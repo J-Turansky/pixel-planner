@@ -1,0 +1,2767 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pixel Planner</title>
+<script>
+  (() => {
+    const param = new URLSearchParams(window.location.search).get("scoutTheme");
+    let saved = null; try { saved = localStorage.getItem("pixelplanner.theme"); } catch (e) {}
+    const sys = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+    const theme = param || (saved && saved !== "system" ? saved : sys);
+    document.documentElement.setAttribute("data-theme", theme);
+  })();
+</script>
+<style>
+:root {
+  color-scheme: light;
+  --cp-bg: #f7f4ef;
+  --cp-bg-elevated: #fcfbf8;
+  --cp-surface: #ffffff;
+  --cp-surface-soft: #f5f5f5;
+  --cp-border: #dedede;
+  --cp-border-strong: #919191;
+  --cp-text: #242424;
+  --cp-text-muted: #5c5c5c;
+  --cp-text-soft: #6f6f6f;
+  --cp-accent: #b11f4b;
+  --cp-accent-hover: #9a1a41;
+  --cp-accent-soft: rgba(177, 31, 75, 0.08);
+  --cp-accent-fg: #ffffff;
+  --cp-success: #16a34a;
+  --cp-danger: #dc2626;
+  --cp-warning: #f59e0b;
+  --cp-link: #0078d4;
+  --cp-shadow: 0 18px 48px rgba(0, 0, 0, 0.12);
+  --cp-overlay: rgba(255, 255, 255, 0.8);
+  --cp-panel: rgba(255, 255, 255, 0.86);
+  --cp-panel-strong: rgba(255, 255, 255, 0.96);
+  --cp-sheen: rgba(255, 255, 255, 0.55);
+  --cp-highlight: rgba(177, 31, 75, 0.12);
+}
+html[data-theme="dark"] {
+  color-scheme: dark;
+  --cp-bg: #3d3b3a;
+  --cp-bg-elevated: #343231;
+  --cp-surface: #292929;
+  --cp-surface-soft: #2e2e2e;
+  --cp-border: #474747;
+  --cp-border-strong: #5f5f5f;
+  --cp-text: #dedede;
+  --cp-text-muted: #919191;
+  --cp-text-soft: #b0b0b0;
+  --cp-accent: #fd8ea1;
+  --cp-accent-hover: #fb7b91;
+  --cp-accent-soft: rgba(253, 142, 161, 0.14);
+  --cp-accent-fg: #1a1a1a;
+  --cp-success: #4ade80;
+  --cp-danger: #f87171;
+  --cp-warning: #fbbf24;
+  --cp-link: #4da6ff;
+  --cp-shadow: 0 18px 48px rgba(0, 0, 0, 0.32);
+  --cp-overlay: rgba(41, 41, 41, 0.88);
+  --cp-panel: rgba(41, 41, 41, 0.72);
+  --cp-panel-strong: rgba(41, 41, 41, 0.96);
+  --cp-sheen: rgba(255, 255, 255, 0.04);
+  --cp-highlight: rgba(253, 142, 161, 0.12);
+}
+
+/* Wiring colours are aliases of the theme palette. */
+:root, html[data-theme="dark"] {
+  --pp-pos: var(--cp-danger);
+  --pp-gnd: var(--cp-text);
+  --pp-data: var(--cp-success);
+  --pp-radius: 0.625rem;
+  --pp-card-shadow: 0 0 2px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.14);
+}
+
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+body {
+  font-family: "Segoe UI", Aptos, Calibri, -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 13px; background: var(--cp-bg); color: var(--cp-text);
+  display: grid; grid-template-rows: auto auto 1fr auto; overflow: hidden;
+}
+code, .mono { font-family: Consolas, "Courier New", Courier, monospace; }
+button, input, select, textarea { font: inherit; color: inherit; }
+button {
+  background: var(--cp-surface); border: 1px solid var(--cp-border); border-radius: var(--pp-radius);
+  padding: 4px 10px; cursor: pointer; min-height: 28px; white-space: nowrap;
+}
+button:hover { border-color: var(--cp-border-strong); background: var(--cp-surface-soft); }
+button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, summary:focus-visible { outline: 2px solid var(--cp-accent); outline-offset: 1px; }
+button.primary { background: var(--cp-accent); color: var(--cp-accent-fg); border-color: var(--cp-accent); }
+button.primary:hover { background: var(--cp-accent-hover); }
+button.ghost { background: transparent; border-color: transparent; }
+button.ghost:hover { border-color: var(--cp-border); }
+button.small { min-height: 22px; padding: 1px 7px; font-size: 12px; }
+button.danger:hover { color: var(--cp-danger); border-color: var(--cp-danger); }
+button:disabled { opacity: .45; cursor: default; }
+input, select, textarea {
+  background: var(--cp-surface); border: 1px solid var(--cp-border); border-radius: 6px; padding: 3px 6px; min-height: 26px;
+}
+input[type=number] { width: 72px; }
+input[type=checkbox] { min-height: auto; accent-color: var(--cp-accent); }
+input[type=range] { accent-color: var(--cp-accent); padding: 0; border: 0; background: transparent; }
+textarea { width: 100%; min-height: 50px; resize: vertical; }
+.muted { color: var(--cp-text-muted); }
+.soft { color: var(--cp-text-soft); }
+.grow { flex: 1; }
+.ok { color: var(--cp-success); }
+.warn { color: var(--cp-warning); }
+.err, .error { color: var(--cp-danger); }
+
+/* Top bar */
+.topbar {
+  display: flex; align-items: center; gap: 10px; padding: 8px 12px; background: var(--cp-bg-elevated);
+  border-bottom: 1px solid var(--cp-border); flex-wrap: wrap;
+}
+.brand { display: flex; align-items: center; gap: 8px; font-size: 15px; }
+.logo { display: inline-flex; gap: 3px; }
+.logo i { width: 7px; height: 7px; border-radius: 50%; background: var(--cp-accent); display: block; }
+.logo i:nth-child(2) { background: var(--cp-warning); }
+.logo i:nth-child(3) { background: var(--cp-success); }
+.proj-name { font-weight: 600; width: 200px; background: transparent; border-color: transparent; }
+.proj-name:hover, .proj-name:focus { border-color: var(--cp-border); background: var(--cp-surface); }
+.tb-group { display: flex; gap: 4px; }
+.seg { display: inline-flex; border: 1px solid var(--cp-border); border-radius: var(--pp-radius); overflow: hidden; }
+.seg button { border: 0; border-radius: 0; background: var(--cp-surface); }
+.seg button + button { border-left: 1px solid var(--cp-border); }
+.seg button.on { background: var(--cp-accent); color: var(--cp-accent-fg); }
+.icon { width: 28px; padding: 0; font-weight: 700; font-family: Georgia, serif; font-style: italic; border-radius: 50%; }
+.ver { font-size: 11px; color: var(--cp-text-muted); cursor: pointer; padding: 2px 6px; border: 1px solid var(--cp-border); border-radius: 999px; }
+.ver:hover { color: var(--cp-accent); border-color: var(--cp-accent); }
+
+/* Summary strip */
+.summary { display: flex; gap: 8px; padding: 8px 12px; overflow-x: auto; border-bottom: 1px solid var(--cp-border); align-items: stretch; }
+.card {
+  background: var(--cp-surface); border: 1px solid var(--cp-border); border-radius: 16px; box-shadow: var(--pp-card-shadow);
+}
+.stat { padding: 6px 12px; min-width: 118px; border-radius: 12px; }
+.stat .k { font-size: 11px; color: var(--cp-text-muted); text-transform: uppercase; letter-spacing: .04em; }
+.stat .v { font-size: 18px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.stat .s { font-size: 11px; color: var(--cp-text-soft); }
+.stat.bright { min-width: 210px; }
+.stat.bright input { width: 100%; }
+.stat.status .v.err { color: var(--cp-danger); }
+.stat.status { cursor: pointer; }
+
+/* Main layout */
+main { display: grid; min-height: 0; }
+main.mode-form { grid-template-columns: 1fr; }
+main.mode-visual { grid-template-columns: 1fr; }
+main.mode-split { grid-template-columns: minmax(420px, 44%) 1fr; }
+main.mode-form #visualPane { display: none; }
+main.mode-visual #formPane { display: none; }
+.pane { min-height: 0; min-width: 0; position: relative; }
+#formPane { overflow: auto; padding: 12px; border-right: 1px solid var(--cp-border); }
+main.mode-form #formPane { padding: 12px max(12px, calc((100% - 1200px) / 2)); }
+
+/* Form */
+.sec { margin-bottom: 14px; }
+.sec > summary, .sec-head { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; cursor: pointer; padding: 4px 0; list-style: none; }
+.sec > summary::-webkit-details-marker, details > summary::-webkit-details-marker { display: none; }
+details > summary { list-style: none; }
+.chev { display: inline-block; transition: transform .15s; color: var(--cp-text-muted); width: 12px; }
+details[open] > summary .chev { transform: rotate(90deg); }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 8px 14px; padding: 8px 0; }
+.fld { display: flex; flex-direction: column; gap: 2px; font-size: 12px; color: var(--cp-text-muted); }
+.fld > input, .fld > select { color: var(--cp-text); }
+.fld.inline { flex-direction: row; align-items: center; gap: 6px; }
+.row { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.distro { padding: 10px 12px; margin: 10px 0; }
+.distro.sel, .ctl.sel, .psurow.sel, .portrow.sel, .item.sel { box-shadow: 0 0 0 2px var(--cp-accent); }
+.distro-head { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.distro-head .name { font-weight: 600; font-size: 14px; width: 170px; }
+.pill { font-size: 11px; padding: 1px 8px; border-radius: 999px; background: var(--cp-surface-soft); border: 1px solid var(--cp-border); color: var(--cp-text-muted); white-space: nowrap; }
+.pill.ok { color: var(--cp-success); } .pill.warn { color: var(--cp-warning); } .pill.err { color: var(--cp-danger); }
+h4 { margin: 12px 0 4px; font-size: 12px; text-transform: uppercase; letter-spacing: .05em; color: var(--cp-text-muted); display: flex; align-items: center; gap: 8px; }
+table.t { width: 100%; border-collapse: collapse; font-size: 12px; }
+table.t th { text-align: left; font-weight: 600; color: var(--cp-text-muted); padding: 3px 4px; border-bottom: 1px solid var(--cp-border); white-space: nowrap; }
+table.t td { padding: 3px 4px; border-bottom: 1px solid var(--cp-border); vertical-align: middle; }
+table.t input[type=text], table.t input:not([type]) { width: 100%; min-width: 80px; }
+.bar { position: relative; height: 8px; background: var(--cp-surface-soft); border: 1px solid var(--cp-border); border-radius: 999px; overflow: hidden; min-width: 80px; }
+.bar > i { position: absolute; inset: 0 auto 0 0; background: var(--cp-success); border-radius: 999px; }
+.bar.warn > i { background: var(--cp-warning); } .bar.err > i { background: var(--cp-danger); }
+.bar .tgt { position: absolute; top: -2px; bottom: -2px; width: 1px; background: var(--cp-border-strong); }
+.ctl { margin: 10px 0 4px; padding: 8px 10px; border: 1px solid var(--cp-border); border-radius: 12px; background: var(--cp-bg-elevated); }
+.ctl-head { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.ctl-head .name { font-weight: 600; width: 150px; }
+.banks { display: flex; gap: 10px; flex-wrap: wrap; margin: 6px 0; }
+.bank { display: flex; flex-direction: column; gap: 2px; font-size: 12px; padding: 4px 8px; border: 1px dashed var(--cp-border); border-radius: 8px; }
+.portrow { border: 1px solid var(--cp-border); border-radius: 8px; margin: 4px 0; background: var(--cp-surface); }
+.portrow > summary { display: flex; align-items: center; gap: 8px; padding: 5px 8px; cursor: pointer; font-variant-numeric: tabular-nums; }
+.portrow > summary .pn { font-weight: 600; width: 50px; }
+.portrow > summary .pl { flex: 1; min-width: 60px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.portrow > summary .m { color: var(--cp-text-muted); font-size: 12px; white-space: nowrap; }
+.portbody { padding: 6px 8px 8px; border-top: 1px solid var(--cp-border); }
+.dot { width: 9px; height: 9px; border-radius: 50%; background: var(--cp-border-strong); display: inline-block; flex: none; }
+.dot.ok { background: var(--cp-success); } .dot.warn { background: var(--cp-warning); } .dot.err { background: var(--cp-danger); } .dot.none { background: var(--cp-border); }
+.chain { display: flex; flex-direction: column; gap: 4px; margin: 6px 0; }
+.item { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; padding: 4px 6px; border: 1px solid var(--cp-border); border-radius: 8px; background: var(--cp-bg-elevated); }
+.item .kind { font-size: 11px; font-weight: 600; width: 64px; text-transform: uppercase; letter-spacing: .04em; }
+.item.k-cable .kind { color: var(--cp-text-soft); }
+.item.k-pixels .kind { color: var(--cp-success); }
+.item.k-inject .kind { color: var(--cp-danger); }
+.item .res { margin-left: auto; font-size: 12px; color: var(--cp-text-muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.item label { font-size: 12px; color: var(--cp-text-muted); display: inline-flex; align-items: center; gap: 3px; }
+.item input[type=number] { width: 62px; }
+.item input.lbl { width: 130px; }
+.item select { max-width: 170px; }
+.port-port { font-size: 11px; color: var(--cp-text-muted); padding: 2px 0; }
+.addbar { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; padding-top: 4px; }
+.url { font-family: Consolas, "Courier New", Courier, monospace; font-size: 11px; color: var(--cp-link); word-break: break-all; }
+.nw { white-space: nowrap; }
+.psw { display: inline-block; width: 9px; height: 9px; border-radius: 3px; vertical-align: middle; }
+.psw.c0 { background: var(--cp-accent); } .psw.c1 { background: var(--cp-link); } .psw.c2 { background: var(--cp-success); }
+.psw.c3 { background: var(--cp-warning); } .psw.c4 { background: var(--cp-text-soft); } .psw.c5 { background: var(--cp-danger); }
+.flash { animation: flash 1.2s ease-out; }
+@keyframes flash { from { box-shadow: 0 0 0 4px var(--cp-accent); } to { box-shadow: 0 0 0 0 transparent; } }
+.empty { padding: 20px; text-align: center; color: var(--cp-text-muted); border: 1px dashed var(--cp-border); border-radius: 16px; }
+
+/* Visual */
+#visualPane { display: grid; grid-template-columns: 170px 1fr; grid-template-rows: auto 1fr; }
+main.mode-visual #visualPane { grid-template-columns: 170px 1fr 420px; }
+.vtools { grid-column: 1 / -1; display: flex; gap: 6px; align-items: center; padding: 6px 8px; border-bottom: 1px solid var(--cp-border); background: var(--cp-bg-elevated); flex-wrap: wrap; }
+.legend { display: inline-flex; gap: 6px; align-items: center; font-size: 12px; color: var(--cp-text-muted); margin-left: 8px; }
+.lg { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+.lg.ok { background: var(--cp-success); } .lg.warn { background: var(--cp-warning); } .lg.err { background: var(--cp-danger); } .lg.off { background: var(--cp-border-strong); }
+.palette { overflow: auto; padding: 8px; border-right: 1px solid var(--cp-border); background: var(--cp-bg-elevated); }
+.palette h5 { margin: 8px 0 4px; font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: var(--cp-text-muted); }
+.pal { display: flex; align-items: center; gap: 6px; padding: 5px 8px; margin: 3px 0; border: 1px solid var(--cp-border); border-radius: 8px; background: var(--cp-surface); cursor: grab; font-size: 12px; user-select: none; }
+.pal:hover { border-color: var(--cp-accent); }
+.pal .sw { width: 10px; height: 10px; border-radius: 50%; flex: none; background: var(--cp-success); }
+.pal .sw.flood { border-radius: 2px; background: var(--cp-warning); }
+.pal .sw.cable { border-radius: 2px; height: 4px; background: var(--cp-text-soft); }
+.pal .sw.inject { border-radius: 1px; transform: rotate(45deg); background: var(--cp-danger); width: 8px; height: 8px; }
+.canvas-wrap { position: relative; overflow: hidden; background: var(--cp-bg); }
+.canvas-wrap.dragover { box-shadow: inset 0 0 0 2px var(--cp-accent); }
+#svg { width: 100%; height: 100%; display: block; cursor: grab; user-select: none; }
+#svg.panning { cursor: grabbing; }
+.inspector { display: none; overflow: auto; padding: 10px; border-left: 1px solid var(--cp-border); background: var(--cp-bg-elevated); }
+main.mode-visual .inspector { display: block; }
+.inspector .hint { color: var(--cp-text-muted); padding: 8px 0; }
+
+/* SVG styles (colours via theme variables) */
+.s-grid { stroke: var(--cp-border); stroke-width: .5; }
+.s-distro { fill: var(--cp-surface); stroke: var(--cp-border-strong); stroke-width: 1.2; }
+.s-distro-head { fill: var(--cp-surface-soft); stroke: none; cursor: move; }
+.s-title { fill: var(--cp-text); font-size: 13px; font-weight: 600; }
+.s-text { fill: var(--cp-text); font-size: 11px; }
+.s-muted { fill: var(--cp-text-muted); font-size: 10px; }
+.s-tiny { fill: var(--cp-text-soft); font-size: 9px; }
+.s-psu { fill: var(--cp-bg-elevated); stroke: var(--cp-border-strong); }
+.s-board { fill: var(--cp-surface-soft); stroke: var(--cp-border-strong); }
+.s-pad { fill: var(--cp-surface); stroke: var(--cp-border-strong); }
+.s-pad.used { fill: var(--cp-accent-soft); stroke: var(--cp-accent); }
+.s-barbg { fill: var(--cp-surface-soft); stroke: var(--cp-border); }
+.s-ok { fill: var(--cp-success); } .s-warn { fill: var(--cp-warning); } .s-err { fill: var(--cp-danger); } .s-off { fill: var(--cp-border-strong); }
+.s-cable { stroke: var(--cp-text-soft); fill: none; stroke-linecap: round; }
+.s-cable.hot { stroke: var(--cp-warning); } .s-cable.over { stroke: var(--cp-danger); }
+.s-strwire { stroke: var(--cp-border-strong); stroke-width: 1; }
+.s-feed { fill: none; stroke-width: 1.6; stroke-dasharray: 5 3; opacity: .85; }
+.s-bankwire { fill: none; stroke-width: 2.2; }
+.s-sel { fill: none; stroke: var(--cp-accent); stroke-width: 2; }
+.s-hit { fill: transparent; cursor: pointer; }
+.s-hit:hover { fill: var(--cp-highlight); }
+.s-plus { fill: var(--cp-surface); stroke: var(--cp-border-strong); cursor: pointer; }
+.s-plus:hover { stroke: var(--cp-accent); }
+.s-drop { fill: var(--cp-highlight); stroke: var(--cp-accent); stroke-dasharray: 3 2; }
+.s-drop-hi > .s-hit, .s-drop-hi.s-distro, .s-drop-hi > .s-plus { fill: var(--cp-accent-soft); stroke: var(--cp-accent); }
+.s-relay { fill: var(--cp-surface); stroke: var(--cp-border-strong); }
+.s-relay.on { fill: var(--cp-accent-soft); stroke: var(--cp-accent); }
+.s-btn { fill: var(--cp-accent); }
+.s-btn.unset { fill: var(--cp-border-strong); }
+.c0 { stroke: var(--cp-accent); fill: var(--cp-accent); } .c1 { stroke: var(--cp-link); fill: var(--cp-link); }
+.c2 { stroke: var(--cp-success); fill: var(--cp-success); } .c3 { stroke: var(--cp-warning); fill: var(--cp-warning); }
+.c4 { stroke: var(--cp-text-soft); fill: var(--cp-text-soft); } .c5 { stroke: var(--cp-danger); fill: var(--cp-danger); }
+.s-feed.c0, .s-feed.c1, .s-feed.c2, .s-feed.c3, .s-feed.c4, .s-feed.c5, .s-bankwire.c0, .s-bankwire.c1, .s-bankwire.c2, .s-bankwire.c3, .s-bankwire.c4, .s-bankwire.c5 { fill: none; }
+
+/* Status bar, drawer, dialogs, toast */
+.statusbar { display: flex; gap: 12px; align-items: center; padding: 4px 12px; border-top: 1px solid var(--cp-border); background: var(--cp-bg-elevated); font-size: 12px; }
+.warnbtn { min-height: 22px; font-size: 12px; }
+.drawer { position: fixed; right: 12px; bottom: 36px; width: min(560px, calc(100vw - 24px)); max-height: 60vh; overflow: auto; background: var(--cp-panel-strong); border: 1px solid var(--cp-border); border-radius: 16px; box-shadow: var(--cp-shadow); padding: 10px 12px; z-index: 20; }
+.drawer-head { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.wi { display: flex; gap: 8px; padding: 6px 4px; border-bottom: 1px solid var(--cp-border); cursor: pointer; align-items: flex-start; }
+.wi:hover { background: var(--cp-highlight); }
+.wi .lvl { font-size: 10px; font-weight: 700; text-transform: uppercase; width: 44px; flex: none; padding-top: 2px; }
+.wi.error .lvl { color: var(--cp-danger); } .wi.warn .lvl { color: var(--cp-warning); } .wi.info .lvl { color: var(--cp-link); }
+.dlg { border: 1px solid var(--cp-border); border-radius: 16px; background: var(--cp-surface); color: var(--cp-text); box-shadow: var(--cp-shadow); padding: 0; max-width: min(560px, 94vw); }
+.dlg.wide { max-width: min(820px, 94vw); width: 820px; }
+.dlg.full { max-width: 96vw; width: 1100px; height: 92vh; }
+.dlg::backdrop { background: rgba(0,0,0,.35); }
+.dlg-head { display: flex; align-items: center; gap: 8px; padding: 10px 14px; border-bottom: 1px solid var(--cp-border); }
+.dlg-head b { font-size: 15px; }
+.dlg-body { padding: 12px 16px; overflow: auto; max-height: calc(88vh - 60px); line-height: 1.5; }
+.dlg.full .dlg-body { height: calc(92vh - 52px); max-height: none; padding: 0; }
+.dlg.full iframe { width: 100%; height: 100%; border: 0; background: var(--cp-surface); }
+.dlg-body h3 { margin: 14px 0 4px; font-size: 14px; }
+.dlg-body p, .dlg-body li { color: var(--cp-text); }
+.dlg-foot { display: flex; gap: 8px; justify-content: flex-end; padding: 10px 14px; border-top: 1px solid var(--cp-border); }
+.toast { position: fixed; left: 50%; bottom: 44px; transform: translateX(-50%); background: var(--cp-panel-strong); color: var(--cp-text); border: 1px solid var(--cp-border); padding: 8px 14px; border-radius: var(--pp-radius); box-shadow: var(--cp-shadow); z-index: 50; max-width: 80vw; }
+.cl-ver { font-weight: 600; margin-top: 10px; }
+.kbd { font-family: Consolas, "Courier New", Courier, monospace; font-size: 11px; border: 1px solid var(--cp-border); border-bottom-width: 2px; border-radius: 4px; padding: 0 4px; }
+
+@media (max-width: 900px) {
+  main.mode-split { grid-template-columns: 1fr; grid-template-rows: 1fr 1fr; }
+  #visualPane, main.mode-visual #visualPane { grid-template-columns: 1fr; }
+  .palette { display: none; }
+}
+
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="brand"><span class="logo" aria-hidden="true"><i></i><i></i><i></i></span><b>Pixel Planner</b></div>
+  <input id="projName" class="proj-name" data-id="project" data-f="name" title="Project name" aria-label="Project name">
+  <div class="tb-group">
+    <button data-act="new" title="New project">New</button>
+    <button data-act="open" title="Open a .pixelplan.json file (Ctrl+O)">Open</button>
+    <button data-act="save" title="Save (Ctrl+S)">Save</button>
+    <button data-act="saveAs" title="Save as a new file">Save as</button>
+    <button data-act="demo" title="Load the demo show">Demo</button>
+  </div>
+  <div class="tb-group">
+    <button data-act="undo" title="Undo (Ctrl+Z)" aria-label="Undo">↶</button>
+    <button data-act="redo" title="Redo (Ctrl+Y)" aria-label="Redo">↷</button>
+  </div>
+  <div class="seg" role="tablist" aria-label="View">
+    <button data-view="form" role="tab">Form</button>
+    <button data-view="split" role="tab">Split</button>
+    <button data-view="visual" role="tab">Visual</button>
+  </div>
+  <span class="grow"></span>
+  <button class="primary" data-act="guide" title="Wiring guide, bill of materials and channel map">Wiring guide</button>
+  <select id="themeSel" title="Theme" aria-label="Theme"><option value="system">System</option><option value="light">Light</option><option value="dark">Dark</option></select>
+  <button class="icon" data-act="help" title="How to use, how it calculates, and what's new" aria-label="Help">i</button>
+  <span class="ver" id="verBadge" data-act="whatsnew" title="What's new"></span>
+</header>
+
+<section class="summary" id="summary"></section>
+
+<main id="main" class="mode-split">
+  <div id="formPane" class="pane"></div>
+  <div id="visualPane" class="pane">
+    <div class="vtools">
+      <button data-act="fit" title="Fit everything in view">Fit</button>
+      <button data-act="zoomIn" aria-label="Zoom in">+</button>
+      <button data-act="zoomOut" aria-label="Zoom out">−</button>
+      <button data-act="addDistro">+ Distro</button>
+      <span class="legend"><i class="lg ok"></i>OK <i class="lg warn"></i>Low <i class="lg err"></i>Too low <i class="lg off"></i>No power</span>
+    </div>
+    <div class="palette" id="palette"></div>
+    <div class="canvas-wrap" id="canvasWrap"><svg id="svg" xmlns="http://www.w3.org/2000/svg"></svg></div>
+    <div class="inspector" id="inspector"></div>
+  </div>
+</main>
+
+<footer class="statusbar">
+  <button id="warnBtn" data-act="warnings" class="warnbtn"></button>
+  <span id="fileInfo"></span>
+  <span class="grow"></span>
+  <span class="muted">Tip: drag presets from the palette onto a port in the Visual view.</span>
+</footer>
+
+<aside id="warnDrawer" class="drawer" hidden>
+  <div class="drawer-head"><b>Checks</b><span class="grow"></span><button data-act="warnings" aria-label="Close">✕</button></div>
+  <div id="warnList"></div>
+</aside>
+
+<dialog id="helpDlg" class="dlg wide"></dialog>
+<dialog id="guideDlg" class="dlg full"></dialog>
+<dialog id="askDlg" class="dlg"></dialog>
+<div id="toast" class="toast" hidden></div>
+<input type="file" id="fileInput" accept=".json,.pixelplan.json,application/json" hidden>
+
+<script>
+// Bump APP_VERSION on every code change and add an entry to CHANGELOG (newest first).
+// The version shows in the top-right corner and the "i" dialog shows the change log.
+window.PP = window.PP || {};
+PP.APP_NAME = 'Pixel Planner';
+PP.APP_VERSION = '1.0.0';
+PP.BUILT = '28 Sept 2026, 18:49';  // filled in by Build-Portable.ps1 ("Last updated" date and time)
+PP.CHANGELOG = [
+  {
+    version: '1.0.0', date: '2026-09-28', items: [
+      'First release: plan Baldrick controllers, distros, Mean Well PSUs, pixel runs and power injection.',
+      'Form view and Fritzing-style visual view, kept in sync (or side by side in Split view).',
+      'Voltage-drop solver for every pixel on every port, with power injection and +V isolation.',
+      'Auto-inject and auto-balance PSUs, with warnings for PSU, fuse, wire, bank, mains and data limits.',
+      'Baldrick8, Baldrick17, BaldrickInput8, BaldrickInput1, BaldrickSwitchy and BaldrickDMX boards, with Turniput inputs (FPP command URLs) and relays.',
+      'Pixel library (bullets, seeds, 10/20/30 W floods, strip, RGBW, null pixel) and string presets you can edit.',
+      'Printable wiring guide, bill of materials, channel map CSV and per-season running cost.',
+      'Portable single HTML file; projects save as .pixelplan.json files.',
+      'Also online at j-turansky.github.io/pixel-planner.'
+    ]
+  }
+];
+
+</script>
+<script>
+// Built-in reference data: Baldrick boards, Mean Well PSUs, wire, pixel types, presets, distro sizes.
+// Pixel wattages are full-white planning figures; check them against your supplier's datasheet
+// (they are editable per project in the Library).
+(function () {
+  const C = PP.catalog = {};
+
+  // Boards. Specs from baldrickboard.com (tech specs and manuals).
+  // banks: which pixel ports each power input feeds. fuseA: per-port blade fuse.
+  C.boards = {
+    baldrick8: {
+      name: 'Baldrick8', kind: 'pixel', ports: 8, fuseA: 7.5, maxPx: 750, maxCh: 2250, inputs: 3, relays: 0,
+      vmin: 5, vmax: 48, ethernet: 1, logicW: 1.5,
+      banks: [
+        { id: 'L', label: 'Left power jack', ports: [1, 2, 3, 4] },
+        { id: 'R', label: 'Right power jack', ports: [5, 6, 7, 8] }
+      ],
+      note: '8 smart ports, 750 RGB px/port at 40 fps (2250 ch), 7.5 A fuse per port, 2 power jacks (ports 1-4, 5-8), 3 Turniputs. 5-48 V (24 V on v1.0). 10 AWG recommended for power jacks.'
+    },
+    baldrick17: {
+      name: 'Baldrick17', kind: 'pixel', ports: 17, fuseA: 7.5, maxPx: 750, maxCh: 2250, inputs: 3, relays: 0,
+      vmin: 5, vmax: 48, ethernet: 2, logicW: 2.5,
+      banks: [
+        { id: 'P1', label: 'Jack 1 (10 AWG)', ports: [1, 2, 3, 4] },
+        { id: 'P2', label: 'Jack 2 (10 AWG)', ports: [5, 6, 7, 8] },
+        { id: 'P3', label: 'Jack 3 (10 AWG)', ports: [9, 10, 11, 12] },
+        { id: 'P4', label: 'Jack 4 (10 AWG)', ports: [13, 14, 15, 16] },
+        { id: 'P5', label: 'Jack 5 (16 AWG)', ports: [17], maxA: 7.5 }
+      ],
+      note: '17 smart ports, 750 RGB px/port at 40 fps, banked 4+4+4+4+1, 7.5 A fuse per port, dual ethernet, 3 Turniputs. Sits on top of a Mean Well PSU.'
+    },
+    baldrickinput8: {
+      name: 'BaldrickInput8', kind: 'interactive', ports: 2, fuseA: null, maxPx: 750, maxCh: 2250, inputs: 8, relays: 0,
+      vmin: 5, vmax: 48, ethernet: 2, logicW: 1,
+      banks: [{ id: 'IN', label: 'Power input', ports: [1, 2] }],
+      note: '8 Turniputs and 2 pixel ports (750 RGB px/port at 40 fps). 5-48 V. Dual ethernet. Great for selfie stations and tunnels.'
+    },
+    baldrickinput1: {
+      name: 'BaldrickInput1', kind: 'interactive', ports: 0, inputs: 1, relays: 0, vmin: 5, vmax: 24, ethernet: 1, logicW: 0.5,
+      banks: [{ id: 'IN', label: 'Power input', ports: [] }],
+      note: '1 Turniput. Ethernet or Wi-Fi. 5-24 V.'
+    },
+    baldrickswitchy: {
+      name: 'BaldrickSwitchy', kind: 'relay', ports: 0, inputs: 0, relays: 4, relayMaxA: 8, relayMaxV: 300, vmin: 5, vmax: 48, ethernet: 1,
+      logicW: 2.8,
+      banks: [{ id: 'IN', label: 'Power input', ports: [] }],
+      note: '4 relays, up to 8 A and 300 V AC/DC. Board draws 0.23 A at 12 V with all relays on. Always fit the DarwinTray when switching mains.'
+    },
+    baldrickdmx: {
+      name: 'BaldrickDMX', kind: 'dmx', ports: 0, inputs: 0, relays: 0, dmx: 1, vmin: 5, vmax: 48, ethernet: 1, logicW: 1,
+      banks: [{ id: 'IN', label: 'Power input', ports: [] }],
+      note: '1 DMX universe on RJ45, 3-pin and 5-pin XLR. Presets triggered by Turnip Network.'
+    }
+  };
+
+  // Mean Well PSUs. a = rated output current, adj = output trim range.
+  C.psus = [
+    { id: 'LRS-100-12', v: 12, a: 8.5, adj: [10.2, 13.8], ip: 'IP20 (needs an enclosure)' },
+    { id: 'LRS-150F-12', v: 12, a: 12.5, adj: [10.2, 13.8], ip: 'IP20 (needs an enclosure)' },
+    { id: 'LRS-200-12', v: 12, a: 17, adj: [10.2, 13.8], ip: 'IP20 (needs an enclosure)' },
+    { id: 'LRS-350-12', v: 12, a: 29, adj: [10.2, 13.8], ip: 'IP20 (needs an enclosure)' },
+    { id: 'RSP-500-12', v: 12, a: 41.7, adj: [10.2, 13.8], ip: 'IP20, PFC (needs an enclosure)' },
+    { id: 'SE-600-12', v: 12, a: 50, adj: [10.2, 13.8], ip: 'IP20 (needs an enclosure)' },
+    { id: 'HLG-150H-12', v: 12, a: 12.5, adj: [11.2, 12.8], ip: 'IP65/67 waterproof' },
+    { id: 'HLG-185H-12', v: 12, a: 13, adj: [11.2, 12.8], ip: 'IP65/67 waterproof' },
+    { id: 'HLG-240H-12', v: 12, a: 16, adj: [11.2, 12.8], ip: 'IP65/67 waterproof' },
+    { id: 'HLG-320H-12', v: 12, a: 22, adj: [11.2, 12.8], ip: 'IP65/67 waterproof' },
+    { id: 'HLG-600H-12', v: 12, a: 40, adj: [11.2, 12.8], ip: 'IP65/67 waterproof' },
+    { id: 'LRS-200-5', v: 5, a: 40, adj: [4.25, 5.5], ip: 'IP20 (needs an enclosure)' },
+    { id: 'LRS-350-5', v: 5, a: 60, adj: [4.25, 5.5], ip: 'IP20 (needs an enclosure)' },
+    { id: 'LRS-100-24', v: 24, a: 4.5, adj: [21.6, 28.8], ip: 'IP20 (needs an enclosure)' },
+    { id: 'LRS-200-24', v: 24, a: 8.8, adj: [21.6, 28.8], ip: 'IP20 (needs an enclosure)' },
+    { id: 'LRS-350-24', v: 24, a: 14.6, adj: [21.6, 28.8], ip: 'IP20 (needs an enclosure)' },
+    { id: 'HLG-320H-24', v: 24, a: 13.34, adj: [22.4, 25.6], ip: 'IP65/67 waterproof' },
+    { id: 'HLG-600H-24', v: 24, a: 25, adj: [22.4, 25.6], ip: 'IP65/67 waterproof' }
+  ];
+  C.psuById = id => C.psus.find(p => p.id === id);
+
+  // Copper wire: ohms per metre for ONE conductor, and a conservative continuous current for
+  // pixel extensions/feeds (bundled, outdoors). Loop resistance (+V and GND) is twice ohmPerM.
+  C.wires = [
+    { id: 'awg24', label: '24 AWG', mm2: 0.205, ohmPerM: 0.08422, maxA: 2 },
+    { id: 'awg22', label: '22 AWG', mm2: 0.326, ohmPerM: 0.05296, maxA: 3 },
+    { id: 'awg20', label: '20 AWG', mm2: 0.518, ohmPerM: 0.03331, maxA: 5 },
+    { id: 'awg18', label: '18 AWG', mm2: 0.823, ohmPerM: 0.02095, maxA: 7 },
+    { id: 'awg16', label: '16 AWG', mm2: 1.31, ohmPerM: 0.01317, maxA: 10 },
+    { id: 'awg14', label: '14 AWG', mm2: 2.08, ohmPerM: 0.008286, maxA: 15 },
+    { id: 'awg12', label: '12 AWG', mm2: 3.31, ohmPerM: 0.005211, maxA: 20 },
+    { id: 'awg10', label: '10 AWG', mm2: 5.26, ohmPerM: 0.003277, maxA: 30 },
+    { id: 'mm0_5', label: '0.5 mm²', mm2: 0.5, ohmPerM: 0.0344, maxA: 3 },
+    { id: 'mm0_75', label: '0.75 mm²', mm2: 0.75, ohmPerM: 0.0229, maxA: 6 },
+    { id: 'mm1_0', label: '1.0 mm²', mm2: 1.0, ohmPerM: 0.0172, maxA: 10 },
+    { id: 'mm1_5', label: '1.5 mm²', mm2: 1.5, ohmPerM: 0.01147, maxA: 13 },
+    { id: 'mm2_5', label: '2.5 mm²', mm2: 2.5, ohmPerM: 0.00688, maxA: 20 },
+    { id: 'mm4_0', label: '4.0 mm²', mm2: 4.0, ohmPerM: 0.0043, maxA: 25 },
+    { id: 'mm6_0', label: '6.0 mm²', mm2: 6.0, ohmPerM: 0.00287, maxA: 32 }
+  ];
+  C.wireById = id => C.wires.find(w => w.id === id) || C.wires[3];
+  // Heaviest-last order used by auto-inject when it needs a thicker feed.
+  C.feedGaugeLadder = ['awg18', 'awg16', 'awg14', 'awg12', 'awg10'];
+
+  C.bladeFuses = [1, 2, 3, 4, 5, 7.5, 10, 15, 20, 25, 30, 35, 40];
+
+  // Default pixel library (full white, per node, at nominal voltage).
+  C.pixelTypes = [
+    { id: 'bullet12', name: '12 mm bullet 12 V', cat: 'bullet', v: 12, w: 0.6, ch: 3, spacing: 0.1, gauge: 'awg20' },
+    { id: 'bullet5', name: '12 mm bullet 5 V', cat: 'bullet', v: 5, w: 0.3, ch: 3, spacing: 0.1, gauge: 'awg20' },
+    { id: 'bulletrgbw12', name: '12 mm RGBW bullet 12 V', cat: 'bullet', v: 12, w: 0.8, ch: 4, spacing: 0.1, gauge: 'awg20' },
+    { id: 'seed12', name: 'Seed 12 V', cat: 'seed', v: 12, w: 0.3, ch: 3, spacing: 0.1, gauge: 'awg22' },
+    { id: 'seed5', name: 'Seed 5 V', cat: 'seed', v: 5, w: 0.25, ch: 3, spacing: 0.1, gauge: 'awg22' },
+    { id: 'flood10', name: 'Flood 10 W 12 V', cat: 'flood', v: 12, w: 10, ch: 3, spacing: 1, gauge: 'awg18' },
+    { id: 'flood20', name: 'Flood 20 W 12 V', cat: 'flood', v: 12, w: 20, ch: 3, spacing: 1, gauge: 'awg18' },
+    { id: 'flood30', name: 'Flood 30 W 12 V', cat: 'flood', v: 12, w: 30, ch: 3, spacing: 1, gauge: 'awg18' },
+    { id: 'strip12', name: 'Strip WS2811 12 V (per IC, 60 LED/m)', cat: 'strip', v: 12, w: 0.72, ch: 3, spacing: 0.05, gauge: 'awg22' },
+    { id: 'null12', name: 'Null pixel 12 V', cat: 'null', v: 12, w: 0.05, ch: 3, spacing: 0.1, gauge: 'awg20' }
+  ];
+
+  // String presets: count pixels per string.
+  C.presets = [
+    { id: 'seed100', name: '100 seed string', typeId: 'seed12', count: 100 },
+    { id: 'seed50', name: '50 seed string', typeId: 'seed12', count: 50 },
+    { id: 'bullet50', name: '50 bullet string', typeId: 'bullet12', count: 50 },
+    { id: 'bullet100', name: '100 bullet string', typeId: 'bullet12', count: 100 },
+    { id: 'flood10', name: '10 W flood', typeId: 'flood10', count: 1 },
+    { id: 'flood20', name: '20 W flood', typeId: 'flood20', count: 1 },
+    { id: 'flood30', name: '30 W flood', typeId: 'flood30', count: 1 },
+    { id: 'strip5m', name: '5 m strip (100 ICs)', typeId: 'strip12', count: 100 },
+    { id: 'null1', name: 'Null pixel', typeId: 'null12', count: 1 }
+  ];
+
+  // Distro (enclosure) sizes: how many PSUs and boards fit.
+  C.distroSizes = [
+    { id: 'small', name: 'Small (1 PSU, 1 board)', psuSlots: 1, boardSlots: 1 },
+    { id: 'medium', name: 'Medium (2 PSUs, 1 board)', psuSlots: 2, boardSlots: 1 },
+    { id: 'large', name: 'Large (3 PSUs, 2 boards)', psuSlots: 3, boardSlots: 2 },
+    { id: 'xl', name: 'XL (4 PSUs, 2 boards)', psuSlots: 4, boardSlots: 2 },
+    { id: 'xxl', name: 'XXL (6 PSUs, 3 boards)', psuSlots: 6, boardSlots: 3 },
+    { id: 'custom', name: 'Custom', psuSlots: 2, boardSlots: 1 }
+  ];
+
+  C.inputDevices = ['Push button', 'Big red button', 'PIR motion sensor', 'Beam break', 'Reed switch', 'Step / pressure mat', 'Other'];
+  C.inputActions = [
+    { id: 'none', name: 'Not set' },
+    { id: 'playlist', name: 'FPP: start playlist (if not running)', param: 'Playlist name' },
+    { id: 'playlistNow', name: 'FPP: start playlist now', param: 'Playlist name' },
+    { id: 'stop', name: 'FPP: stop now' },
+    { id: 'volume', name: 'FPP: set volume', param: 'Volume 0-100' },
+    { id: 'effect', name: 'FPP: start effect', param: 'Effect name' },
+    { id: 'switchy', name: 'Switchy relay on for N seconds', param: 'Relay and seconds, e.g. 1 / 30' },
+    { id: 'test', name: 'Baldrick test mode', param: 'Brightness %' },
+    { id: 'custom', name: 'Custom FPP command', param: 'Command path, e.g. Next Playlist Item' }
+  ];
+})();
+
+</script>
+<script>
+// Project model, factories, lookup and the store (undo/redo, autosave, change events).
+(function () {
+  const C = PP.catalog;
+  const M = PP.model = {};
+  const SCHEMA = 1;
+
+  M.uid = (p = 'x') => p + Math.random().toString(36).slice(2, 9);
+  const clone = o => JSON.parse(JSON.stringify(o));
+  M.clone = clone;
+
+  M.defaultSettings = () => ({
+    brightness: 100,          // global brightness %, scales pixel current
+    typicalPct: 35,           // average show load as % of full white (for energy/cost)
+    warnDropPct: 10,          // pixel voltage warning below nominal - x%
+    errDropPct: 20,           // pixel voltage error below nominal - x%
+    psuTargetPct: 80,         // keep PSUs at or below this continuous load
+    mainsV: 230,
+    mainsCircuitA: 13,        // UK plug fuse
+    psuEfficiency: 88,
+    fppIp: '192.168.1.50',
+    universeSize: 510,
+    startUniverse: 1,
+    dataWarnM: 5,             // data gap before a pixel that deserves a warning
+    injectGauge: 'awg16',
+    injectMode: 'run',        // 'run' = feed length follows run distance, 'fixed' = injectLength
+    injectLength: 3,
+    hoursPerNight: 5,
+    nights: 40,
+    tariff: 0.25,
+    currency: '£'
+  });
+
+  M.newPsu = (model = 'LRS-350-12', n = 1) => {
+    const s = C.psuById(model);
+    return { id: M.uid('psu'), name: 'PSU ' + n, model, vout: s ? s.v : 12, customV: 12, customA: 10 };
+  };
+
+  M.newPort = (num) => ({ id: M.uid('port'), num, brightness: 100, portPower: true, label: '', chain: [] });
+
+  M.newController = (board = 'baldrick8', name) => {
+    const b = C.boards[board];
+    const c = {
+      id: M.uid('ctl'), board, name: name || b.name, ip: '',
+      feed: { length: 0.5, gauge: 'awg10' }, banks: {}, ports: [], relays: [], inputs: [],
+      dmxFixtures: []
+    };
+    for (let i = 1; i <= (b.ports || 0); i++) c.ports.push(M.newPort(i));
+    for (let i = 1; i <= (b.relays || 0); i++) c.relays.push({ id: M.uid('rly'), num: i, name: '', amps: 0, volts: 230 });
+    for (let i = 1; i <= (b.inputs || 0); i++) c.inputs.push({ id: M.uid('inp'), num: i, name: '', device: 'Push button', action: 'none', param: '' });
+    b.banks.forEach(bk => { c.banks[bk.id] = null; });
+    return c;
+  };
+
+  // Rebuild ports/relays/inputs/banks when a controller's board type changes, keeping what fits.
+  M.changeBoard = (c, board) => {
+    const n = M.newController(board, c.name);
+    n.id = c.id; n.ip = c.ip; n.feed = c.feed;
+    n.ports.forEach((p, i) => { if (c.ports[i]) n.ports[i] = Object.assign(c.ports[i], { num: p.num }); });
+    n.inputs.forEach((p, i) => { if (c.inputs[i]) n.inputs[i] = Object.assign(c.inputs[i], { num: p.num }); });
+    n.relays.forEach((p, i) => { if (c.relays[i]) n.relays[i] = Object.assign(c.relays[i], { num: p.num }); });
+    const firstPsu = Object.values(c.banks).find(Boolean) || null;
+    Object.keys(n.banks).forEach(k => { n.banks[k] = c.banks[k] !== undefined ? c.banks[k] : firstPsu; });
+    Object.assign(c, n);
+  };
+
+  M.newDistro = (name, x = 40, y = 40, size = 'medium') => {
+    const s = C.distroSizes.find(d => d.id === size);
+    return { id: M.uid('dst'), name: name || 'Distro', size, psuSlots: s.psuSlots, boardSlots: s.boardSlots, x, y, notes: '', psus: [], controllers: [] };
+  };
+
+  M.newItem = {
+    cable: (length = 5, gauge = 'awg18') => ({ id: M.uid('it'), kind: 'cable', length, gauge, label: '' }),
+    pixels: (typeId, count, lib) => {
+      const t = (lib || C.pixelTypes).find(x => x.id === typeId) || C.pixelTypes[0];
+      return { id: M.uid('it'), kind: 'pixels', typeId: t.id, count: count || 50, spacing: t.spacing, gauge: t.gauge, label: '' };
+    },
+    inject: (psuId, length = 3, gauge = 'awg16') => ({ id: M.uid('it'), kind: 'inject', psuId, length, gauge, isolate: false, label: '' })
+  };
+
+  M.newProject = () => ({
+    app: 'PixelPlanner', schema: SCHEMA, name: 'New show', notes: '',
+    settings: M.defaultSettings(),
+    library: { pixelTypes: clone(C.pixelTypes), presets: clone(C.presets) },
+    distros: []
+  });
+
+  M.demoProject = () => {
+    const p = M.newProject();
+    p.name = 'Demo show';
+    const d = M.newDistro('Front garden', 40, 40, 'medium');
+    const a = M.newPsu('LRS-350-12', 1), b = M.newPsu('LRS-350-12', 2);
+    d.psus.push(a, b);
+    const c = M.newController('baldrick8', 'Front B8');
+    c.ip = '192.168.1.101';
+    c.banks.L = a.id; c.banks.R = b.id;
+    const I = M.newItem;
+    c.ports[0].label = 'Roofline'; c.ports[0].chain = [I.cable(5, 'awg18'), I.pixels('bullet12', 100), I.pixels('bullet12', 100)];
+    c.ports[1].label = 'Mini trees'; c.ports[1].chain = [I.cable(8, 'awg18'), I.pixels('seed12', 100), I.pixels('seed12', 100), I.pixels('seed12', 100)];
+    c.ports[2].label = 'Floods'; c.ports[2].chain = [I.cable(5, 'awg18'), I.pixels('flood10', 4), I.pixels('flood20', 2)];
+    c.ports[4].label = 'Arches'; c.ports[4].chain = [I.cable(10, 'awg18'), I.pixels('bullet12', 50), I.pixels('bullet12', 50), I.pixels('bullet12', 50), I.pixels('bullet12', 50)];
+    c.inputs[0].name = 'Show start button'; c.inputs[0].device = 'Big red button'; c.inputs[0].action = 'playlist'; c.inputs[0].param = 'Show Time';
+    d.controllers.push(c);
+    const d2 = M.newDistro('Porch', 40, 560, 'small');
+    const e = M.newPsu('LRS-350-12', 1);
+    d2.psus.push(e);
+    const s = M.newController('baldrickswitchy', 'Porch Switchy');
+    s.banks.IN = e.id; s.ip = '192.168.1.110';
+    s.relays[0].name = 'Snow machine'; s.relays[0].amps = 4; s.relays[0].volts = 230;
+    s.relays[1].name = 'Inflatable'; s.relays[1].amps = 1; s.relays[1].volts = 230;
+    d2.controllers.push(s);
+    p.distros.push(d, d2);
+    return p;
+  };
+
+  // Accept files from older versions and fill in anything missing.
+  M.migrate = (p) => {
+    if (!p || typeof p !== 'object' || !Array.isArray(p.distros)) throw new Error('This is not a Pixel Planner project file.');
+    p.settings = Object.assign(M.defaultSettings(), p.settings || {});
+    p.library = p.library || {};
+    p.library.pixelTypes = p.library.pixelTypes || clone(C.pixelTypes);
+    p.library.presets = p.library.presets || clone(C.presets);
+    p.distros.forEach(d => {
+      d.psus = d.psus || []; d.controllers = d.controllers || [];
+      d.controllers.forEach(c => {
+        c.feed = c.feed || { length: 0.5, gauge: 'awg10' };
+        c.relays = c.relays || []; c.inputs = c.inputs || []; c.dmxFixtures = c.dmxFixtures || [];
+        c.ports.forEach(pt => { pt.chain = pt.chain || []; if (pt.brightness == null) pt.brightness = 100; if (pt.portPower == null) pt.portPower = true; });
+      });
+    });
+    p.schema = SCHEMA;
+    return p;
+  };
+
+  // --- lookup ---------------------------------------------------------------------------------
+  // index(p) -> Map id -> {type, obj, distro, controller, port}
+  M.index = (p) => {
+    const m = new Map();
+    p.distros.forEach(d => {
+      m.set(d.id, { type: 'distro', obj: d, distro: d });
+      d.psus.forEach(s => m.set(s.id, { type: 'psu', obj: s, distro: d }));
+      d.controllers.forEach(c => {
+        m.set(c.id, { type: 'controller', obj: c, distro: d, controller: c });
+        c.ports.forEach(pt => {
+          m.set(pt.id, { type: 'port', obj: pt, distro: d, controller: c, port: pt });
+          pt.chain.forEach(it => m.set(it.id, { type: 'item', obj: it, distro: d, controller: c, port: pt }));
+        });
+        c.relays.forEach(r => m.set(r.id, { type: 'relay', obj: r, distro: d, controller: c }));
+        c.inputs.forEach(r => m.set(r.id, { type: 'input', obj: r, distro: d, controller: c }));
+      });
+    });
+    (p.library.pixelTypes || []).forEach(t => m.set(t.id, { type: 'pixelType', obj: t }));
+    (p.library.presets || []).forEach(t => m.set('preset:' + t.id, { type: 'preset', obj: t }));
+    return m;
+  };
+  M.find = (p, id) => M.index(p).get(id);
+  M.allPsus = p => p.distros.flatMap(d => d.psus.map(s => ({ psu: s, distro: d })));
+  M.psuSpec = (psu) => {
+    if (!psu) return null;
+    if (psu.model === 'custom') return { id: 'custom', v: +psu.customV || 12, a: +psu.customA || 10, adj: [0, 99], ip: 'Custom' };
+    return C.psuById(psu.model) || { id: psu.model, v: 12, a: 10, adj: [0, 99], ip: '?' };
+  };
+  M.pixelType = (p, id) => p.library.pixelTypes.find(t => t.id === id);
+
+  // --- store -----------------------------------------------------------------------------------
+  const KEY = 'pixelplanner.autosave.v1';
+  const S = PP.store = {
+    project: null, selection: null, undo: [], redo: [], listeners: [], dirty: false, fileName: null, fileHandle: null
+  };
+  S.on = fn => S.listeners.push(fn);
+  S.emit = (why) => { S.listeners.forEach(fn => { try { fn(why); } catch (e) { console.error(e); } }); };
+  S.load = (p, fileName = null, handle = null) => {
+    S.project = M.migrate(p); S.undo = []; S.redo = []; S.selection = null; S.fileName = fileName; S.fileHandle = handle; S.dirty = false;
+    S.save(); S.emit('load');
+  };
+  S.commit = (label, fn) => {
+    const before = JSON.stringify(S.project);
+    fn(S.project);
+    if (JSON.stringify(S.project) === before) return;
+    S.undo.push(before); if (S.undo.length > 150) S.undo.shift();
+    S.redo = []; S.dirty = true; S.save(); S.emit('change:' + label);
+  };
+  // For live drags: the project was mutated in place since `before` was taken.
+  S.commitFrom = (before, label) => {
+    if (JSON.stringify(S.project) === before) return;
+    S.undo.push(before); if (S.undo.length > 150) S.undo.shift();
+    S.redo = []; S.dirty = true; S.save(); S.emit('change:' + label);
+  };
+  S.doUndo = () => { if (!S.undo.length) return; S.redo.push(JSON.stringify(S.project)); S.project = JSON.parse(S.undo.pop()); S.dirty = true; S.save(); S.emit('undo'); };
+  S.doRedo = () => { if (!S.redo.length) return; S.undo.push(JSON.stringify(S.project)); S.project = JSON.parse(S.redo.pop()); S.dirty = true; S.save(); S.emit('redo'); };
+  S.select = (id) => { if (S.selection === id) return; S.selection = id; S.emit('select'); };
+  let saveTimer = null;
+  S.save = () => {
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(() => {
+      try { localStorage.setItem(KEY, JSON.stringify({ project: S.project, fileName: S.fileName, savedAt: Date.now() })); } catch (e) { /* storage full or blocked */ }
+    }, 250);
+  };
+  S.restore = () => {
+    try {
+      const raw = localStorage.getItem(KEY);
+      if (!raw) return false;
+      const j = JSON.parse(raw);
+      S.project = M.migrate(j.project); S.fileName = j.fileName || null; S.dirty = false;
+      return true;
+    } catch (e) { return false; }
+  };
+})();
+
+</script>
+<script>
+// Electrical engine. Each port's run is solved as a resistor ladder: every pixel is a constant-current
+// load, every wire section is a loop resistance (+V and GND), and the controller port and every
+// injection point are voltage sources behind their feed-cable resistance. A tridiagonal solve gives
+// the voltage at every pixel and the current in every wire, port fuse and injection feed.
+(function () {
+  const C = PP.catalog, M = PP.model;
+  const K = PP.calc = {};
+  const R_CONTACT = 0.01;   // fuse + connector + PCB trace, ohms (loop)
+  const R_TINY = 1e-5;      // a solid joint
+
+  const wire = id => C.wireById(id);
+  const loopR = (gauge, len) => 2 * wire(gauge).ohmPerM * Math.max(0, +len || 0);
+  K.recommendFuse = (amps) => C.bladeFuses.find(f => f >= amps * 1.25) || C.bladeFuses[C.bladeFuses.length - 1];
+
+  function portContext(p, idx, port) {
+    const e = idx.get(port.id);
+    const c = e.controller, board = C.boards[c.board];
+    const bank = board.banks.find(b => b.ports.includes(port.num));
+    const psuId = bank ? c.banks[bank.id] : null;
+    const psuE = psuId ? idx.get(psuId) : null;
+    return { c, board, bank, psu: psuE ? psuE.obj : null, distro: e.distro };
+  }
+
+  // Build the ladder for one port. Returns nodes/edges ready for solve().
+  function buildLadder(p, idx, port, chainOverride) {
+    const st = p.settings;
+    const ctx = portContext(p, idx, port);
+    const chain = chainOverride || port.chain;
+    const bright = (st.brightness / 100) * ((port.brightness == null ? 100 : port.brightness) / 100);
+    const nodes = [], edges = [];
+    const add = (n) => { nodes.push(Object.assign({ gs: 0, vs: 0, load: 0, dist: 0 }, n)); return nodes.length - 1; };
+    const link = (r, item) => edges.push({ g: r === Infinity ? 0 : 1 / Math.max(r, R_TINY), item, r });
+
+    const n0 = add({ kind: 'port', item: null, dist: 0 });
+    if (port.portPower && ctx.psu) {
+      const spec = M.psuSpec(ctx.psu);
+      nodes[n0].gs = 1 / (loopR(ctx.c.feed.gauge, ctx.c.feed.length) + R_CONTACT);
+      nodes[n0].vs = +ctx.psu.vout || spec.v;
+      nodes[n0].src = { type: 'port', psuId: ctx.psu.id };
+    }
+    let dist = 0, gap = 0;
+    chain.forEach((it, ii) => {
+      if (it.kind === 'cable') {
+        dist += +it.length || 0; gap += +it.length || 0;
+        link(loopR(it.gauge, it.length), it.id);
+        add({ kind: 'junction', item: it.id, dist, ii });
+      } else if (it.kind === 'pixels') {
+        const t = M.pixelType(p, it.typeId) || C.pixelTypes[0];
+        const n = Math.max(0, Math.round(+it.count || 0));
+        const sp = +it.spacing || 0;
+        const amps = (t.w / t.v) * bright;
+        for (let i = 0; i < n; i++) {
+          dist += sp; gap += sp;
+          link(loopR(it.gauge, sp), it.id);
+          add({ kind: 'pixel', item: it.id, ii, px: i, load: amps, nomV: t.v, dist, gapBefore: gap });
+          gap = 0;
+        }
+      } else if (it.kind === 'inject') {
+        link(it.isolate ? Infinity : R_TINY, it.id);
+        const k = add({ kind: 'inject', item: it.id, ii, dist });
+        const e = it.psuId ? idx.get(it.psuId) : null;
+        if (e) {
+          const spec = M.psuSpec(e.obj);
+          nodes[k].gs = 1 / (loopR(it.gauge, it.length) + R_CONTACT);
+          nodes[k].vs = +e.obj.vout || spec.v;
+          nodes[k].src = { type: 'inject', psuId: e.obj.id, itemId: it.id };
+        }
+      }
+    });
+    return { nodes, edges, ctx, bright };
+  }
+
+  function solve(L) {
+    const { nodes, edges } = L, n = nodes.length;
+    // Connected components (split by open edges); a component with no source is unpowered.
+    const comp = new Array(n).fill(0);
+    let cid = 0;
+    for (let k = 1; k < n; k++) { if (edges[k - 1].g === 0) cid++; comp[k] = cid; }
+    const powered = new Array(cid + 1).fill(false);
+    nodes.forEach((nd, k) => { if (nd.gs > 0) powered[comp[k]] = true; });
+    const a = new Float64Array(n), b = new Float64Array(n), c = new Float64Array(n), d = new Float64Array(n);
+    for (let k = 0; k < n; k++) {
+      if (!powered[comp[k]]) { b[k] = 1; d[k] = 0; continue; }
+      const gl = k > 0 ? edges[k - 1].g : 0, gr = k < n - 1 ? edges[k].g : 0;
+      a[k] = -gl; c[k] = -gr; b[k] = gl + gr + nodes[k].gs; d[k] = nodes[k].gs * nodes[k].vs - nodes[k].load;
+    }
+    const cp = new Float64Array(n), dp = new Float64Array(n), V = new Float64Array(n);
+    cp[0] = c[0] / b[0]; dp[0] = d[0] / b[0];
+    for (let k = 1; k < n; k++) {
+      const m = b[k] - a[k] * cp[k - 1];
+      cp[k] = c[k] / m; dp[k] = (d[k] - a[k] * dp[k - 1]) / m;
+    }
+    V[n - 1] = dp[n - 1];
+    for (let k = n - 2; k >= 0; k--) V[k] = dp[k] - cp[k] * V[k + 1];
+    const Ie = edges.map((e, k) => e.g * (V[k] - V[k + 1]));
+    const Is = nodes.map((nd, k) => nd.gs ? nd.gs * (nd.vs - V[k]) : 0);
+    return { V, Ie, Is, comp, powered };
+  }
+
+  // Solve one port and summarise per item.
+  K.solvePort = (p, idx, port, chainOverride) => {
+    const st = p.settings;
+    const L = buildLadder(p, idx, port, chainOverride);
+    const S = solve(L);
+    const { nodes, edges, ctx } = L;
+    const items = new Map();
+    const chain = chainOverride || port.chain;
+    chain.forEach(it => items.set(it.id, { minV: Infinity, minPct: Infinity, maxA: 0, pixels: 0, watts: 0, sourceA: 0, startDist: null, endDist: 0, unpowered: false }));
+    let minPct = Infinity, minV = Infinity, firstFail = -1, firstErr = -1, pixels = 0, channels = 0, loadA = 0;
+    const pxV = [];
+    nodes.forEach((nd, k) => {
+      const r = nd.item ? items.get(nd.item) : null;
+      if (r) {
+        if (r.startDist == null) { r.startDist = nd.dist; r.vIn = Math.max(0, k > 0 ? S.V[k - 1] : S.V[k]); }
+        r.endDist = nd.dist; r.vOut = Math.max(0, S.V[k]);
+      }
+      if (nd.kind === 'pixel') {
+        // Constant-current loads can solve below 0 V when hopelessly overloaded; real pixels just go dark.
+        const v = Math.max(0, S.V[k]), pct = S.powered[S.comp[k]] ? v / nd.nomV * 100 : 0;
+        pxV.push({ k, v, pct, item: nd.item });
+        pixels++; loadA += nd.load;
+        r.pixels++; r.watts += nd.load * nd.nomV;
+        if (!S.powered[S.comp[k]]) r.unpowered = true;
+        if (v < r.minV) r.minV = v;
+        if (pct < r.minPct) r.minPct = pct;
+        if (pct < minPct) { minPct = pct; minV = v; }
+        if (firstFail < 0 && pct < 100 - st.warnDropPct) firstFail = k;
+        if (firstErr < 0 && pct < 100 - st.errDropPct) firstErr = k;
+      }
+      if (nd.src && nd.src.type === 'inject') items.get(nd.src.itemId).sourceA = S.Is[k];
+    });
+    edges.forEach((e, k) => { const r = items.get(e.item); if (r) r.maxA = Math.max(r.maxA, Math.abs(S.Ie[k])); });
+    chain.forEach(it => { if (it.kind === 'pixels') { const t = M.pixelType(p, it.typeId); if (t) channels += (+it.count || 0) * t.ch; } });
+    return {
+      L, S, items, pxV, pixels, channels, loadA, firstFail, firstErr,
+      minV: pixels ? minV : null, minPct: pixels ? minPct : null,
+      portA: S.Is[0] || 0, psuId: ctx.psu ? ctx.psu.id : null, ctx
+    };
+  };
+
+  // Full project analysis.
+  K.run = (p) => {
+    const st = p.settings, idx = M.index(p);
+    const R = { ports: new Map(), psus: new Map(), banks: new Map(), distros: new Map(), controllers: new Map(), warnings: [], idx };
+    const warn = (level, msg, ref) => R.warnings.push({ level, msg, ref });
+    const psuLoad = (psuId, amps, label, ref) => {
+      const r = R.psus.get(psuId); if (!r) return;
+      r.amps += amps; r.loads.push({ label, amps, ref });
+    };
+    M.allPsus(p).forEach(({ psu, distro }) => {
+      const spec = M.psuSpec(psu);
+      R.psus.set(psu.id, { spec, amps: 0, loads: [], distroId: distro.id, psu });
+      if (psu.vout < spec.adj[0] || psu.vout > spec.adj[1]) warn('error', `${psu.name} (${psu.model}) is set to ${psu.vout} V, outside its ${spec.adj[0]}-${spec.adj[1]} V trim range.`, psu.id);
+    });
+
+    let chCursor = 1;
+    p.distros.forEach(d => {
+      const D = { dcW: 0, acW: 0, relayW: 0, mainsA: 0, pixels: 0 };
+      R.distros.set(d.id, D);
+      if (d.psus.length > d.psuSlots) warn('warn', `${d.name}: ${d.psus.length} PSUs but the enclosure holds ${d.psuSlots}.`, d.id);
+      if (d.controllers.length > d.boardSlots) warn('warn', `${d.name}: ${d.controllers.length} boards but the enclosure holds ${d.boardSlots}.`, d.id);
+      if (!d.psus.length && d.controllers.length) warn('error', `${d.name} has controllers but no PSU.`, d.id);
+
+      d.controllers.forEach(c => {
+        const board = C.boards[c.board];
+        const CR = { pixels: 0, channels: 0, universes: 0, startCh: chCursor, watts: 0 };
+        R.controllers.set(c.id, CR);
+        const bankA = {};
+        board.banks.forEach(bk => {
+          bankA[bk.id] = 0;
+          const psuId = c.banks[bk.id];
+          const needed = bk.ports.some(n => { const pt = c.ports.find(x => x.num === n); return pt && pt.chain.length && pt.portPower; }) || bk === board.banks[0];
+          if (!psuId && needed) warn('error', `${c.name}: ${bk.label} has no PSU connected.`, c.id);
+          if (psuId) {
+            const ps = R.psus.get(psuId);
+            if (ps && (ps.spec.v < board.vmin || ps.spec.v > board.vmax)) warn('error', `${c.name}: ${bk.label} fed ${ps.spec.v} V, board accepts ${board.vmin}-${board.vmax} V.`, c.id);
+          }
+        });
+        // Board logic draws from the first connected bank.
+        const firstBank = board.banks.find(bk => c.banks[bk.id]);
+        if (firstBank) { const ps = R.psus.get(c.banks[firstBank.id]); if (ps) psuLoad(ps.psu.id, board.logicW / (ps.psu.vout || ps.spec.v), `${c.name} board`, c.id); }
+        if (!c.ip) warn('info', `${c.name} has no IP address yet.`, c.id);
+
+        c.ports.forEach(pt => {
+          const r = K.solvePort(p, idx, pt);
+          r.startCh = chCursor;
+          r.universes = Math.ceil(r.channels / st.universeSize);
+          chCursor += r.channels;
+          R.ports.set(pt.id, r);
+          const pname = `${c.name} port ${pt.num}${pt.label ? ' (' + pt.label + ')' : ''}`;
+          CR.pixels += r.pixels; CR.channels += r.channels; CR.universes += r.universes;
+          D.pixels += r.pixels;
+          if (!pt.chain.length) return;
+          // Port / bank current.
+          const bk = r.ctx.bank;
+          if (bk) bankA[bk.id] += r.portA;
+          if (r.psuId && r.portA > 0) psuLoad(r.psuId, r.portA, `${pname} via ${bk ? bk.label : 'bank'}`, pt.id);
+          if (board.fuseA) {
+            if (r.portA > board.fuseA) warn('error', `${pname} draws ${r.portA.toFixed(2)} A through its ${board.fuseA} A fuse. Inject power or split the run.`, pt.id);
+            else if (r.portA > board.fuseA * 0.8) warn('warn', `${pname} draws ${r.portA.toFixed(2)} A, over 80% of its ${board.fuseA} A fuse.`, pt.id);
+          }
+          if (board.maxCh && r.channels > board.maxCh) warn('error', `${pname} has ${r.channels} channels; ${board.name} ports take ${board.maxCh} (${board.maxPx} RGB pixels at 40 fps).`, pt.id);
+          if (!pt.portPower && !pt.chain.some(i => i.kind === 'inject')) warn('error', `${pname} has port power off and no injection, so nothing powers it.`, pt.id);
+          // Voltage.
+          if (r.minPct != null) {
+            const it = r.firstFail >= 0 ? r.L.nodes[r.firstFail] : null;
+            const where = it ? ` from pixel ${countBefore(r, r.firstFail) + 1}` : '';
+            if (r.firstErr >= 0) warn('error', `${pname}: pixels drop to ${r.minV.toFixed(2)} V (${r.minPct.toFixed(0)}% of nominal)${where}. Colours will shift or pixels fail. Inject power (try Auto-inject).`, pt.id);
+            else if (r.firstFail >= 0) warn('warn', `${pname}: pixels drop to ${r.minV.toFixed(2)} V (${r.minPct.toFixed(0)}%)${where}. Whites will look warm; consider injecting.`, pt.id);
+          }
+          // Items.
+          const comps = componentInfo(p, idx, r);
+          pt.chain.forEach((it, i) => {
+            const ir = r.items.get(it.id);
+            const w = wire(it.gauge);
+            if (it.kind === 'cable' || it.kind === 'pixels') {
+              if (ir.maxA > w.maxA) warn(ir.maxA > w.maxA * 1.3 ? 'error' : 'warn', `${pname}: ${describe(p, it)} carries ${ir.maxA.toFixed(2)} A; ${w.label} is good for about ${w.maxA} A. Use thicker wire or inject nearer.`, it.id);
+              if (ir.unpowered) warn('error', `${pname}: ${describe(p, it)} has no power (isolated with no injection).`, it.id);
+            }
+            if (it.kind === 'pixels') {
+              const t = M.pixelType(p, it.typeId);
+              if (!t) warn('error', `${pname}: unknown pixel type.`, it.id);
+              else if (t.spacing > st.dataWarnM || +it.spacing > st.dataWarnM) warn('warn', `${pname}: ${describe(p, it)} has ${it.spacing} m between pixels; data over ${st.dataWarnM} m can glitch.`, it.id);
+            }
+            if (it.kind === 'inject') {
+              const e = it.psuId ? idx.get(it.psuId) : null;
+              if (!e) warn('error', `${pname}: injection point ${i + 1} has no PSU selected.`, it.id);
+              else {
+                psuLoad(it.psuId, Math.max(0, ir.sourceA), `${pname} injection (${it.length} m ${w.label})`, it.id);
+                if (e.distro.id !== d.id) warn('info', `${pname}: injection from ${e.obj.name} in ${e.distro.name} (another distro). Tie the grounds together.`, it.id);
+              }
+              if (ir.sourceA > w.maxA) warn('error', `${pname}: injection feed carries ${ir.sourceA.toFixed(2)} A; ${w.label} is good for about ${w.maxA} A.`, it.id);
+              if (ir.sourceA < -0.05) warn('warn', `${pname}: injection point ${i + 1} is pushing current back into its PSU; check its PSU voltage.`, it.id);
+            }
+          });
+          // Data gaps (first pixel or between pixels).
+          let reported = 0;
+          r.L.nodes.forEach((nd, k) => {
+            if (nd.kind === 'pixel' && Math.round(nd.gapBefore * 2) / 2 > st.dataWarnM && reported < 2) {
+              reported++;
+              warn('warn', `${pname}: ${nd.gapBefore.toFixed(1)} m of data cable before pixel ${countBefore(r, k) + 1}. Over ${st.dataWarnM} m the data can glitch; add a null pixel or shorten the lead.`, nd.item);
+            }
+          });
+          comps.forEach(ci => {
+            if (ci.mismatch) warn('error', `${pname}: ${ci.mismatch}`, pt.id);
+            if (ci.mixed) warn('info', `${pname}: ${ci.mixed}`, pt.id);
+          });
+        });
+        // Banks.
+        board.banks.forEach(bk => {
+          const max = bk.maxA || (board.fuseA ? board.fuseA * bk.ports.length : null);
+          R.banks.set(c.id + ':' + bk.id, { amps: bankA[bk.id], max, psuId: c.banks[bk.id] });
+          if (max && bankA[bk.id] > max) warn('error', `${c.name}: ${bk.label} carries ${bankA[bk.id].toFixed(1)} A (max ${max} A).`, c.id);
+          const fw = wire(c.feed.gauge);
+          if (bankA[bk.id] > fw.maxA) warn('warn', `${c.name}: ${bk.label} feed (${fw.label}) carries ${bankA[bk.id].toFixed(1)} A; good for about ${fw.maxA} A.`, c.id);
+        });
+        // Relays.
+        c.relays.forEach(rl => {
+          if (!rl.name && !rl.amps) return;
+          if (board.relayMaxA && rl.amps > board.relayMaxA) warn('error', `${c.name} relay ${rl.num} (${rl.name || 'unnamed'}) switches ${rl.amps} A; max ${board.relayMaxA} A.`, rl.id);
+          if (board.relayMaxV && rl.volts > board.relayMaxV) warn('error', `${c.name} relay ${rl.num} switches ${rl.volts} V; max ${board.relayMaxV} V.`, rl.id);
+          if (rl.volts >= 100) D.relayW += rl.amps * rl.volts;
+        });
+        CR.watts = 0;
+      });
+    });
+
+    // PSU totals.
+    R.psus.forEach((r, id) => {
+      r.watts = r.amps * (r.psu.vout || r.spec.v);
+      r.pct = r.amps / r.spec.a * 100;
+      const D = R.distros.get(r.distroId); D.dcW += r.watts;
+      if (r.pct > 100) warn('error', `${r.psu.name} (${r.psu.model}) is overloaded: ${r.amps.toFixed(1)} A of ${r.spec.a} A (${r.pct.toFixed(0)}%).`, id);
+      else if (r.pct > st.psuTargetPct) warn('warn', `${r.psu.name} (${r.psu.model}) is at ${r.pct.toFixed(0)}%, above your ${st.psuTargetPct}% target.`, id);
+      else if (r.amps === 0) warn('info', `${r.psu.name} (${r.psu.model}) is not used.`, id);
+    });
+    // Controllers: watts per controller from its ports.
+    p.distros.forEach(d => d.controllers.forEach(c => {
+      const CR = R.controllers.get(c.id);
+      c.ports.forEach(pt => { const r = R.ports.get(pt.id); CR.watts += r.loadA * (r.L.nodes[0].vs || 12); });
+    }));
+    // Distros and totals.
+    const T = { pixels: 0, dcW: 0, acW: 0, relayW: 0, mainsA: 0, channels: chCursor - 1, universes: 0, psuA: 0, psuCapA: 0 };
+    p.distros.forEach(d => {
+      const D = R.distros.get(d.id);
+      D.acW = D.dcW / (st.psuEfficiency / 100) + D.relayW;
+      D.mainsA = D.acW / st.mainsV;
+      if (D.mainsA > st.mainsCircuitA) warn('error', `${d.name} draws ${D.mainsA.toFixed(1)} A from the mains at full white; the circuit is ${st.mainsCircuitA} A.`, d.id);
+      else if (D.mainsA > st.mainsCircuitA * 0.8) warn('warn', `${d.name} draws ${D.mainsA.toFixed(1)} A from the mains at full white (over 80% of ${st.mainsCircuitA} A).`, d.id);
+      T.pixels += D.pixels; T.dcW += D.dcW; T.acW += D.acW; T.relayW += D.relayW;
+    });
+    R.controllers.forEach(cr => { T.universes += cr.universes; });
+    R.psus.forEach(r => { T.psuA += r.amps; T.psuCapA += r.spec.a; });
+    T.mainsA = T.acW / st.mainsV;
+    T.typicalW = (T.acW - T.relayW) * st.typicalPct / 100;
+    T.kWh = T.typicalW * st.hoursPerNight * st.nights / 1000;
+    T.cost = T.kWh * st.tariff;
+    R.totals = T;
+    const order = { error: 0, warn: 1, info: 2 };
+    R.warnings.sort((a, b) => order[a.level] - order[b.level]);
+    R.counts = { error: 0, warn: 0, info: 0 };
+    R.warnings.forEach(w => R.counts[w.level]++);
+    return R;
+  };
+
+  function countBefore(r, k) { let n = 0; for (let i = 0; i < k; i++) if (r.L.nodes[i].kind === 'pixel') n++; return n; }
+
+  // Per connected section: PSU voltage vs pixel voltage, and PSUs paralleled through a run.
+  function componentInfo(p, idx, r) {
+    const out = [];
+    const groups = new Map();
+    r.L.nodes.forEach((nd, k) => {
+      const c = r.S.comp[k];
+      if (!groups.has(c)) groups.set(c, { psus: new Set(), volts: new Set() });
+      const g = groups.get(c);
+      if (nd.src) g.psus.add(nd.src.psuId);
+      if (nd.kind === 'pixel') g.volts.add(nd.nomV);
+    });
+    groups.forEach(g => {
+      const psus = [...g.psus].map(id => idx.get(id)).filter(Boolean).map(e => e.obj);
+      const info = {};
+      psus.forEach(s => {
+        const v = M.psuSpec(s).v;
+        g.volts.forEach(pv => { if (Math.abs(pv - v) > 0.5) info.mismatch = `${pv} V pixels are fed from ${s.name} (${v} V). This will destroy them.`; });
+      });
+      if (psus.length > 1) info.mixed = `${psus.map(s => s.name).join(' and ')} are joined through this run (+V not isolated). Fine if grounds are common and both are set to the same voltage; otherwise tick Isolate on the injection.`;
+      out.push(info);
+    });
+    return out;
+  }
+
+  K.describe = describe;
+  function describe(p, it) {
+    if (it.kind === 'cable') return `${it.length} m ${wire(it.gauge).label} cable`;
+    if (it.kind === 'inject') return `injection (${it.length} m ${wire(it.gauge).label})`;
+    const t = M.pixelType(p, it.typeId);
+    return `${it.count} × ${t ? t.name : '?'}`;
+  }
+
+  // ---- Auto-inject -------------------------------------------------------------------------------
+  // Greedy cover: find the first pixel under the warning threshold, then place one injection as far
+  // down the run as possible while every pixel up to that point still passes. String joins are
+  // preferred over tapping into a string. Repeat until the whole run passes.
+  K.autoInject = (p, portId) => {
+    const idx = M.index(p), e = idx.get(portId), port = e.obj, st = p.settings;
+    const ctx = portContext(p, idx, port);
+    let added = 0; const notes = [];
+    for (let iter = 0; iter < 40; iter++) {
+      const r = K.solvePort(p, idx, port);
+      if (r.firstFail < 0) break;
+      const psu = pickPsu(p, idx, ctx, r);
+      if (!psu) { notes.push('No PSU with a matching voltage in this distro.'); break; }
+      const lastSrc = lastSourceBefore(r, r.firstFail);
+      const cands = candidates(port, r, lastSrc);
+      let pick = null;
+      for (const g of gaugesFrom(st.injectGauge)) {
+        let bestJoin = null, bestSplit = null, bestProgress = null;
+        cands.forEach(cd => {
+          const chain = trialChain(p, port, cd, psu, st, g);
+          let injNode = -1, cut = Infinity;
+          // Pixels well past this point will get their own injection later, so leave their load
+          // out of the trial: this spot serves about as far downstream as upstream.
+          const tr = K.solvePort(p, idx, port, chain, L => {
+            injNode = L.nodes.findIndex(n => n.kind === 'inject' && n.item === chain[cd.insertAt].id);
+            let prev = 0;
+            for (let i = injNode - 1; i >= 0; i--) if (L.nodes[i].gs > 0) { prev = i; break; }
+            cut = injNode + Math.max(1, Math.round((injNode - prev) / 2));
+            for (let i = cut + 1; i < L.nodes.length; i++) L.nodes[i].load = 0;
+          });
+          const ok = tr.firstFail < 0 || tr.firstFail > Math.min(cut, tr.L.nodes.length - 1);
+          const res = { chain, cd, node: cd.node, ff: tr.firstFail < 0 ? 1e9 : tr.firstFail };
+          if (ok) {
+            if (cd.split) { if (!bestSplit || cd.node > bestSplit.node) bestSplit = res; }
+            else if (!bestJoin || cd.node > bestJoin.node) bestJoin = res;
+          }
+          if (!bestProgress || res.ff > bestProgress.ff) bestProgress = res;
+        });
+        const span = x => x.node - lastSrc;
+        if (bestJoin && (!bestSplit || span(bestJoin) >= 0.6 * span(bestSplit))) pick = bestJoin;
+        else if (bestSplit) pick = bestSplit;
+        if (pick) break;
+        if (g === C.feedGaugeLadder[C.feedGaugeLadder.length - 1] && bestProgress && bestProgress.ff > r.firstFail) pick = bestProgress;
+      }
+      if (!pick) { notes.push('Voltage is still low near the start of the run: use a thicker lead cable or a PSU closer to the pixels.'); break; }
+      port.chain = pick.chain; added++;
+    }
+    sizeFeeds(p, port);
+    return { added, notes };
+  };
+
+  function gaugesFrom(g) { const l = C.feedGaugeLadder, i = l.indexOf(g); return i < 0 ? [g].concat(l) : l.slice(i); }
+  function lastSourceBefore(r, k) { for (let i = k; i >= 0; i--) if (r.L.nodes[i].gs > 0) return i; return 0; }
+
+  // Positions after the last source and up to (a little past) the failing pixel: every join
+  // between items, and every few pixels inside strings.
+  function candidates(port, r, lastSrc) {
+    const out = [], nodes = r.L.nodes;
+    const limit = nodes.length;
+    const seenJoin = new Set();
+    for (let k = lastSrc + 1; k < nodes.length && k <= limit; k++) {
+      const nd = nodes[k];
+      if (nd.kind !== 'pixel') continue;
+      const it = port.chain[nd.ii];
+      if (nd.px === 0) {
+        // Join just before this string (skip if an injection already sits there).
+        const prev = port.chain[nd.ii - 1];
+        if (!(prev && prev.kind === 'inject') && !seenJoin.has(nd.ii)) { seenJoin.add(nd.ii); out.push({ pos: nd.ii, node: k - 0.5 }); }
+      } else {
+        const step = Math.max(1, Math.round(it.count / 20));
+        if (nd.px % step === 0) out.push({ pos: nd.ii, split: nd.px, node: k - 0.5 });
+      }
+      // Join after the last pixel of a string.
+      if (nd.px === it.count - 1 && !seenJoin.has(nd.ii + 1)) {
+        const next = port.chain[nd.ii + 1];
+        if (!(next && next.kind === 'inject')) { seenJoin.add(nd.ii + 1); out.push({ pos: nd.ii + 1, node: k + 0.5 }); }
+      }
+    }
+    return out;
+  }
+  function pickPsu(p, idx, ctx, r) {
+    const v = ctx.psu ? M.psuSpec(ctx.psu).v : (r.L.nodes.find(n => n.nomV) || {}).nomV || 12;
+    const loads = K.run(p).psus;
+    const pool = ctx.distro.psus.filter(s => M.psuSpec(s).v === v);
+    if (!pool.length) return null;
+    const pct = s => (loads.get(s.id) || { pct: 0 }).pct;
+    if (ctx.psu && pool.includes(ctx.psu) && pct(ctx.psu) < p.settings.psuTargetPct) return ctx.psu;
+    return pool.slice().sort((a, b) => pct(a) - pct(b))[0];
+  }
+
+  // A string split for a mid-string tap keeps tapOffset (pixels before it in the physical string),
+  // so the guide can say "tap at pixel 61 of this string".
+  function trialChain(p, port, cd, psu, st, gauge) {
+    const chain = port.chain.map(x => Object.assign({}, x));
+    let pos = cd.pos, tapAt = null;
+    if (cd.split) {
+      const it = chain[pos];
+      const off = it.tapOffset || 0;
+      const a = Object.assign({}, it, { count: cd.split });
+      const b = Object.assign({}, it, { id: M.uid('it'), count: it.count - cd.split, tapOffset: off + cd.split, continued: true });
+      tapAt = off + cd.split + 1;
+      chain.splice(pos, 1, a, b);
+      pos = pos + 1;
+    }
+    cd.insertAt = pos;
+    // Distance along the run to this point.
+    let dist = 0;
+    for (let i = 0; i < pos; i++) { const x = chain[i]; if (x.kind === 'cable') dist += +x.length || 0; if (x.kind === 'pixels') dist += (+x.count || 0) * (+x.spacing || 0); }
+    const len = st.injectMode === 'fixed' ? st.injectLength : Math.max(1, Math.ceil(dist * 2) / 2);
+    const inj = M.newItem.inject(psu.id, len, gauge || st.injectGauge);
+    inj.label = tapAt ? `tap into string at pixel ${tapAt}` : 'at string join';
+    inj.auto = true;
+    chain.splice(pos, 0, inj);
+    return chain;
+  }
+
+  // Give each auto feed the thinnest gauge (from the default up) that is rated for its current and
+  // keeps the run passing; thicken if nothing passes.
+  function sizeFeeds(p, port) {
+    const idx = M.index(p), st = p.settings;
+    const ladder = gaugesFrom(st.injectGauge);
+    const passes = () => { const r = K.solvePort(p, idx, port); return { ok: r.firstFail < 0, r }; };
+    port.chain.filter(it => it.kind === 'inject' && it.auto).forEach(it => {
+      const keep = it.gauge;
+      const base = passes().ok;
+      for (const g of ladder) {
+        it.gauge = g;
+        const t = passes();
+        if (t.r.items.get(it.id).sourceA <= wire(g).maxA && (t.ok || !base)) return;
+      }
+      it.gauge = base ? keep : ladder[ladder.length - 1];
+    });
+  }
+  // ---- Balance PSUs ------------------------------------------------------------------------------
+  // Reassign controller banks and injection feeds to PSUs in the same distro (same voltage) so the
+  // most-loaded PSU is as light as possible. Returns a list of changes.
+  K.balance = (p, distroIds) => {
+    const R = K.run(p);
+    const changes = [];
+    p.distros.filter(d => !distroIds || distroIds.includes(d.id)).forEach(d => {
+      if (d.psus.length < 2) return;
+      const loads = [];
+      d.controllers.forEach(c => {
+        const board = C.boards[c.board];
+        board.banks.forEach(bk => {
+          const b = R.banks.get(c.id + ':' + bk.id);
+          if (!c.banks[bk.id]) return;
+          const logic = board.banks.find(x => c.banks[x.id]) === bk ? board.logicW / 12 : 0;
+          loads.push({ amps: (b ? b.amps : 0) + logic, v: M.psuSpec(M.find(p, c.banks[bk.id]).obj).v, set: id => { c.banks[bk.id] = id; }, cur: c.banks[bk.id], label: `${c.name} ${bk.label}` });
+        });
+        c.ports.forEach(pt => {
+          const r = R.ports.get(pt.id);
+          pt.chain.forEach(it => {
+            if (it.kind !== 'inject' || !it.psuId) return;
+            const e = M.find(p, it.psuId);
+            if (!e || e.distro.id !== d.id) return;
+            loads.push({ amps: Math.max(0, r.items.get(it.id).sourceA), v: M.psuSpec(e.obj).v, set: id => { it.psuId = id; }, cur: it.psuId, label: `${c.name} port ${pt.num} injection` });
+          });
+        });
+      });
+      const used = new Map(d.psus.map(s => [s.id, 0]));
+      loads.sort((a, b) => b.amps - a.amps).forEach(l => {
+        const pool = d.psus.filter(s => M.psuSpec(s).v === l.v);
+        let best = null, bestPct = Infinity;
+        pool.forEach(s => { const pct = (used.get(s.id) + l.amps) / M.psuSpec(s).a; if (pct < bestPct - 1e-9) { bestPct = pct; best = s; } });
+        if (!best) return;
+        used.set(best.id, used.get(best.id) + l.amps);
+        if (best.id !== l.cur) { l.set(best.id); changes.push(`${l.label} → ${best.name}`); }
+      });
+    });
+    return changes;
+  };
+
+  K.fmtA = a => (a == null ? '-' : (Math.abs(a) < 10 ? a.toFixed(2) : a.toFixed(1)) + ' A');
+  K.fmtW = w => (w == null ? '-' : w >= 1000 ? (w / 1000).toFixed(2) + ' kW' : Math.round(w) + ' W');
+  K.fmtV = v => (v == null || !isFinite(v) ? '-' : v.toFixed(2) + ' V');
+  K.status = pct => pct == null ? 'none' : pct < 100 - PP.store.project.settings.errDropPct ? 'error' : pct < 100 - PP.store.project.settings.warnDropPct ? 'warn' : 'ok';
+})();
+
+</script>
+<script>
+// Small UI helpers shared by the views.
+(function () {
+  const U = PP.ui = {
+    open: new Set(),          // ids of expanded <details> in the form
+    view: 'split',
+    cam: { x: 20, y: 20, k: 1 },
+    lastR: null
+  };
+  U.$ = (s, el = document) => el.querySelector(s);
+  U.$$ = (s, el = document) => Array.from(el.querySelectorAll(s));
+  U.esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  U.num = (v, d = 2) => (v == null || !isFinite(v)) ? '-' : (+v).toFixed(d).replace(/\.?0+$/, m => m.startsWith('.') ? '' : m);
+
+  U.toast = (msg, ms = 3200) => {
+    const t = U.$('#toast'); t.textContent = msg; t.hidden = false;
+    clearTimeout(U._tt); U._tt = setTimeout(() => { t.hidden = true; }, ms);
+  };
+
+  // Promise-based confirm / prompt in a themed dialog.
+  U.ask = ({ title, body = '', input = null, ok = 'OK', cancel = 'Cancel', danger = false }) => new Promise(res => {
+    const d = U.$('#askDlg');
+    d.innerHTML = `<form method="dialog"><div class="dlg-head"><b>${U.esc(title)}</b></div>
+      <div class="dlg-body">${body}${input != null ? `<input id="askIn" style="width:100%;margin-top:6px" value="${U.esc(input)}">` : ''}</div>
+      <div class="dlg-foot">${cancel ? `<button value="cancel">${U.esc(cancel)}</button>` : ''}<button value="ok" class="${danger ? 'primary' : 'primary'}">${U.esc(ok)}</button></div></form>`;
+    d.onclose = () => {
+      if (d.returnValue !== 'ok') return res(null);
+      res(input != null ? U.$('#askIn', d).value : true);
+    };
+    d.returnValue = '';
+    d.showModal();
+    const i = U.$('#askIn', d); if (i) { i.focus(); i.select(); }
+  });
+
+  U.wireOptions = (sel, filter) => PP.catalog.wires.filter(w => !filter || filter(w)).map(w => `<option value="${w.id}"${w.id === sel ? ' selected' : ''}>${w.label}</option>`).join('');
+  U.opt = (v, label, sel) => `<option value="${U.esc(v)}"${String(v) === String(sel) ? ' selected' : ''}>${U.esc(label)}</option>`;
+
+  U.psuOptions = (p, sel, blank = '— none —') => {
+    let h = `<option value="">${blank}</option>`;
+    p.distros.forEach(d => {
+      if (!d.psus.length) return;
+      h += `<optgroup label="${U.esc(d.name)}">` + d.psus.map(s => U.opt(s.id, `${s.name} · ${s.model === 'custom' ? 'custom ' + s.customV + ' V' : s.model}`, sel)).join('') + '</optgroup>';
+    });
+    return h;
+  };
+  U.psuModelOptions = (sel) => {
+    const byV = {};
+    PP.catalog.psus.forEach(s => { (byV[s.v] = byV[s.v] || []).push(s); });
+    let h = '';
+    Object.keys(byV).sort((a, b) => (a == 12 ? -1 : b == 12 ? 1 : a - b)).forEach(v => {
+      h += `<optgroup label="${v} V">` + byV[v].map(s => U.opt(s.id, `${s.id} (${s.a} A)`, sel)).join('') + '</optgroup>';
+    });
+    return h + `<optgroup label="Other">${U.opt('custom', 'Custom PSU…', sel)}</optgroup>`;
+  };
+  U.pixelTypeOptions = (p, sel) => {
+    const cats = { bullet: 'Bullets', seed: 'Seeds', flood: 'Floods', strip: 'Strip', null: 'Null pixels', other: 'Other' };
+    const g = {};
+    p.library.pixelTypes.forEach(t => { const c = cats[t.cat] ? t.cat : 'other'; (g[c] = g[c] || []).push(t); });
+    return Object.keys(cats).filter(c => g[c]).map(c => `<optgroup label="${cats[c]}">` + g[c].map(t => U.opt(t.id, t.name, sel)).join('') + '</optgroup>').join('');
+  };
+
+  U.pctClass = (pct, target = 80) => pct > 100 ? 'err' : pct > target ? 'warn' : 'ok';
+  U.bar = (pct, target) => {
+    const c = U.pctClass(pct, target);
+    return `<div class="bar ${c}" title="${U.num(pct, 0)}%"><i style="width:${Math.min(100, Math.max(0, pct))}%"></i>${target ? `<span class="tgt" style="left:${target}%"></span>` : ''}</div>`;
+  };
+  U.vClass = (pct) => { const s = PP.calc.status(pct); return s === 'error' ? 'err' : s; };
+
+  U.download = (name, text, type = 'application/json') => {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([text], { type }));
+    a.download = name; document.body.appendChild(a); a.click();
+    setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+  };
+  U.slug = s => (String(s || 'show').trim().replace(/[^\w\- ]+/g, '').replace(/\s+/g, '-') || 'show');
+})();
+
+</script>
+<script>
+// Form view: every part of the project as editable fields. The same editors feed the Visual view's
+// inspector, so both views always edit the same data.
+// Inputs carry data-id (entity id), data-f (field path) and data-t (num|str|bool); main.js commits
+// them on change. Buttons carry data-act and data-id.
+(function () {
+  const U = PP.ui, C = PP.catalog, M = PP.model, K = PP.calc;
+  const esc = U.esc;
+  const F = PP.form = {};
+
+  const inp = (id, f, v, t = 'str', attrs = '') =>
+    t === 'bool'
+      ? `<input type="checkbox" data-id="${id}" data-f="${f}" data-t="bool"${v ? ' checked' : ''} ${attrs}>`
+      : `<input ${t === 'num' ? 'type="number"' : 'type="text"'} data-id="${id}" data-f="${f}" data-t="${t}" value="${esc(v)}" ${attrs}>`;
+  const sel = (id, f, opts, attrs = '', t = 'str') => `<select data-id="${id}" data-f="${f}" data-t="${t}" ${attrs}>${opts}</select>`;
+  const btn = (act, label, id = '', cls = '', title = '', extra = '') => `<button class="${cls}" data-act="${act}" data-id="${id}" ${title ? `title="${esc(title)}"` : ''} ${extra}>${label}</button>`;
+  const det = (key, cls, summary, body, defOpen = false) => {
+    const open = U.open.has(key) || (defOpen && !U.open.has('!' + key));
+    return `<details class="${cls}" data-open-id="${key}"${open ? ' open' : ''}><summary>${summary}</summary>${body}</details>`;
+  };
+  const chev = '<span class="chev">▶</span>';
+
+  // ---------- whole form ----------
+  F.render = (p, R) => {
+    const pane = U.$('#formPane');
+    const scroll = pane.scrollTop;
+    const act = document.activeElement;
+    const focusKey = act && pane.contains(act) && act.dataset && act.dataset.id ? act.dataset.id + '|' + act.dataset.f : null;
+    let h = '';
+    h += det('sec-settings', 'sec', `${chev}Project settings <span class="pill">${p.settings.brightness}% brightness</span><span class="pill">warn below ${100 - p.settings.warnDropPct}% V</span>`, settings(p));
+    h += `<div class="sec"><div class="sec-head">Distros <span class="pill">${p.distros.length}</span><span class="grow"></span>
+      ${btn('balanceAll', 'Balance all PSUs', '', 'small', 'Spread banks and injection feeds across the PSUs in each distro')}
+      ${btn('autoInjectAll', 'Auto-inject all', '', 'small', 'Add injection points to every run that drops too low')}
+      ${btn('addDistro', '+ Distro', '', 'small primary')}</div>`;
+    if (!p.distros.length) h += `<div class="empty">No distros yet. A distro is an enclosure holding a controller and its PSUs.<br><br>${btn('addDistro', '+ Add a distro', '', 'primary')} ${btn('demo', 'Load the demo show')}</div>`;
+    p.distros.forEach(d => { h += F.distro(p, R, d); });
+    h += '</div>';
+    h += det('sec-library', 'sec', `${chev}Library: pixel types and string presets <span class="pill">${p.library.pixelTypes.length} types</span><span class="pill">${p.library.presets.length} presets</span>`, library(p));
+    h += det('sec-channels', 'sec', `${chev}Channel map <span class="pill">${R.totals.channels} channels</span><span class="pill">${R.totals.universes} universes</span>`, channels(p, R));
+    h += `<div class="sec"><textarea data-id="project" data-f="notes" data-t="str" placeholder="Project notes (appear in the wiring guide)">${esc(p.notes)}</textarea></div>`;
+    pane.innerHTML = h;
+    pane.scrollTop = scroll;
+    if (focusKey) {
+      const [id, f] = focusKey.split('|');
+      const el = U.$$('[data-id]', pane).find(e => e.dataset.id === id && e.dataset.f === f);
+      if (el) el.focus({ preventScroll: true });
+    }
+    F.markSelection();
+  };
+
+  function settings(p) {
+    const s = p.settings, id = 'settings';
+    const f = (label, html, title = '') => `<label class="fld" ${title ? `title="${esc(title)}"` : ''}>${label}${html}</label>`;
+    return `<div class="card" style="padding:4px 12px"><div class="grid">
+      ${f('Global brightness %', inp(id, 'brightness', s.brightness, 'num', 'min="1" max="100"'), 'Scales every pixel\'s current. Set the same cap in xLights/FPP or the Baldrick port.')}
+      ${f('Typical show load % of full white', inp(id, 'typicalPct', s.typicalPct, 'num', 'min="1" max="100"'), 'Used only for running cost. Sequences average far below full white.')}
+      ${f('Warn when pixels drop by %', inp(id, 'warnDropPct', s.warnDropPct, 'num', 'min="1" max="50"'))}
+      ${f('Error when pixels drop by %', inp(id, 'errDropPct', s.errDropPct, 'num', 'min="1" max="60"'))}
+      ${f('PSU load target %', inp(id, 'psuTargetPct', s.psuTargetPct, 'num', 'min="50" max="100"'), 'Warn above this continuous load (80% is the usual rule).')}
+      ${f('PSU efficiency %', inp(id, 'psuEfficiency', s.psuEfficiency, 'num', 'min="50" max="99"'))}
+      ${f('Mains voltage', inp(id, 'mainsV', s.mainsV, 'num'))}
+      ${f('Mains circuit / plug fuse (A)', inp(id, 'mainsCircuitA', s.mainsCircuitA, 'num'), 'UK plug: 13 A. Warn above 80% of this per distro.')}
+      ${f('FPP (Pi) IP address', inp(id, 'fppIp', s.fppIp), 'Used to build the Turniput FPP command URLs.')}
+      ${f('Channels per universe', inp(id, 'universeSize', s.universeSize, 'num'))}
+      ${f('Data warning distance (m)', inp(id, 'dataWarnM', s.dataWarnM, 'num', 'step="0.5"'), 'Warn when data travels further than this to the next pixel.')}
+      ${f('Auto-inject feed wire', sel(id, 'injectGauge', U.wireOptions(s.injectGauge)))}
+      ${f('Auto-inject feed length', sel(id, 'injectMode', U.opt('run', 'Follow the run (feed from distro)', s.injectMode) + U.opt('fixed', 'Fixed length', s.injectMode)), 'Follow the run: each feed is as long as the run up to that point (worst case, PSU in the distro). Fixed: PSU near the pixels.')}
+      ${f('Fixed feed length (m)', inp(id, 'injectLength', s.injectLength, 'num', 'step="0.5"'))}
+      ${f('Show hours per night', inp(id, 'hoursPerNight', s.hoursPerNight, 'num', 'step="0.5"'))}
+      ${f('Show nights per season', inp(id, 'nights', s.nights, 'num'))}
+      ${f(`Electricity price (${esc(s.currency)}/kWh)`, inp(id, 'tariff', s.tariff, 'num', 'step="0.01"'))}
+      ${f('Currency symbol', inp(id, 'currency', s.currency))}
+    </div></div>`;
+  }
+
+  // ---------- distro ----------
+  F.distro = (p, R, d, opts = {}) => {
+    const D = R.distros.get(d.id);
+    const size = C.distroSizes.find(s => s.id === d.size) || C.distroSizes[0];
+    const st = p.settings;
+    const mainsPct = D.mainsA / st.mainsCircuitA * 100;
+    let h = `<div class="card distro" id="f-${d.id}" data-sel="${d.id}">
+      <div class="distro-head">
+        <input class="name" data-id="${d.id}" data-f="name" data-t="str" value="${esc(d.name)}" aria-label="Distro name">
+        ${sel(d.id, 'size', C.distroSizes.map(s => U.opt(s.id, s.name, d.size)).join(''), 'title="Enclosure size"')}
+        ${d.size === 'custom' ? `<label class="fld inline">PSUs ${inp(d.id, 'psuSlots', d.psuSlots, 'num', 'min="1" style="width:52px"')}</label><label class="fld inline">Boards ${inp(d.id, 'boardSlots', d.boardSlots, 'num', 'min="1" style="width:52px"')}</label>` : ''}
+        <span class="pill ${d.psus.length > d.psuSlots ? 'warn' : ''}">${d.psus.length}/${d.psuSlots} PSU</span>
+        <span class="pill ${d.controllers.length > d.boardSlots ? 'warn' : ''}">${d.controllers.length}/${d.boardSlots} board</span>
+        <span class="pill">${K.fmtW(D.dcW)} DC</span>
+        <span class="pill ${U.pctClass(mainsPct)}" title="Mains current at full white, including PSU losses and relay loads">${U.num(D.mainsA, 1)} A mains</span>
+        <span class="grow"></span>
+        ${btn('balance', 'Balance PSUs', d.id, 'small', 'Spread banks and injection feeds across this distro\'s PSUs')}
+        ${btn('delDistro', '✕', d.id, 'small ghost danger', 'Delete distro')}
+      </div>`;
+    h += `<h4>Power supplies ${btn('addPsu', '+ PSU', d.id, 'small')}</h4>`;
+    if (d.psus.length) {
+      h += `<table class="t"><tr><th>Name</th><th>Model</th><th title="Output voltage set on the trim pot">Set V</th><th style="width:28%">Load</th><th>Amps</th><th>Watts</th><th></th></tr>`;
+      d.psus.forEach((s, i) => { h += F.psuRow(p, R, s, i); });
+      h += '</table>';
+    } else h += '<div class="muted">No PSUs. Add one, then connect it to the controller\'s power inputs below.</div>';
+    h += `<h4>Controllers <select id="addBoard-${d.id}" aria-label="Board to add">${Object.entries(C.boards).map(([k, b]) => U.opt(k, b.name, 'baldrick8')).join('')}</select>${btn('addController', '+ Add', d.id, 'small')}</h4>`;
+    d.controllers.forEach(c => { h += F.controller(p, R, d, c, opts); });
+    h += `<details data-open-id="dn-${d.id}"${U.open.has('dn-' + d.id) ? ' open' : ''}><summary class="muted" style="font-size:12px;cursor:pointer">${chev} Notes</summary><textarea data-id="${d.id}" data-f="notes" data-t="str" placeholder="Location, mains feed, IP rating…">${esc(d.notes)}</textarea></details>`;
+    return h + '</div>';
+  };
+
+  F.psuRow = (p, R, s, i) => {
+    const r = R.psus.get(s.id), spec = r.spec, st = p.settings;
+    return `<tr class="psurow" id="f-${s.id}" data-sel="${s.id}">
+      <td class="nw"><span class="psw c${i % 6}" aria-hidden="true"></span> <input data-id="${s.id}" data-f="name" data-t="str" value="${esc(s.name)}" style="width:80px"></td>
+      <td>${sel(s.id, 'model', U.psuModelOptions(s.model))}
+        ${s.model === 'custom' ? `<div class="row" style="margin-top:3px"><label class="fld inline">V ${inp(s.id, 'customV', s.customV, 'num', 'style="width:52px"')}</label><label class="fld inline">A ${inp(s.id, 'customA', s.customA, 'num', 'style="width:52px"')}</label></div>` : `<div class="soft" style="font-size:11px">${esc(spec.ip)}</div>`}</td>
+      <td>${inp(s.id, 'vout', s.vout, 'num', `step="0.1" min="${spec.adj[0]}" max="${spec.adj[1]}" style="width:60px" title="Trim range ${spec.adj[0]}-${spec.adj[1]} V"`)}</td>
+      <td>${U.bar(r.pct, st.psuTargetPct)}<div class="soft" style="font-size:11px">${U.num(r.pct, 0)}% of ${spec.a} A</div></td>
+      <td class="nw">${K.fmtA(r.amps)}</td><td class="nw">${K.fmtW(r.watts)}</td>
+      <td class="nw">${btn('delPsu', '✕', s.id, 'small ghost danger', 'Delete PSU')}</td></tr>`;
+  };
+
+  // ---------- controller ----------
+  F.controller = (p, R, d, c, opts = {}) => {
+    const b = C.boards[c.board], CR = R.controllers.get(c.id);
+    let h = `<div class="ctl" id="f-${c.id}" data-sel="${c.id}">
+      <div class="ctl-head">
+        <input class="name" data-id="${c.id}" data-f="name" data-t="str" value="${esc(c.name)}" aria-label="Controller name">
+        ${sel(c.id, 'board', Object.entries(C.boards).map(([k, x]) => U.opt(k, x.name, c.board)).join(''), 'title="Board"')}
+        <label class="fld inline">IP ${inp(c.id, 'ip', c.ip, 'str', 'placeholder="192.168.1.x" style="width:120px"')}</label>
+        ${b.ports ? `<span class="pill">${CR.pixels} px</span><span class="pill">${CR.channels} ch</span>` : ''}
+        <span class="grow"></span>
+        ${btn('delController', '✕', c.id, 'small ghost danger', 'Delete controller')}
+      </div>
+      <div class="soft" style="font-size:11px;margin-top:3px">${esc(b.note)}</div>
+      <div class="banks">`;
+    b.banks.forEach(bk => {
+      const br = R.banks.get(c.id + ':' + bk.id);
+      h += `<div class="bank"><b>${esc(bk.label)}</b>${bk.ports.length ? `<span class="soft">ports ${bk.ports[0]}${bk.ports.length > 1 ? '-' + bk.ports[bk.ports.length - 1] : ''}</span>` : '<span class="soft">board power</span>'}
+        ${sel(c.id, 'banks.' + bk.id, U.psuOptions(p, c.banks[bk.id], '— no PSU —'))}
+        ${br && br.max ? `<span class="${br.amps > br.max ? 'err' : 'soft'}">${K.fmtA(br.amps)} of ${br.max} A</span>` : ''}</div>`;
+    });
+    h += `<div class="bank"><b>Power jack feed</b><span class="soft">PSU → board</span><div class="row">${inp(c.id, 'feed.length', c.feed.length, 'num', 'step="0.1" style="width:56px"')} m ${sel(c.id, 'feed.gauge', U.wireOptions(c.feed.gauge))}</div></div>`;
+    h += '</div>';
+    if (b.ports) {
+      h += `<div>`;
+      c.ports.forEach(pt => { h += F.port(p, R, c, pt, opts.openPort === pt.id); });
+      h += `</div>`;
+    }
+    if (b.relays) h += relays(p, R, c, b);
+    if (b.inputs) h += inputs(p, R, c, b);
+    if (b.dmx) h += `<h4>DMX</h4><div class="muted">One universe out on RJ45, 3-pin and 5-pin XLR. Add fixtures in xLights as a DMX model on this controller.</div>`;
+    return h + '</div>';
+  };
+
+  function relays(p, R, c, b) {
+    let h = `<h4>Relays (max ${b.relayMaxA} A, ${b.relayMaxV} V)</h4><table class="t"><tr><th>#</th><th>Switches</th><th>Amps</th><th>Volts</th><th>Load</th></tr>`;
+    c.relays.forEach(r => {
+      const over = r.amps > b.relayMaxA || r.volts > b.relayMaxV;
+      h += `<tr id="f-${r.id}" data-sel="${r.id}"><td>${r.num}</td><td>${inp(r.id, 'name', r.name, 'str', 'placeholder="e.g. Snow machine"')}</td>
+        <td>${inp(r.id, 'amps', r.amps, 'num', 'step="0.1" min="0" style="width:60px"')}</td><td>${inp(r.id, 'volts', r.volts, 'num', 'style="width:60px"')}</td>
+        <td class="${over ? 'err' : 'soft'}">${r.amps ? K.fmtW(r.amps * r.volts) : '-'}${over ? ' over rating' : ''}</td></tr>`;
+    });
+    return h + '</table>';
+  }
+
+  F.inputUrl = (p, r) => {
+    const base = `http://${p.settings.fppIp}/api/command/`;
+    const v = r.param || '';
+    switch (r.action) {
+      case 'playlist': return base + `Start Playlist/${v}/false/true`;
+      case 'playlistNow': return base + `Start Playlist/${v}/false/false`;
+      case 'stop': return base + 'Stop Now';
+      case 'volume': return base + `Volume Set/${v}`;
+      case 'effect': return base + `Effect Start/${v}`;
+      case 'custom': return base + v;
+      case 'switchy': return 'Baldrick web UI: Turniputs > BaldrickSwitchy (Turnip Network) — relay/seconds ' + v;
+      case 'test': return 'Baldrick web UI: Turniputs > Test mode at ' + (v || '50') + '%';
+      default: return '';
+    }
+  };
+
+  function inputs(p, R, c, b) {
+    let h = `<h4>Turniputs (inputs)</h4><table class="t"><tr><th>#</th><th>Name</th><th>Device</th><th>Action</th><th>Value</th></tr>`;
+    c.inputs.forEach(r => {
+      const a = C.inputActions.find(x => x.id === r.action) || C.inputActions[0];
+      const url = F.inputUrl(p, r);
+      h += `<tr id="f-${r.id}" data-sel="${r.id}"><td>${r.num}</td><td>${inp(r.id, 'name', r.name, 'str', 'placeholder="e.g. Start button"')}</td>
+        <td>${sel(r.id, 'device', C.inputDevices.map(x => U.opt(x, x, r.device)).join(''))}</td>
+        <td>${sel(r.id, 'action', C.inputActions.map(x => U.opt(x.id, x.name, r.action)).join(''))}</td>
+        <td>${a.param ? inp(r.id, 'param', r.param, 'str', `placeholder="${esc(a.param)}"`) : ''}</td></tr>`;
+      if (url) h += `<tr><td></td><td colspan="4"><span class="url">${esc(url)}</span> ${url.startsWith('http') ? btn('copy', 'Copy', '', 'small ghost', 'Copy URL', `data-text="${esc(url)}"`) : ''}</td></tr>`;
+    });
+    return h + '</table>';
+  }
+
+  // ---------- port ----------
+  F.port = (p, R, c, pt, forceOpen) => {
+    const r = R.ports.get(pt.id), b = C.boards[c.board];
+    const status = !pt.chain.length ? 'none' : r.minPct == null ? 'none' : (r.firstErr >= 0 || (b.fuseA && r.portA > b.fuseA)) ? 'err' : (r.firstFail >= 0 || (b.fuseA && r.portA > b.fuseA * 0.8)) ? 'warn' : 'ok';
+    const summ = `${chev}<span class="dot ${status}" aria-hidden="true"></span><span class="pn">Port ${pt.num}</span><span class="pl">${esc(pt.label) || '<span class="soft">unused</span>'}</span>
+      ${pt.chain.length ? `<span class="m">${r.pixels} px · ${r.channels} ch</span><span class="m ${b.fuseA && r.portA > b.fuseA ? 'err' : ''}">${K.fmtA(r.portA)}</span><span class="m ${status === 'err' ? 'err' : status === 'warn' ? 'warn' : ''}">${r.minV != null ? 'min ' + K.fmtV(r.minV) : ''}</span>` : ''}`;
+    const key = 'pt-' + pt.id;
+    const open = forceOpen || U.open.has(key);
+    return `<details class="portrow" id="f-${pt.id}" data-sel="${pt.id}" data-open-id="${key}"${open ? ' open' : ''}><summary>${summ}</summary>${open ? F.portBody(p, R, c, pt) : ''}</details>`;
+  };
+
+  F.portBody = (p, R, c, pt) => {
+    const r = R.ports.get(pt.id), b = C.boards[c.board];
+    const others = [];
+    PP.store.project.distros.forEach(d => d.controllers.forEach(cc => cc.ports.forEach(x => { if (x.id !== pt.id) others.push(U.opt(x.id, `${cc.name} port ${x.num}${x.label ? ' · ' + x.label : ''}${x.chain.length ? ' (in use)' : ''}`, '')); })));
+    let h = `<div class="portbody">
+      <div class="row">
+        <label class="fld inline">Label ${inp(pt.id, 'label', pt.label, 'str', 'placeholder="e.g. Roofline" style="width:150px"')}</label>
+        <label class="fld inline" title="Baldrick port brightness (on top of global ${p.settings.brightness}%)">Port brightness ${inp(pt.id, 'brightness', pt.brightness, 'num', 'min="1" max="100" style="width:56px"')}%</label>
+        <label class="fld inline" title="Untick if this port only carries data and the run is powered by injection">${inp(pt.id, 'portPower', pt.portPower, 'bool')} Power from port${b.fuseA ? ` (${b.fuseA} A fuse)` : ''}</label>
+      </div>
+      <div class="chain">
+        <div class="port-port">▸ ${esc(c.name)} port ${pt.num} · ${r.ctx.psu ? `${esc(r.ctx.psu.name)} via ${esc(r.ctx.bank.label)}` : '<span class="err">no PSU on this bank</span>'}${pt.chain.length ? ` · ${K.fmtA(r.portA)}${b.fuseA ? `, fit ${b.fuseA} A fuse` : ''}` : ''}</div>`;
+    pt.chain.forEach((it, i) => { h += F.item(p, R, pt, it, i); });
+    if (!pt.chain.length) h += '<div class="muted" style="padding:4px 0">Empty. Add a lead cable, then strings or floods.</div>';
+    const presetOpts = p.library.presets.map(x => U.opt(x.id, x.name, '')).join('');
+    h += `</div><div class="addbar">
+        <select id="preset-${pt.id}" aria-label="Preset">${presetOpts}</select>× <input type="number" id="qty-${pt.id}" value="1" min="1" max="50" style="width:50px" aria-label="How many">
+        ${btn('addPreset', 'Add', pt.id, 'small primary')}
+        ${btn('addCable', '+ Cable', pt.id, 'small')}${btn('addPixels', '+ Pixels', pt.id, 'small')}${btn('addInject', '+ Injection', pt.id, 'small')}
+      </div>
+      <div class="addbar">
+        ${btn('autoInject', 'Auto-inject', pt.id, 'small', 'Add injection points until every pixel is above the warning voltage')}
+        ${btn('clearInject', 'Remove injections', pt.id, 'small')}
+        ${btn('clearPort', 'Clear run', pt.id, 'small danger')}
+        <span class="grow"></span>
+        <select id="moveTo-${pt.id}" aria-label="Move or swap run to port"><option value="">Move / swap run to…</option>${others.join('')}</select>${btn('movePort', 'Go', pt.id, 'small')}
+      </div></div>`;
+    return h;
+  };
+
+  // ---------- chain item ----------
+  F.item = (p, R, pt, it, i) => {
+    const r = R.ports.get(pt.id), ir = r.items.get(it.id) || {};
+    const id = it.id;
+    let body = '', res = '';
+    if (it.kind === 'cable') {
+      const w = C.wireById(it.gauge);
+      body = `<span class="kind">Cable</span><label>${inp(id, 'length', it.length, 'num', 'step="0.5" min="0"')} m</label>${sel(id, 'gauge', U.wireOptions(it.gauge))}`;
+      const drop = ir.vIn != null ? ir.vIn - ir.vOut : 0;
+      res = `<span class="${ir.maxA > w.maxA ? 'err' : ''}">${K.fmtA(ir.maxA)}</span> · drop ${U.num(drop, 2)} V`;
+    } else if (it.kind === 'pixels') {
+      const t = M.pixelType(p, it.typeId);
+      const cls = ir.unpowered ? 'err' : U.vClass(ir.minPct);
+      const w = C.wireById(it.gauge);
+      body = `<span class="kind">${t ? esc(t.cat === 'flood' ? 'Flood' : t.cat === 'seed' ? 'Seeds' : t.cat === 'bullet' ? 'Bullets' : 'Pixels') : 'Pixels'}</span>
+        ${sel(id, 'typeId', U.pixelTypeOptions(p, it.typeId))}
+        <label>× ${inp(id, 'count', it.count, 'num', 'min="1" max="2000"')}</label>
+        <label title="Distance between pixels (lead length for floods)">every ${inp(id, 'spacing', it.spacing, 'num', 'step="0.01" min="0"')} m</label>
+        <label title="Wire inside the string">wire ${sel(id, 'gauge', U.wireOptions(it.gauge))}</label>`;
+      res = `<span class="dot ${cls}" aria-hidden="true"></span> ${ir.unpowered ? '<span class="err">no power</span>' : `min ${K.fmtV(ir.minV)} (${U.num(ir.minPct, 0)}%)`} · <span class="${ir.maxA > w.maxA ? 'err' : ''}">${K.fmtA(ir.maxA)}</span> · ${K.fmtW(ir.watts)}${t ? ` · ${it.count * t.ch} ch` : ''}${it.continued ? ` · <span class="soft">rest of string from pixel ${it.tapOffset + 1}</span>` : ''}`;
+    } else if (it.kind === 'inject') {
+      const w = C.wireById(it.gauge);
+      const a = ir.sourceA || 0;
+      body = `<span class="kind">Inject</span>${sel(id, 'psuId', U.psuOptions(p, it.psuId, '— pick PSU —'))}
+        <label>feed ${inp(id, 'length', it.length, 'num', 'step="0.5" min="0"')} m</label>${sel(id, 'gauge', U.wireOptions(it.gauge))}
+        <label title="Cut +V between the run before and after this point, so two PSUs are not joined">${inp(id, 'isolate', it.isolate, 'bool')} isolate +V</label>`;
+      res = `<span class="${a > w.maxA ? 'err' : ''}">${K.fmtA(a)}</span> · fuse ${K.recommendFuse(Math.max(a, 0.1))} A`;
+    }
+    return `<div class="item k-${it.kind}" id="f-${id}" data-sel="${id}">${body}
+      <input class="lbl" data-id="${id}" data-f="label" data-t="str" value="${esc(it.label)}" placeholder="note" aria-label="Note">
+      <span class="res">${res}</span>
+      <span class="row" style="gap:2px">${btn('itemUp', '↑', id, 'small ghost', 'Move up')}${btn('itemDown', '↓', id, 'small ghost', 'Move down')}${btn('itemDup', '⧉', id, 'small ghost', 'Duplicate')}${btn('itemDel', '✕', id, 'small ghost danger', 'Remove')}</span></div>`;
+  };
+
+  // ---------- library ----------
+  function library(p) {
+    let h = `<div class="card" style="padding:8px 12px"><h4>Pixel types <span class="soft" style="text-transform:none;letter-spacing:0">full-white watts per pixel at its voltage; check your supplier's figures</span>${btn('addType', '+ Type', '', 'small')}</h4>
+      <table class="t"><tr><th>Name</th><th>Kind</th><th>Volts</th><th>Watts</th><th>Channels</th><th>Spacing m</th><th>String wire</th><th></th></tr>`;
+    p.library.pixelTypes.forEach(t => {
+      h += `<tr><td>${inp(t.id, 'name', t.name)}</td>
+        <td>${sel(t.id, 'cat', ['bullet', 'seed', 'flood', 'strip', 'null', 'other'].map(x => U.opt(x, x, t.cat)).join(''))}</td>
+        <td>${inp(t.id, 'v', t.v, 'num', 'style="width:56px"')}</td><td>${inp(t.id, 'w', t.w, 'num', 'step="0.01" style="width:64px"')}</td>
+        <td>${sel(t.id, 'ch', U.opt(3, '3 RGB', t.ch) + U.opt(4, '4 RGBW', t.ch) + U.opt(1, '1', t.ch), '', 'num')}</td>
+        <td>${inp(t.id, 'spacing', t.spacing, 'num', 'step="0.01" style="width:64px"')}</td><td>${sel(t.id, 'gauge', U.wireOptions(t.gauge))}</td>
+        <td>${btn('delType', '✕', t.id, 'small ghost danger')}</td></tr>`;
+    });
+    h += `</table><h4>String presets ${btn('addPresetDef', '+ Preset', '', 'small')}</h4><table class="t"><tr><th>Name</th><th>Pixel type</th><th>Pixels per string</th><th></th></tr>`;
+    p.library.presets.forEach(x => {
+      const id = 'preset:' + x.id;
+      h += `<tr><td>${inp(id, 'name', x.name)}</td><td>${sel(id, 'typeId', U.pixelTypeOptions(p, x.typeId))}</td><td>${inp(id, 'count', x.count, 'num', 'min="1"')}</td><td>${btn('delPresetDef', '✕', x.id, 'small ghost danger')}</td></tr>`;
+    });
+    return h + `</table><div class="row" style="margin-top:8px">${btn('resetLibrary', 'Reset library to defaults', '', 'small')}<span class="soft">Library travels with the project file.</span></div></div>`;
+  }
+
+  // ---------- channels ----------
+  function channels(p, R) {
+    let h = `<div class="card" style="padding:8px 12px"><table class="t"><tr><th>Controller</th><th>IP</th><th>Port</th><th>Label</th><th>Pixels</th><th>Channels</th><th>Start ch</th><th>Universes (${p.settings.universeSize} ch)</th></tr>`;
+    let any = false;
+    p.distros.forEach(d => d.controllers.forEach(c => c.ports.forEach(pt => {
+      const r = R.ports.get(pt.id); if (!r.channels) return; any = true;
+      h += `<tr><td>${esc(c.name)}</td><td class="mono">${esc(c.ip)}</td><td>${pt.num}</td><td>${esc(pt.label)}</td><td>${r.pixels}</td><td>${r.channels}</td><td>${r.startCh}</td><td>${r.universes}</td></tr>`;
+    })));
+    if (!any) h += '<tr><td colspan="8" class="muted">No pixels yet.</td></tr>';
+    return h + `</table><div class="row" style="margin-top:8px">${btn('csvChannels', 'Export CSV', '', 'small')}<span class="soft">Start channels run on in controller order, like xLights absolute addressing. With DDP you only need the per-port pixel counts.</span></div></div>`;
+  }
+
+  // ---------- inspector (Visual view) ----------
+  F.inspector = (p, R, selId) => {
+    const e = selId ? R.idx.get(selId) : null;
+    if (!e) {
+      return `<div class="hint"><b>Nothing selected.</b><br>Click a distro, PSU, board, port, string or injection to edit it here. Drag presets from the left onto a port's output (or onto a string to insert after it). Drag a distro by its title bar. Scroll to zoom, drag the background to pan.</div>
+        ${p.distros.length ? '' : btn('addDistro', '+ Add a distro', '', 'primary')}`;
+    }
+    const crumbs = [];
+    if (e.distro) crumbs.push(esc(e.distro.name));
+    if (e.controller) crumbs.push(esc(e.controller.name));
+    if (e.port) crumbs.push('Port ' + e.port.num);
+    let h = `<div class="soft" style="margin-bottom:6px">${crumbs.join(' › ')}</div>`;
+    if (e.type === 'distro') h += F.distro(p, R, e.obj);
+    else if (e.type === 'psu') {
+      const r = R.psus.get(e.obj.id);
+      const i = e.distro.psus.indexOf(e.obj);
+      h += `<table class="t">${F.psuRow(p, R, e.obj, i)}</table><h4>Feeds</h4><table class="t"><tr><th>Load</th><th>Amps</th></tr>`;
+      r.loads.slice().sort((a, b) => b.amps - a.amps).forEach(l => { h += `<tr data-act="select" data-id="${l.ref}" style="cursor:pointer"><td>${esc(l.label)}</td><td>${K.fmtA(l.amps)}</td></tr>`; });
+      h += `<tr><td><b>Total</b></td><td><b>${K.fmtA(r.amps)}</b> of ${r.spec.a} A</td></tr></table>`;
+    } else if (e.type === 'controller' || e.type === 'relay' || e.type === 'input') h += `<div class="card" style="padding:4px 8px">${F.controller(p, R, e.distro, e.controller)}</div>`;
+    else if (e.type === 'port' || e.type === 'item') {
+      U.open.add('pt-' + e.port.id);
+      h += `<div class="card" style="padding:4px 8px">${F.port(p, R, e.controller, e.port, true)}</div>`;
+    }
+    return h;
+  };
+
+  // Highlight the selected element and open/scroll to it.
+  F.markSelection = (scroll = false) => {
+    const id = PP.store.selection;
+    U.$$('#formPane .sel').forEach(el => el.classList.remove('sel'));
+    if (!id) return;
+    const el = document.getElementById('f-' + id);
+    if (!el || !U.$('#formPane').contains(el)) return;
+    el.classList.add('sel');
+    if (scroll) {
+      let d = el.parentElement;
+      while (d && d.id !== 'formPane') { if (d.tagName === 'DETAILS' && !d.open) { d.open = true; } d = d.parentElement; }
+      el.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash');
+    }
+  };
+})();
+
+</script>
+<script>
+// Visual view: an SVG wiring diagram of every distro, its PSUs, boards and the pixel runs on each port.
+// It draws straight from the project + calc result, so it always matches the Form view.
+(function () {
+  const U = PP.ui, C = PP.catalog, M = PP.model, K = PP.calc, S = PP.store;
+  const esc = U.esc;
+  const V = PP.visual = {};
+  const W = 300;             // distro box width
+  const ROW = 30;            // port row height
+  const GAUGE_W = { awg22: 1, awg20: 1.3, awg18: 1.7, awg16: 2.2, awg14: 2.8, awg12: 3.4, awg10: 4.2, awg8: 5 };
+  let drag = null, pan = null;
+  V.psuPos = new Map();      // psuId -> absolute anchor for feed lines
+
+  const t = (x, y, cls, s, extra = '') => `<text x="${x}" y="${y}" class="${cls}" ${extra}>${esc(s)}</text>`;
+  const title = s => `<title>${esc(s)}</title>`;
+  const psuColour = (p, psuId) => {
+    for (const d of p.distros) { const i = d.psus.findIndex(s => s.id === psuId); if (i >= 0) return 'c' + (i % 6); }
+    return 'c4';
+  };
+
+  // ---------- palette ----------
+  V.renderPalette = (p) => {
+    const pal = (data, sw, label, tip = '') => `<div class="pal" draggable="true" data-drag='${esc(JSON.stringify(data))}' title="${esc(tip || 'Drag onto the diagram')}"><span class="sw ${sw}"></span>${esc(label)}</div>`;
+    let h = '<h5>Strings and floods</h5>';
+    p.library.presets.forEach(x => {
+      const ty = M.pixelType(p, x.typeId);
+      h += pal({ t: 'preset', id: x.id }, ty && ty.cat === 'flood' ? 'flood' : '', x.name, 'Drag onto a port or after a string');
+    });
+    h += '<h5>Wiring</h5>';
+    [[2, 'awg18'], [5, 'awg18'], [10, 'awg18'], [10, 'awg16']].forEach(([l, g]) => { h += pal({ t: 'cable', length: l, gauge: g }, 'cable', `Cable ${l} m ${C.wireById(g).label}`); });
+    h += pal({ t: 'inject' }, 'inject', 'Power injection', 'Drop after a string to inject power there');
+    h += '<h5>Hardware</h5>';
+    ['LRS-350-12', 'LRS-200-12', 'HLG-320H-12'].filter(id => C.psuById(id)).forEach(id => { h += pal({ t: 'psu', model: id }, 'cable', id, 'Drop onto a distro'); });
+    Object.entries(C.boards).forEach(([k, b]) => { h += pal({ t: 'board', board: k }, '', b.name, 'Drop onto a distro'); });
+    h += pal({ t: 'distro' }, 'cable', 'New distro', 'Drop anywhere');
+    U.$('#palette').innerHTML = h;
+  };
+
+  // ---------- layout ----------
+  function layoutDistro(p, R, d) {
+    const L = { psus: [], ctls: [], h: 0 };
+    const cols = 2, pw = 132, ph = 58;
+    d.psus.forEach((s, i) => L.psus.push({ s, i, x: 12 + (i % cols) * (pw + 12), y: 44 + Math.floor(i / cols) * (ph + 10), w: pw, h: ph }));
+    let y = 44 + Math.ceil(d.psus.length / cols) * (ph + 10) + (d.psus.length ? 24 : 12);
+    d.controllers.forEach(c => {
+      const b = C.boards[c.board];
+      const rows = [];
+      let ry = y + 34;
+      c.ports.forEach(pt => { rows.push({ kind: 'port', pt, y: ry }); ry += ROW; });
+      c.relays.forEach(r => { rows.push({ kind: 'relay', r, y: ry }); ry += 24; });
+      c.inputs.forEach(r => { rows.push({ kind: 'input', r, y: ry }); ry += 22; });
+      if (b.dmx) { rows.push({ kind: 'dmx', y: ry }); ry += 22; }
+      const h = Math.max(ry - y + 4, 34 + b.banks.length * 26);
+      L.ctls.push({ c, b, x: 120, y, w: W - 120, h, rows });
+      y += h + 14;
+    });
+    L.h = Math.max(y, 90);
+    return L;
+  }
+
+  // ---------- render ----------
+  V.render = (p, R) => {
+    const svg = U.$('#svg');
+    V.psuPos.clear();
+    const sel = S.selection;
+    let body = '', feeds = '';
+    const layouts = new Map();
+    p.distros.forEach(d => layouts.set(d.id, layoutDistro(p, R, d)));
+    p.distros.forEach(d => {
+      const L = layouts.get(d.id);
+      L.psus.forEach(q => V.psuPos.set(q.s.id, { x: d.x + q.x + q.w, y: d.y + q.y + q.h / 2, cls: 'c' + (q.i % 6) }));
+    });
+    p.distros.forEach(d => {
+      const L = layouts.get(d.id);
+      const out = drawDistro(p, R, d, L, sel);
+      body += out.g; feeds += out.feeds;
+    });
+    const k = U.cam.k;
+    svg.innerHTML = `<defs><pattern id="dots" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="1" cy="1" r="1" class="s-grid"/></pattern></defs>
+      <g id="cam" transform="translate(${U.cam.x},${U.cam.y}) scale(${k})">
+        <rect x="-20000" y="-20000" width="40000" height="40000" fill="url(#dots)" class="bg"/>
+        ${body}<g id="feeds">${feeds}</g>
+      </g>
+      ${p.distros.length ? '' : `<text x="50%" y="45%" text-anchor="middle" class="s-muted" style="font-size:14px">Drag “New distro” from the palette, or press + Distro</text>`}`;
+  };
+
+  function drawDistro(p, R, d, L, sel) {
+    const D = R.distros.get(d.id);
+    let g = `<g class="distro" data-distro="${d.id}" transform="translate(${d.x},${d.y})">`;
+    g += `<rect class="s-distro" x="0" y="0" width="${W}" height="${L.h}" rx="10" data-drop="distro" data-id="${d.id}"/>`;
+    g += `<rect class="s-distro-head" x="1" y="1" width="${W - 2}" height="32" rx="10" data-drag-distro="${d.id}" data-id="${d.id}"/>`;
+    g += t(12, 20, 's-title', d.name, `data-drag-distro="${d.id}" data-id="${d.id}" style="cursor:move"`);
+    g += t(W - 10, 20, 's-muted', `${K.fmtW(D.dcW)} · ${U.num(D.mainsA, 1)} A mains`, 'text-anchor="end" pointer-events="none"');
+    g += t(12, 40, 's-tiny', `${(C.distroSizes.find(s => s.id === d.size) || {}).name || ''}`, 'pointer-events="none"');
+    if (sel === d.id) g += `<rect class="s-sel" x="-3" y="-3" width="${W + 6}" height="${L.h + 6}" rx="12"/>`;
+    // PSUs
+    L.psus.forEach(q => {
+      const r = R.psus.get(q.s.id), cls = 'c' + (q.i % 6);
+      const pct = r.pct || 0, bc = U.pctClass(pct, p.settings.psuTargetPct);
+      g += `<g data-id="${q.s.id}" style="cursor:pointer">${title(`${q.s.name}: ${q.s.model}, set ${q.s.vout} V\n${K.fmtA(r.amps)} of ${r.spec.a} A (${U.num(pct, 0)}%)\n${r.loads.map(l => '• ' + l.label + ': ' + K.fmtA(l.amps)).join('\n')}`)}
+        <rect class="s-psu" x="${q.x}" y="${q.y}" width="${q.w}" height="${q.h}" rx="6"/>
+        <rect class="${cls}" x="${q.x}" y="${q.y}" width="5" height="${q.h}" rx="2"/>
+        ${t(q.x + 11, q.y + 15, 's-text', q.s.name)}${t(q.x + q.w - 6, q.y + 15, 's-tiny', q.s.vout + ' V', 'text-anchor="end"')}
+        ${t(q.x + 11, q.y + 28, 's-tiny', q.s.model === 'custom' ? `Custom ${q.s.customV} V ${q.s.customA} A` : q.s.model)}
+        <rect class="s-barbg" x="${q.x + 11}" y="${q.y + 35}" width="${q.w - 20}" height="7" rx="3"/>
+        <rect class="s-${bc}" x="${q.x + 11}" y="${q.y + 35}" width="${Math.min(1, pct / 100) * (q.w - 20)}" height="7" rx="3"/>
+        ${t(q.x + 11, q.y + 53, 's-tiny', `${K.fmtA(r.amps)} / ${r.spec.a} A · ${U.num(pct, 0)}%`)}
+        ${sel === q.s.id ? `<rect class="s-sel" x="${q.x - 2}" y="${q.y - 2}" width="${q.w + 4}" height="${q.h + 4}" rx="7"/>` : ''}</g>`;
+    });
+    if (!d.psus.length) g += t(12, 58, 's-muted', 'No PSU — drop one here');
+    // Controllers
+    let chains = '', feeds = '';
+    L.ctls.forEach(cl => {
+      const { c, b } = cl;
+      g += `<g data-id="${c.id}" style="cursor:pointer">${title(`${c.name} (${b.name})${c.ip ? '\nIP ' + c.ip : ''}\n${b.note}`)}
+        <rect class="s-board" x="${cl.x}" y="${cl.y}" width="${cl.w}" height="${cl.h}" rx="6"/>
+        ${t(cl.x + 8, cl.y + 15, 's-text', c.name)}${t(cl.x + 8, cl.y + 27, 's-tiny', `${b.name}${c.ip ? ' · ' + c.ip : ''}`)}</g>`;
+      if (sel === c.id) g += `<rect class="s-sel" x="${cl.x - 3}" y="${cl.y - 3}" width="${cl.w + 6}" height="${cl.h + 6}" rx="8"/>`;
+      // Banks: power pads on the left edge, wired from their PSU.
+      b.banks.forEach((bk, bi) => {
+        const portRows = cl.rows.filter(r => r.kind === 'port' && bk.ports.includes(r.pt.num));
+        const py = portRows.length ? (portRows[0].y + portRows[portRows.length - 1].y) / 2 : cl.y + 40 + bi * 26;
+        const psuId = c.banks[bk.id];
+        const q = L.psus.find(x => x.s.id === psuId);
+        const cls = psuId ? psuColour(p, psuId) : '';
+        const br = R.banks.get(c.id + ':' + bk.id);
+        g += `<g data-id="${c.id}" style="cursor:pointer">${title(`${bk.label}${bk.ports.length ? ' (ports ' + bk.ports.join(', ') + ')' : ''}\n${psuId ? 'from ' + (R.psus.get(psuId) || {}).psu.name : 'NO PSU'}${br ? '\n' + K.fmtA(br.amps) : ''}\nFeed: ${c.feed.length} m ${C.wireById(c.feed.gauge).label}`)}
+          <rect class="${psuId ? cls : 's-pad'}" x="${cl.x - 6}" y="${py - 6}" width="12" height="12" rx="2"/>
+          ${portRows.length ? '' : t(cl.x + 10, py + 4, 's-tiny', bk.label)}</g>`;
+        if (portRows.length > 1) g += `<path d="M${cl.x + 4} ${portRows[0].y} V${portRows[portRows.length - 1].y}" class="s-strwire" style="opacity:.4"/>`;
+        if (q) {
+          const sx = q.x + q.w / 2 + (bi % 2 ? 8 : -8), sy = q.y + q.h;
+          g += `<path class="s-bankwire ${cls}" d="M${sx} ${sy} C${sx} ${py} ${cl.x - 50} ${py} ${cl.x - 6} ${py}"/>`;
+        } else if (psuId) {
+          const a = V.psuPos.get(psuId);
+          if (a) feeds += `<path class="s-bankwire ${cls}" style="stroke-dasharray:6 3" d="M${a.x} ${a.y} C${a.x + 80} ${a.y} ${d.x + cl.x - 80} ${d.y + py} ${d.x + cl.x - 6} ${d.y + py}"/>`;
+        } else {
+          g += `<path class="s-cable over" style="stroke-width:1.5;stroke-dasharray:3 3" d="M${cl.x - 40} ${py} H${cl.x - 6}"/>${t(cl.x - 42, py + 3, 's-tiny', 'no PSU', 'text-anchor="end" class="err"')}`;
+        }
+      });
+      cl.rows.forEach(row => {
+        if (row.kind === 'port') {
+          const pt = row.pt, r = R.ports.get(pt.id), used = pt.chain.length > 0;
+          const st = !used ? '' : (r.firstErr >= 0 || (b.fuseA && r.portA > b.fuseA)) ? 'err' : (r.firstFail >= 0 || (b.fuseA && r.portA > b.fuseA * .8)) ? 'warn' : 'ok';
+          g += `<g data-id="${pt.id}" data-drop="port" data-port="${pt.id}" style="cursor:pointer">${title(`Port ${pt.num}${pt.label ? ' · ' + pt.label : ''}${used ? `\n${r.pixels} px, ${r.channels} ch\n${K.fmtA(r.portA)} from port${b.fuseA ? ' (' + b.fuseA + ' A fuse)' : ''}\nmin ${K.fmtV(r.minV)}` : '\nempty — drop a preset here'}`)}
+            <rect class="s-hit" x="${cl.x + 14}" y="${row.y - ROW / 2 + 2}" width="${cl.w - 14}" height="${ROW - 4}" rx="4"/>
+            ${t(cl.x + 18, row.y + 4, 's-text', `P${pt.num}`)}
+            ${t(cl.x + 40, row.y + 4, used ? 's-text' : 's-tiny', (pt.label || (used ? '' : 'free')).slice(0, 14))}
+            ${used ? t(cl.x + cl.w - 18, row.y + 4, 's-tiny', K.fmtA(r.portA), `text-anchor="end" class="${b.fuseA && r.portA > b.fuseA ? 'err' : ''}"`) : ''}
+            ${st ? `<circle cx="${cl.x + cl.w - 60}" cy="${row.y}" r="3.5" class="s-${st}"/>` : ''}
+            <rect class="${used ? 's-pad used' : 's-pad'}" x="${W - 7}" y="${row.y - 7}" width="14" height="14" rx="3"/></g>`;
+          if (sel === pt.id) g += `<rect class="s-sel" x="${cl.x + 12}" y="${row.y - ROW / 2 + 1}" width="${cl.w - 8}" height="${ROW - 2}" rx="5"/>`;
+          const ch = drawChain(p, R, d, pt, r, W + 7, row.y, sel);
+          chains += ch.g; feeds += ch.feeds;
+        } else if (row.kind === 'relay') {
+          const rl = row.r, on = !!(rl.name || rl.amps), over = rl.amps > b.relayMaxA || rl.volts > b.relayMaxV;
+          g += `<g data-id="${rl.id}" style="cursor:pointer">${title(`Relay ${rl.num}${rl.name ? ': ' + rl.name : ''}\n${rl.amps || 0} A at ${rl.volts} V (max ${b.relayMaxA} A)`)}
+            <rect class="s-relay ${on ? 'on' : ''}" x="${cl.x + 14}" y="${row.y - 9}" width="30" height="18" rx="3"/>
+            <path d="M${cl.x + 20} ${row.y + 4} L${cl.x + 36} ${row.y - 4}" class="s-strwire"/>
+            ${t(cl.x + 50, row.y + 4, on ? 's-text' : 's-tiny', `R${rl.num} ${rl.name || 'spare'}`.slice(0, 18))}
+            ${rl.amps ? t(cl.x + cl.w - 8, row.y + 4, 's-tiny', rl.amps + ' A', `text-anchor="end" class="${over ? 'err' : ''}"`) : ''}</g>`;
+          if (on) chains += `<path class="s-cable" style="stroke-width:2" d="M${W} ${row.y} H${W + 40}"/>${t(W + 46, row.y + 4, 's-muted', `${rl.name || 'load'} · ${rl.volts} V`)}`;
+          if (sel === rl.id) g += `<rect class="s-sel" x="${cl.x + 10}" y="${row.y - 12}" width="${cl.w - 14}" height="24" rx="4"/>`;
+        } else if (row.kind === 'input') {
+          const ip = row.r, set = ip.action && ip.action !== 'none';
+          const act = C.inputActions.find(x => x.id === ip.action);
+          g += `<g data-id="${ip.id}" style="cursor:pointer">${title(`Turniput ${ip.num}${ip.name ? ': ' + ip.name : ''}\n${ip.device}\n${act ? act.name : ''}${ip.param ? ' ' + ip.param : ''}`)}
+            <circle cx="${cl.x + 22}" cy="${row.y}" r="7" class="s-btn ${set ? '' : 'unset'}"/>
+            ${t(cl.x + 36, row.y + 4, set ? 's-text' : 's-tiny', `T${ip.num} ${ip.name || (set ? act.name : 'input')}`.slice(0, 20))}</g>`;
+          if (sel === ip.id) g += `<rect class="s-sel" x="${cl.x + 10}" y="${row.y - 11}" width="${cl.w - 14}" height="22" rx="4"/>`;
+        } else if (row.kind === 'dmx') {
+          g += t(cl.x + 14, row.y + 4, 's-tiny', 'DMX out: RJ45 · 3-pin · 5-pin XLR');
+        }
+      });
+    });
+    g += chains + '</g>';
+    return { g, feeds };
+  }
+
+  // Draws one port's run from (x0,y) to the right. Coordinates are distro-local; feeds are absolute.
+  function drawChain(p, R, d, pt, r, x0, y, sel) {
+    let g = '', feeds = '', x = x0;
+    const st = p.settings;
+    pt.chain.forEach((it, i) => {
+      const ir = r.items.get(it.id) || {};
+      const isSel = sel === it.id;
+      const start = x;
+      if (it.kind === 'cable') {
+        const w = C.wireById(it.gauge), len = Math.max(20, Math.min(160, it.length * 10));
+        const cls = ir.maxA > w.maxA ? 'over' : ir.maxA > w.maxA * 0.8 ? 'hot' : '';
+        const drop = ir.vIn != null ? ir.vIn - ir.vOut : 0;
+        g += `<g data-id="${it.id}" data-drop="item" data-item="${it.id}" data-port="${pt.id}" style="cursor:pointer">${title(`Cable ${it.length} m ${w.label}${it.label ? ' · ' + it.label : ''}\n${K.fmtA(ir.maxA)} (rated ${w.maxA} A)\nDrop ${U.num(drop, 2)} V`)}
+          <rect class="s-hit" x="${x}" y="${y - 12}" width="${len}" height="24"/>
+          <path class="s-cable ${cls}" style="stroke-width:${GAUGE_W[it.gauge] || 2}" d="M${x} ${y} H${x + len}"/>
+          ${t(x + len / 2, y - 6, 's-tiny', `${it.length} m ${w.label.replace(' AWG', 'AWG')}`, 'text-anchor="middle"')}</g>`;
+        x += len;
+      } else if (it.kind === 'pixels') {
+        const ty = M.pixelType(p, it.typeId) || { cat: 'bullet', name: '?' };
+        const n = +it.count || 0;
+        const isFlood = ty.cat === 'flood';
+        const maxShapes = isFlood ? 12 : 30;
+        const shapes = Math.min(n, maxShapes);
+        const step = isFlood ? 16 : 7;
+        const px = r.pxV.filter(v => v.item === it.id);
+        const w = shapes * step + 6;
+        g += `<g data-id="${it.id}" data-drop="item" data-item="${it.id}" data-port="${pt.id}" style="cursor:pointer">${title(`${n} × ${ty.name}${it.label ? ' · ' + it.label : ''}\nevery ${it.spacing} m on ${C.wireById(it.gauge).label}\n${ir.unpowered ? 'NO POWER' : `min ${K.fmtV(ir.minV)} (${U.num(ir.minPct, 0)}%)`}\n${K.fmtW(ir.watts)} · ${K.fmtA(ir.maxA)} in string${n > shapes ? `\n(each ${isFlood ? 'square' : 'dot'} ≈ ${U.num(n / shapes, 1)} pixels)` : ''}`)}
+          <rect class="s-hit" x="${x}" y="${y - 12}" width="${w}" height="24"/>
+          <path class="s-strwire" d="M${x} ${y} H${x + w}"/>`;
+        for (let k = 0; k < shapes; k++) {
+          const a = Math.floor(k * n / shapes), b = Math.max(a + 1, Math.floor((k + 1) * n / shapes));
+          let mn = Infinity; for (let j = a; j < b && j < px.length; j++) mn = Math.min(mn, px[j].pct);
+          const cls = ir.unpowered || mn <= 0 ? 'off' : U.vClass(mn);
+          const cx = x + 3 + k * step + step / 2;
+          g += isFlood ? `<rect x="${cx - 5}" y="${y - 5}" width="10" height="10" rx="2" class="s-${cls}"/>` : `<circle cx="${cx}" cy="${y}" r="2.6" class="s-${cls}"/>`;
+        }
+        g += t(x + 3, y - 8, 's-tiny', `${n}× ${ty.name}`.slice(0, Math.max(8, Math.floor(w / 5))));
+        g += `</g>`;
+        x += w;
+      } else if (it.kind === 'inject') {
+        const a = ir.sourceA || 0, w = C.wireById(it.gauge);
+        const cls = it.psuId ? psuColour(p, it.psuId) : 'c5';
+        g += `<g data-id="${it.id}" data-drop="item" data-item="${it.id}" data-port="${pt.id}" style="cursor:pointer">${title(`Power injection${it.label ? ' · ' + it.label : ''}\n${it.psuId ? 'from ' + ((R.psus.get(it.psuId) || {}).psu || {}).name : 'NO PSU'} via ${it.length} m ${w.label}\n${K.fmtA(a)} · fuse ${K.recommendFuse(Math.max(a, .1))} A${it.isolate ? '\n+V isolated from the run before' : ''}`)}
+          <rect class="s-hit" x="${x}" y="${y - 12}" width="18" height="24"/>
+          <rect x="${x + 4}" y="${y - 5}" width="10" height="10" transform="rotate(45 ${x + 9} ${y})" class="${cls}"/>
+          ${it.isolate ? `<path d="M${x + 16} ${y - 7} V${y + 7}" class="s-cable over" style="stroke-width:2"/>` : ''}
+          ${t(x + 9, y + 18, 's-tiny', K.fmtA(a), 'text-anchor="middle"')}</g>`;
+        const src = V.psuPos.get(it.psuId);
+        if (src) {
+          const ax = d.x + x + 9, ay = d.y + y - 6;
+          feeds += `<path class="s-feed ${cls}" d="M${src.x} ${src.y} C${src.x + 60} ${src.y} ${ax} ${ay - 60} ${ax} ${ay}"><title>${esc(`Injection feed ${it.length} m ${w.label}: ${K.fmtA(a)}`)}</title></path>`;
+        }
+        x += 18;
+      }
+      if (isSel) g += `<rect class="s-sel" x="${start - 2}" y="${y - 14}" width="${x - start + 4}" height="28" rx="4"/>`;
+    });
+    // End of run: min voltage and a "+" drop target.
+    if (pt.chain.length && r.minV != null) g += t(x + 6, y + 16, `s-tiny`, `min ${K.fmtV(r.minV)}`);
+    g += `<g data-drop="port" data-port="${pt.id}" data-plus="${pt.id}" style="cursor:pointer">${title('Drop a preset here, or click to edit this port')}
+      <circle class="s-plus" cx="${x + 12}" cy="${y}" r="7"/><path d="M${x + 8} ${y} H${x + 16} M${x + 12} ${y - 4} V${y + 4}" class="s-strwire"/></g>`;
+    return { g, feeds };
+  }
+
+  // ---------- camera ----------
+  const applyCam = () => { const g = U.$('#cam'); if (g) g.setAttribute('transform', `translate(${U.cam.x},${U.cam.y}) scale(${U.cam.k})`); };
+  V.zoom = (f, cx, cy) => {
+    const wrap = U.$('#canvasWrap').getBoundingClientRect();
+    if (cx == null) { cx = wrap.width / 2; cy = wrap.height / 2; }
+    const k = Math.min(3, Math.max(0.15, U.cam.k * f));
+    U.cam.x = cx - (cx - U.cam.x) * k / U.cam.k;
+    U.cam.y = cy - (cy - U.cam.y) * k / U.cam.k;
+    U.cam.k = k; applyCam();
+  };
+  V.fit = () => {
+    const p = S.project, wrap = U.$('#canvasWrap').getBoundingClientRect();
+    const gs = U.$$('#cam > g.distro');
+    if (!gs.length || !wrap.width) return;
+    let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+    gs.forEach(g => {
+      const bb = g.getBBox(), d = p.distros.find(x => x.id === g.dataset.distro);
+      if (!d) return;
+      x0 = Math.min(x0, d.x + bb.x); y0 = Math.min(y0, d.y + bb.y); x1 = Math.max(x1, d.x + bb.x + bb.width); y1 = Math.max(y1, d.y + bb.y + bb.height);
+    });
+    const k = Math.min(1.4, Math.max(0.15, Math.min((wrap.width - 40) / (x1 - x0), (wrap.height - 40) / (y1 - y0))));
+    U.cam = { k, x: 20 - x0 * k + Math.max(0, (wrap.width - 40 - (x1 - x0) * k) / 2), y: 20 - y0 * k };
+    applyCam();
+  };
+  const toWorld = (ev) => {
+    const r = U.$('#svg').getBoundingClientRect();
+    return { x: (ev.clientX - r.left - U.cam.x) / U.cam.k, y: (ev.clientY - r.top - U.cam.y) / U.cam.k };
+  };
+
+  // ---------- drop handling ----------
+  function doDrop(data, target, world) {
+    const p = S.project;
+    const portId = target && target.dataset.port;
+    const itemId = target && target.dataset.item;
+    const distroId = target && target.dataset.drop === 'distro' ? target.dataset.id : (target && target.closest('g.distro') ? target.closest('g.distro').dataset.distro : null);
+    if (data.t === 'distro') {
+      S.commit('addDistro', p => { const d = M.newDistro('Distro ' + (p.distros.length + 1), Math.round(world.x), Math.round(world.y)); p.distros.push(d); S.selection = d.id; });
+      return;
+    }
+    if (data.t === 'psu' || data.t === 'board') {
+      if (!distroId) return U.toast('Drop PSUs and boards onto a distro.');
+      S.commit('dropHw', p => {
+        const d = p.distros.find(x => x.id === distroId);
+        if (data.t === 'psu') {
+          const s = M.newPsu(data.model, d.psus.length + 1); d.psus.push(s); S.selection = s.id;
+          d.controllers.forEach(c => Object.keys(c.banks).forEach(k => { if (!c.banks[k]) c.banks[k] = s.id; }));
+        } else {
+          const c = M.newController(data.board); const first = d.psus[0];
+          if (first) Object.keys(c.banks).forEach(k => { c.banks[k] = first.id; });
+          d.controllers.push(c); S.selection = c.id;
+        }
+      });
+      return;
+    }
+    if (!portId) return U.toast('Drop strings, cables and injections onto a port or a run.');
+    S.commit('drop', p => {
+      const e = M.find(p, portId); if (!e) return;
+      const chain = e.port.chain;
+      let at = itemId ? chain.findIndex(x => x.id === itemId) + 1 : chain.length;
+      const add = [];
+      if (data.t === 'preset') {
+        const pr = p.library.presets.find(x => x.id === data.id); if (!pr) return;
+        if (!chain.length) add.push(M.newItem.cable(5, 'awg18'));
+        add.push(M.newItem.pixels(pr.typeId, pr.count, p.library.pixelTypes));
+        if (!e.port.label) e.port.label = pr.name;
+      } else if (data.t === 'cable') add.push(M.newItem.cable(data.length, data.gauge));
+      else if (data.t === 'inject') {
+        const c = e.controller, b = C.boards[c.board];
+        const bk = b.banks.find(x => x.ports.includes(e.port.num));
+        add.push(M.newItem.inject((bk && c.banks[bk.id]) || (e.distro.psus[0] || {}).id || null, p.settings.injectLength, p.settings.injectGauge));
+      }
+      chain.splice(at, 0, ...add);
+      S.selection = add[add.length - 1].id;
+    });
+  }
+
+  // ---------- events (bound once) ----------
+  V.init = () => {
+    const svg = U.$('#svg'), wrap = U.$('#canvasWrap');
+    U.$('#palette').addEventListener('dragstart', ev => {
+      const el = ev.target.closest('[data-drag]'); if (!el) return;
+      ev.dataTransfer.setData('text/plain', el.dataset.drag); ev.dataTransfer.effectAllowed = 'copy';
+    });
+    let lastHi = null;
+    const hi = el => { if (lastHi === el) return; if (lastHi) lastHi.classList.remove('s-drop-hi'); lastHi = el; if (el) el.classList.add('s-drop-hi'); };
+    wrap.addEventListener('dragover', ev => { ev.preventDefault(); wrap.classList.add('dragover'); hi(ev.target.closest && ev.target.closest('[data-drop]')); });
+    wrap.addEventListener('dragleave', ev => { if (!wrap.contains(ev.relatedTarget)) { wrap.classList.remove('dragover'); hi(null); } });
+    wrap.addEventListener('drop', ev => {
+      ev.preventDefault(); wrap.classList.remove('dragover'); hi(null);
+      let data; try { data = JSON.parse(ev.dataTransfer.getData('text/plain')); } catch (e) { return; }
+      doDrop(data, ev.target.closest && ev.target.closest('[data-drop]'), toWorld(ev));
+    });
+    svg.addEventListener('wheel', ev => {
+      ev.preventDefault();
+      const r = svg.getBoundingClientRect();
+      V.zoom(ev.deltaY < 0 ? 1.12 : 1 / 1.12, ev.clientX - r.left, ev.clientY - r.top);
+    }, { passive: false });
+    svg.addEventListener('pointerdown', ev => {
+      if (ev.button !== 0) return;
+      const dh = ev.target.closest('[data-drag-distro]');
+      if (dh) {
+        const d = S.project.distros.find(x => x.id === dh.dataset.dragDistro);
+        drag = { d, before: JSON.stringify(S.project), sx: ev.clientX, sy: ev.clientY, ox: d.x, oy: d.y, moved: false, g: U.$(`g.distro[data-distro="${d.id}"]`) };
+        svg.setPointerCapture(ev.pointerId);
+        return;
+      }
+      if (ev.target.closest('[data-id],[data-plus]')) return;
+      pan = { sx: ev.clientX, sy: ev.clientY, ox: U.cam.x, oy: U.cam.y, moved: false };
+      svg.setPointerCapture(ev.pointerId); svg.classList.add('panning');
+    });
+    svg.addEventListener('pointermove', ev => {
+      if (drag) {
+        const dx = (ev.clientX - drag.sx) / U.cam.k, dy = (ev.clientY - drag.sy) / U.cam.k;
+        if (Math.abs(dx) + Math.abs(dy) > 3) drag.moved = true;
+        drag.d.x = Math.round((drag.ox + dx) / 10) * 10; drag.d.y = Math.round((drag.oy + dy) / 10) * 10;
+        drag.g.setAttribute('transform', `translate(${drag.d.x},${drag.d.y})`);
+        U.$('#feeds').style.display = 'none';
+      } else if (pan) {
+        U.cam.x = pan.ox + ev.clientX - pan.sx; U.cam.y = pan.oy + ev.clientY - pan.sy;
+        if (Math.abs(ev.clientX - pan.sx) + Math.abs(ev.clientY - pan.sy) > 3) pan.moved = true;
+        applyCam();
+      }
+    });
+    const end = ev => {
+      if (drag) {
+        const dr = drag; drag = null;
+        if (dr.moved) S.commitFrom(dr.before, 'moveDistro'); else S.select(dr.d.id);
+        const f = U.$('#feeds'); if (f) f.style.display = '';
+      }
+      if (pan) { if (!pan.moved) S.select(null); pan = null; svg.classList.remove('panning'); }
+    };
+    svg.addEventListener('pointerup', end);
+    svg.addEventListener('pointercancel', end);
+    svg.addEventListener('click', ev => {
+      const plus = ev.target.closest('[data-plus]');
+      if (plus) { S.select(plus.dataset.plus); return; }
+      const el = ev.target.closest('[data-id]'); if (!el || el.closest('[data-drag-distro]')) return;
+      S.select(el.dataset.id);
+    });
+  };
+})();
+
+</script>
+<script>
+// Wiring guide: printable step-by-step build sheet, bill of materials and channel map.
+(function () {
+  const U = PP.ui, C = PP.catalog, M = PP.model, K = PP.calc, S = PP.store;
+  const esc = U.esc;
+  const G = PP.guide = {};
+
+  const THEME_VARS = ['--cp-bg', '--cp-bg-elevated', '--cp-surface', '--cp-surface-soft', '--cp-border', '--cp-border-strong', '--cp-text', '--cp-text-muted', '--cp-text-soft', '--cp-accent', '--cp-accent-soft', '--cp-success', '--cp-warning', '--cp-danger', '--cp-link', '--cp-highlight'];
+  const themeCss = () => {
+    const cs = getComputedStyle(document.documentElement);
+    return ':root{' + THEME_VARS.map(v => `${v}:${cs.getPropertyValue(v).trim()};`).join('') + '}';
+  };
+
+  // ---------- bill of materials ----------
+  G.bom = (p, R) => {
+    const rows = [];
+    const add = (group, item, qty, unit = '', note = '') => {
+      const r = rows.find(x => x.group === group && x.item === item && x.note === note);
+      if (r) r.qty += qty; else rows.push({ group, item, qty, unit, note });
+    };
+    p.distros.forEach(d => {
+      add('Enclosures', (C.distroSizes.find(s => s.id === d.size) || {}).name || d.size, 1, 'pcs', d.name);
+      d.psus.forEach(s => add('Power supplies', s.model === 'custom' ? `Custom ${s.customV} V ${s.customA} A PSU` : `Mean Well ${s.model}`, 1, 'pcs'));
+      d.controllers.forEach(c => {
+        const b = C.boards[c.board];
+        add('Controllers', b.name, 1, 'pcs');
+        add('Cable', `${C.wireById(c.feed.gauge).label} power (PSU → board)`, c.feed.length * b.banks.filter(bk => c.banks[bk.id]).length * 2, 'm', 'red + black');
+        c.ports.forEach(pt => {
+          const r = R.ports.get(pt.id);
+          if (!pt.chain.length) return;
+          if (b.fuseA) add('Fuses', `${K.recommendFuse(Math.max(r.portA, 0.1))} A mini blade (port)`, 1, 'pcs', `board ships with ${b.fuseA} A`);
+          pt.chain.forEach(it => {
+            if (it.kind === 'cable') { add('Cable', `${C.wireById(it.gauge).label} 3-core pixel extension`, +it.length || 0, 'm'); add('Connectors', '3-pin pixel pigtail pair', 1, 'pairs'); }
+            else if (it.kind === 'pixels') {
+              const t = M.pixelType(p, it.typeId);
+              add('Pixels', t ? t.name : it.typeId, +it.count || 0, t && t.cat === 'flood' ? 'pcs' : 'px');
+              add('Connectors', '3-pin pixel pigtail pair', 1, 'pairs');
+            } else if (it.kind === 'inject') {
+              const ir = r.items.get(it.id) || {};
+              add('Cable', `${C.wireById(it.gauge).label} 2-core power (injection)`, +it.length || 0, 'm');
+              add('Fuses', `${K.recommendFuse(Math.max(ir.sourceA || 0, 0.1))} A inline blade (injection)`, 1, 'pcs');
+              add('Connectors', 'Injection T / 3-pin splice', 1, 'pcs');
+            }
+          });
+        });
+      });
+    });
+    rows.forEach(r => { if (r.unit === 'm') r.qty = Math.ceil(r.qty * 10) / 10; });
+    const order = ['Enclosures', 'Controllers', 'Power supplies', 'Pixels', 'Cable', 'Fuses', 'Connectors'];
+    return rows.sort((a, b) => order.indexOf(a.group) - order.indexOf(b.group) || a.item.localeCompare(b.item));
+  };
+
+  const csv = rows => rows.map(r => r.map(v => { const s = String(v == null ? '' : v); return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; }).join(',')).join('\r\n');
+  G.csvBom = (p, R) => csv([['Group', 'Item', 'Qty', 'Unit', 'Note'], ...G.bom(p, R).map(r => [r.group, r.item, U.num(r.qty, 1), r.unit, r.note])]);
+  G.csvChannels = (p, R) => {
+    const rows = [['Controller', 'IP', 'Port', 'Label', 'Pixels', 'Channels', 'Start channel', 'End channel', 'Universes', 'Brightness %']];
+    p.distros.forEach(d => d.controllers.forEach(c => c.ports.forEach(pt => {
+      const r = R.ports.get(pt.id); if (!r.channels) return;
+      rows.push([c.name, c.ip, pt.num, pt.label, r.pixels, r.channels, r.startCh, r.startCh + r.channels - 1, r.universes, Math.round(p.settings.brightness * pt.brightness / 100)]);
+    })));
+    return csv(rows);
+  };
+
+  // ---------- per-port steps ----------
+  function portSteps(p, R, d, c, pt) {
+    const r = R.ports.get(pt.id), b = C.boards[c.board];
+    const steps = [];
+    let pxCount = 0, dist = 0;
+    const bright = Math.round(p.settings.brightness * pt.brightness / 100);
+    steps.push(`Set port ${pt.num} to <b>${r.pixels} pixels</b>${bright < 100 ? `, brightness <b>${bright}%</b>` : ''} in the Baldrick web UI (or let xLights/FPP upload it).`);
+    if (b.fuseA) steps.push(pt.portPower ? `Port fuse: draws <b>${K.fmtA(r.portA)}</b> → fit a <b>${K.recommendFuse(Math.max(r.portA, 0.1))} A</b> blade (max ${b.fuseA} A on this board).` : `Port power is <b>off</b>: remove the port ${pt.num} fuse so only data and ground leave the board.`);
+    pt.chain.forEach(it => {
+      const ir = r.items.get(it.id) || {};
+      if (it.kind === 'cable') {
+        dist += +it.length || 0;
+        steps.push(`Run <b>${it.length} m of ${C.wireById(it.gauge).label}</b> 3-core extension${it.label ? ' (' + esc(it.label) + ')' : ''}. Arrives at <b>${K.fmtV(ir.vOut)}</b>, carrying ${K.fmtA(ir.maxA)}.`);
+      } else if (it.kind === 'pixels') {
+        const t = M.pixelType(p, it.typeId);
+        const n = +it.count || 0;
+        steps.push(`Connect <b>${n} × ${esc(t ? t.name : it.typeId)}</b>${it.label ? ' (' + esc(it.label) + ')' : ''}${it.continued ? ' — rest of the same string' : ''}: pixels ${pxCount + 1}–${pxCount + n} on this port, ${it.spacing} m apart. ${ir.unpowered ? '<span class="err">No power reaches these pixels.</span>' : `Lowest voltage <b class="${U.vClass(ir.minPct)}">${K.fmtV(ir.minV)}</b> (${U.num(ir.minPct, 0)}%).`}`);
+        pxCount += n; dist += n * (+it.spacing || 0);
+      } else if (it.kind === 'inject') {
+        const ps = it.psuId ? (R.psus.get(it.psuId) || {}).psu : null;
+        const a = ir.sourceA || 0;
+        const where = it.label || (pxCount ? `after pixel ${pxCount}` : 'here');
+        steps.push(`<b>Inject power</b> ${esc(where)} (about ${U.num(dist, 1)} m along the run): run <b>${it.length} m of ${C.wireById(it.gauge).label}</b> red/black from <b>${ps ? esc(ps.name) : '<span class="err">no PSU</span>'}</b>, <b>${K.recommendFuse(Math.max(a, 0.1))} A</b> inline fuse at the PSU end. Carries ${K.fmtA(a)}. Join +V and GND only${it.isolate ? '; <b>cut the +V wire</b> coming from the previous section so the supplies are not joined' : ''}. Data passes straight through.`);
+      }
+    });
+    return steps;
+  }
+
+  // ---------- full document ----------
+  G.build = (p, R) => {
+    const st = p.settings, T = R.totals;
+    const date = new Date().toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' });
+    let h = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${esc(p.name)} — wiring guide</title><style>${themeCss()}
+      body{font-family:"Segoe UI",system-ui,sans-serif;background:var(--cp-surface);color:var(--cp-text);margin:24px;font-size:13px;line-height:1.45}
+      h1{font-size:22px;margin:0 0 4px}h2{font-size:17px;margin:26px 0 6px;padding-bottom:4px;border-bottom:2px solid var(--cp-border)}h3{font-size:14px;margin:16px 0 4px}
+      .muted{color:var(--cp-text-muted)}.soft{color:var(--cp-text-soft)}.ok{color:var(--cp-success)}.warn{color:var(--cp-warning)}.err,.error{color:var(--cp-danger)}
+      table{border-collapse:collapse;width:100%;margin:6px 0}th,td{text-align:left;padding:4px 8px;border-bottom:1px solid var(--cp-border);vertical-align:top}th{color:var(--cp-text-muted);font-weight:600;font-size:12px}
+      ol{margin:4px 0 8px 18px;padding:0}li{margin:3px 0}.card{border:1px solid var(--cp-border);border-radius:10px;padding:10px 14px;margin:8px 0;background:var(--cp-bg-elevated);break-inside:avoid}
+      .kpis{display:flex;gap:10px;flex-wrap:wrap}.kpi{border:1px solid var(--cp-border);border-radius:10px;padding:6px 12px;min-width:110px}.kpi b{display:block;font-size:17px}.kpi span{font-size:11px;color:var(--cp-text-muted)}
+      .mono{font-family:Consolas,"Courier New",monospace;font-size:12px;word-break:break-all;color:var(--cp-link)}.tick{display:inline-block;width:12px;height:12px;border:1.5px solid var(--cp-border-strong);border-radius:3px;margin-right:6px;vertical-align:-2px}
+      @media print{body{margin:10mm}h2{break-after:avoid}.card{break-inside:avoid}}
+    </style></head><body>`;
+    h += `<h1>${esc(p.name)} — wiring guide</h1><div class="muted">${esc(PP.APP_NAME)} ${esc(PP.APP_VERSION)} · ${esc(date)} · global brightness ${st.brightness}%</div>`;
+    if (p.notes) h += `<p>${esc(p.notes).replace(/\n/g, '<br>')}</p>`;
+    h += `<div class="kpis" style="margin-top:12px">
+      <div class="kpi"><b>${T.pixels}</b><span>pixels</span></div><div class="kpi"><b>${T.channels}</b><span>channels · ${T.universes} universes</span></div>
+      <div class="kpi"><b>${K.fmtW(T.dcW)}</b><span>DC at full white</span></div><div class="kpi"><b>${U.num(T.mainsA, 1)} A</b><span>mains at ${st.mainsV} V</span></div>
+      <div class="kpi"><b>${K.fmtA(T.psuA)} / ${U.num(T.psuCapA, 0)} A</b><span>PSU load</span></div><div class="kpi"><b>${esc(st.currency)}${U.num(T.cost, 2)}</b><span>season cost (${st.typicalPct}% typical)</span></div></div>`;
+    const errs = R.warnings.filter(w => w.level !== 'info');
+    if (errs.length) h += `<h2>Check before you build (${errs.length})</h2><ul>${errs.map(w => `<li class="${w.level}">${esc(w.msg)}</li>`).join('')}</ul>`;
+
+    // Network
+    h += `<h2>Network</h2><table><tr><th>Controller</th><th>Board</th><th>Distro</th><th>IP</th><th>Pixels</th><th>Channels</th></tr>`;
+    p.distros.forEach(d => d.controllers.forEach(c => { const CR = R.controllers.get(c.id); h += `<tr><td>${esc(c.name)}</td><td>${esc(C.boards[c.board].name)}</td><td>${esc(d.name)}</td><td class="mono">${esc(c.ip || '—')}</td><td>${CR.pixels}</td><td>${CR.channels}</td></tr>`; }));
+    h += `</table><p class="muted">FPP on the Pi (${esc(st.fppIp)}) sends E1.31/DDP over ethernet to each Baldrick. Give every board a fixed IP, set the same IPs in xLights controller setup (vendor ILightThat), and upload the output config from xLights. GS8208 pixels need FPP “Always Transmit Channel Data”.</p>`;
+
+    // Per distro
+    p.distros.forEach(d => {
+      const D = R.distros.get(d.id);
+      h += `<h2>${esc(d.name)}</h2><div class="muted">${esc((C.distroSizes.find(s => s.id === d.size) || {}).name || '')} · ${K.fmtW(D.dcW)} DC · ${U.num(D.mainsA, 2)} A mains${D.relayW ? ` (incl. ${K.fmtW(D.relayW)} switched by relays)` : ''}</div>`;
+      if (d.notes) h += `<p>${esc(d.notes).replace(/\n/g, '<br>')}</p>`;
+      h += `<h3>Power supplies</h3><table><tr><th>PSU</th><th>Model</th><th>Set output to</th><th>Load</th><th>Feeds</th></tr>`;
+      d.psus.forEach(s => {
+        const r = R.psus.get(s.id);
+        h += `<tr><td><span class="tick"></span>${esc(s.name)}</td><td>${esc(s.model === 'custom' ? `Custom ${s.customV} V ${s.customA} A` : s.model)}<div class="soft">${esc(r.spec.ip)}</div></td><td><b>${s.vout} V</b> (trim pot)</td>
+          <td class="${U.pctClass(r.pct, st.psuTargetPct)}">${K.fmtA(r.amps)} of ${r.spec.a} A (${U.num(r.pct, 0)}%)</td><td>${r.loads.map(l => esc(l.label) + ': ' + K.fmtA(l.amps)).join('<br>')}</td></tr>`;
+      });
+      h += `</table><p class="muted">Mains in: L, N and earth to every PSU; earth the enclosure and PSU cases. Set each PSU's voltage with a meter before connecting any pixels.</p>`;
+      d.controllers.forEach(c => {
+        const b = C.boards[c.board];
+        h += `<div class="card"><h3 style="margin-top:0">${esc(c.name)} — ${esc(b.name)}${c.ip ? ` <span class="mono">${esc(c.ip)}</span>` : ''}</h3><div class="soft">${esc(b.note)}</div>`;
+        h += `<h3>Power in</h3><ol>`;
+        b.banks.forEach(bk => {
+          const ps = c.banks[bk.id] ? (R.psus.get(c.banks[bk.id]) || {}).psu : null;
+          const br = R.banks.get(c.id + ':' + bk.id);
+          h += `<li><span class="tick"></span>${esc(bk.label)}${bk.ports.length ? ` (ports ${bk.ports.join(', ')})` : ''}: ${ps ? `<b>${esc(ps.name)}</b> V+ and V− with ${c.feed.length} m of <b>${C.wireById(c.feed.gauge).label}</b>` : '<span class="err">no PSU</span>'}${br && br.amps ? ` — ${K.fmtA(br.amps)}` : ''}</li>`;
+        });
+        h += `</ol>`;
+        c.ports.filter(pt => pt.chain.length).forEach(pt => {
+          const r = R.ports.get(pt.id);
+          h += `<h3>Port ${pt.num}${pt.label ? ' — ' + esc(pt.label) : ''} <span class="soft" style="font-weight:400">${r.pixels} px · ch ${r.startCh}–${r.startCh + r.channels - 1} · min ${K.fmtV(r.minV)}</span></h3><ol>${portSteps(p, R, d, c, pt).map(s => `<li><span class="tick"></span>${s}</li>`).join('')}</ol>`;
+        });
+        if (c.relays.some(r => r.name || r.amps)) {
+          h += `<h3>Relays</h3><table><tr><th>Relay</th><th>Switches</th><th>Load</th></tr>${c.relays.filter(r => r.name || r.amps).map(r => `<tr><td>${r.num}</td><td>${esc(r.name)}</td><td class="${r.amps > b.relayMaxA ? 'err' : ''}">${r.amps} A at ${r.volts} V</td></tr>`).join('')}</table><p class="muted">Relay contacts are rated ${b.relayMaxA} A / ${b.relayMaxV} V. Mains wiring must be done by a competent person, in a suitable enclosure, on an RCD-protected circuit.</p>`;
+        }
+        const ins = c.inputs.filter(r => r.action && r.action !== 'none');
+        if (ins.length) {
+          h += `<h3>Inputs (Turniputs)</h3><table><tr><th>Input</th><th>Device</th><th>Does</th><th>URL / setting</th></tr>${ins.map(r => `<tr><td>${r.num} ${esc(r.name)}</td><td>${esc(r.device)}</td><td>${esc((C.inputActions.find(a => a.id === r.action) || {}).name || '')}${r.param ? ': ' + esc(r.param) : ''}</td><td class="mono">${esc(PP.form.inputUrl(p, r))}</td></tr>`).join('')}</table>`;
+        }
+        h += `</div>`;
+      });
+    });
+
+    // BOM
+    h += `<h2>Bill of materials</h2><table><tr><th>Group</th><th>Item</th><th>Qty</th><th>Note</th></tr>`;
+    G.bom(p, R).forEach(r => { h += `<tr><td>${esc(r.group)}</td><td>${esc(r.item)}</td><td>${U.num(r.qty, 1)} ${esc(r.unit)}</td><td class="soft">${esc(r.note)}</td></tr>`; });
+    h += `</table><p class="muted">Add 10–15% to cable lengths for routing and drip loops. Pixel string wire is included in the strings.</p>`;
+
+    // Channel map
+    h += `<h2>Channel map</h2><table><tr><th>Controller</th><th>Port</th><th>Label</th><th>Pixels</th><th>Start</th><th>End</th><th>Universes</th></tr>`;
+    p.distros.forEach(d => d.controllers.forEach(c => c.ports.forEach(pt => {
+      const r = R.ports.get(pt.id); if (!r.channels) return;
+      h += `<tr><td>${esc(c.name)}</td><td>${pt.num}</td><td>${esc(pt.label)}</td><td>${r.pixels}</td><td>${r.startCh}</td><td>${r.startCh + r.channels - 1}</td><td>${r.universes}</td></tr>`;
+    })));
+    h += `</table><p class="soft">Voltages are estimates from wire resistance and pixel full-white draw at ${st.brightness}% brightness. Always check with a meter at full white before the show.</p></body></html>`;
+    return h;
+  };
+
+  G.open = () => {
+    const p = S.project, R = U.lastR || K.run(p);
+    const html = G.build(p, R);
+    const d = U.$('#guideDlg');
+    d.innerHTML = `<div class="dlg-head"><b>Wiring guide</b><span class="grow"></span>
+      <button data-g="print" class="primary">Print / PDF</button><button data-g="html">Download HTML</button><button data-g="bom">BOM CSV</button><button data-g="ch">Channel map CSV</button><button data-g="close" aria-label="Close">✕</button></div>
+      <div class="dlg-body"><iframe id="guideFrame" title="Wiring guide"></iframe></div>`;
+    const f = U.$('#guideFrame', d);
+    f.srcdoc = html;
+    d.onclick = ev => {
+      const b = ev.target.closest('[data-g]'); if (!b) return;
+      const base = U.slug(p.name);
+      if (b.dataset.g === 'print') f.contentWindow.print();
+      else if (b.dataset.g === 'html') U.download(base + '-wiring-guide.html', html, 'text/html');
+      else if (b.dataset.g === 'bom') U.download(base + '-bom.csv', G.csvBom(p, R), 'text/csv');
+      else if (b.dataset.g === 'ch') U.download(base + '-channels.csv', G.csvChannels(p, R), 'text/csv');
+      else if (b.dataset.g === 'close') d.close();
+    };
+    d.showModal();
+  };
+})();
+
+</script>
+<script>
+// Help dialog: How to use, How it calculates, What's new, About.
+(function () {
+  const U = PP.ui, esc = U.esc;
+  const H = PP.help = {};
+
+  const pages = {
+    use: () => `
+      <h3>The idea</h3>
+      <p>Build your show as <b>distros</b> (weatherproof boxes). Each distro holds Mean Well <b>PSUs</b> and Baldrick <b>boards</b>. Each board port drives a <b>run</b>: a chain of cables, pixel strings or floods and power injection points, in the order they are wired, for example <i>port → 5 m 18 AWG → 100 seeds → 100 seeds → injection → 4 × 10 W floods</i>.</p>
+      <p>Every change is recalculated straight away. Pixel colours show the voltage each pixel gets at your brightness: <span class="ok">green</span> fine, <span class="warn">amber</span> low (colour shift), <span class="err">red</span> too low, grey no power.</p>
+      <h3>Views</h3>
+      <ul>
+        <li><b>Form</b>: every setting as fields. Ports fold open to show their run.</li>
+        <li><b>Visual</b>: a wiring diagram. Drag presets, cables and injections from the left onto a port (the pad on the right of a board), onto a string to insert after it, or onto the <b>+</b> at the end of a run. Drop PSUs and boards onto a distro. Drag a distro by its title bar. Scroll to zoom, drag the background to pan. The panel on the right edits whatever you click.</li>
+        <li><b>Split</b>: both at once. Clicking in one highlights the same thing in the other.</li>
+      </ul>
+      <h3>Typical workflow</h3>
+      <ol>
+        <li>Set global brightness and your limits in <b>Project settings</b>.</li>
+        <li>Add a distro, pick its size, add PSUs, add a board, and pick which PSU feeds each power input (bank).</li>
+        <li>Build each port's run with presets. Edit the <b>Library</b> to match your pixels' real wattage and spacing, or to add presets like “100 seed string”.</li>
+        <li>Press <b>Auto-inject</b> on a port (or <b>Auto-inject all</b>) to add injection points until every pixel is in the green, then <b>Balance PSUs</b> to spread the load.</li>
+        <li>Clear the checks in the status bar (click one to jump to it).</li>
+        <li>Open the <b>Wiring guide</b> to print a build sheet with PSU trim voltages, fuses, injection feeds, Turniput URLs, bill of materials and channel map.</li>
+      </ol>
+      <h3>Files</h3>
+      <p>Your work autosaves in this browser. Use <b>Save</b> to keep a <span class="kbd">.pixelplan.json</span> file you can back up or send to someone with this app. Shortcuts: <span class="kbd">Ctrl+S</span> save, <span class="kbd">Ctrl+O</span> open, <span class="kbd">Ctrl+Z</span> undo, <span class="kbd">Ctrl+Y</span> redo, <span class="kbd">Delete</span> removes the selected run item.</p>`,
+    calc: () => `
+      <h3>Voltage drop</h3>
+      <p>Each port is modelled as a ladder of wire resistances. Every pixel is a load that draws its full-white watts × brightness ÷ voltage. The +V and GND wires both count (round-trip resistance). The solver finds the voltage at every single pixel, including current shared between the port and any injection points, and the current in every wire.</p>
+      <p>Wire resistance uses copper at 20 °C: 22 AWG 52.9, 20 AWG 33.3, 18 AWG 21, 16 AWG 13.2, 14 AWG 8.3, 12 AWG 5.2, 10 AWG 3.3 mΩ per metre per conductor. Wire current limits are deliberately conservative for bundled outdoor cable.</p>
+      <h3>Power injection</h3>
+      <p>An injection point is a feed from a PSU with its own length and gauge. If <b>isolate +V</b> is ticked the +V between the previous section and this one is cut (needed when the feed comes from a different PSU); ground is always shared. <b>Auto-inject</b> places the fewest points it can, furthest along the run first, choosing a gauge from your default upwards, and sizes each feed to the thinnest wire that is rated for its current.</p>
+      <h3>Checks</h3>
+      <p>PSU load against your target (default 80% continuous), PSU trim range, Baldrick fuse per port (7.5 A), power bank limits, board input voltage, wire ampacity, channel limit per port (2,250 ch = 750 RGB pixels at 40 fps), data gaps over ${esc(PP.store.project ? PP.store.project.settings.dataWarnM : 5)} m, relay ratings, enclosure slots and mains current per distro against your circuit.</p>
+      <h3>Mains and cost</h3>
+      <p>Mains amps = DC watts ÷ PSU efficiency ÷ mains voltage, plus relay loads. Running cost uses the “typical show load” percentage, hours per night and nights per season.</p>
+      <p class="soft">These are planning estimates. Pixel wattage varies a lot between suppliers; measure a string at full white and put the real figure in the Library. Always check voltages with a meter before the show.</p>`,
+    news: () => PP.CHANGELOG.map(c => `<div class="cl-ver">${esc(c.version)} <span class="soft" style="font-weight:400">${esc(c.date)}</span></div><ul>${c.items.map(i => `<li>${esc(i)}</li>`).join('')}</ul>`).join(''),
+    about: () => `
+      <p><b>${esc(PP.APP_NAME)}</b> version ${esc(PP.APP_VERSION)}${PP.BUILT ? ` <span class="soft">· last updated ${esc(PP.BUILT)}</span>` : ''}</p>
+      <p>A planner for pixel shows on <a href="https://www.baldrickboard.com/" target="_blank" rel="noopener">Baldrick</a> controllers driven by FPP, with Mean Well power supplies.</p>
+      <p>It is one self-contained HTML file: it runs offline in any modern browser, needs no install and sends nothing anywhere. Give someone the file (or the zip) and they can open it straight away. The latest version is also online at <a href="https://j-turansky.github.io/pixel-planner/" target="_blank" rel="noopener">j-turansky.github.io/pixel-planner</a>; projects are stored only in your browser and in files you save.</p>
+      <p class="soft">Board figures come from baldrickboard.com; check the latest board documentation before building. Not affiliated with Baldrick or Mean Well.</p>`
+  };
+  const tabs = [['use', 'How to use'], ['calc', 'How it calculates'], ['news', "What's new"], ['about', 'About']];
+
+  H.open = (tab = 'use') => {
+    const d = U.$('#helpDlg');
+    d.innerHTML = `<div class="dlg-head"><b>${esc(PP.APP_NAME)} <span class="soft" style="font-weight:400">v${esc(PP.APP_VERSION)}</span></b><span class="grow"></span>
+      <div class="seg" role="tablist">${tabs.map(([k, l]) => `<button data-tab="${k}" role="tab" class="${k === tab ? 'on' : ''}" aria-selected="${k === tab}">${l}</button>`).join('')}</div>
+      <button data-close aria-label="Close">✕</button></div><div class="dlg-body" id="helpBody">${pages[tab]()}</div>`;
+    d.onclick = ev => {
+      const t = ev.target.closest('[data-tab]');
+      if (t) { H.open(t.dataset.tab); return; }
+      if (ev.target.closest('[data-close]')) d.close();
+    };
+    if (!d.open) d.showModal();
+  };
+  H.badge = () => {
+    const b = U.$('#verBadge');
+    b.textContent = 'v' + PP.APP_VERSION;
+    b.title = "What's new" + (PP.BUILT ? ' · last updated ' + PP.BUILT : '');
+  };
+})();
+
+</script>
+<script>
+// Bootstrap, rendering loop, actions, files and shortcuts.
+(function () {
+  const U = PP.ui, C = PP.catalog, M = PP.model, K = PP.calc, S = PP.store, F = PP.form, V = PP.visual;
+  const esc = U.esc;
+  let drawerOpen = false, fitted = false;
+
+  // ---------- render ----------
+  function render() {
+    const p = S.project;
+    const t0 = performance.now();
+    const R = K.run(p);
+    U.lastR = R;
+    U.$('#projName').value = p.name;
+    document.title = `${p.name} — ${PP.APP_NAME}`;
+    summary(p, R);
+    if (U.view !== 'visual') F.render(p, R);
+    if (U.view !== 'form') { V.renderPalette(p); V.render(p, R); }
+    if (U.view === 'visual') inspector(p, R);
+    status(p, R);
+    U._renderMs = performance.now() - t0;
+  }
+
+  function onSelect() {
+    const p = S.project, R = U.lastR;
+    if (U.view !== 'visual') F.markSelection(true);
+    if (U.view !== 'form') V.render(p, R);
+    if (U.view === 'visual') inspector(p, R);
+  }
+
+  function inspector(p, R) {
+    const el = U.$('#inspector');
+    const act = document.activeElement;
+    const key = act && el.contains(act) && act.dataset && act.dataset.id ? act.dataset.id + '|' + act.dataset.f : null;
+    const sc = el.scrollTop;
+    el.innerHTML = F.inspector(p, R, S.selection);
+    el.scrollTop = sc;
+    if (key) { const [id, f] = key.split('|'); const x = U.$$('[data-id]', el).find(e => e.dataset.id === id && e.dataset.f === f); if (x) x.focus({ preventScroll: true }); }
+    const s = S.selection && document.getElementById('f-' + S.selection);
+    if (s && el.contains(s)) s.classList.add('sel');
+  }
+
+  function summary(p, R) {
+    const T = R.totals, st = p.settings;
+    const psuPct = T.psuCapA ? T.psuA / T.psuCapA * 100 : 0;
+    const mainsMax = Math.max(0, ...Array.from(R.distros.values()).map(d => d.mainsA));
+    const card = (k, v, s = '', cls = '', extra = '') => `<div class="card stat ${cls}" ${extra}><div class="k">${k}</div><div class="v">${v}</div><div class="s">${s}</div></div>`;
+    const errs = R.counts.error, warns = R.counts.warn;
+    U.$('#summary').innerHTML =
+      card('Status', errs ? `<span class="err">${errs} error${errs > 1 ? 's' : ''}</span>` : warns ? `<span class="warn">${warns} warning${warns > 1 ? 's' : ''}</span>` : '<span class="ok">All good</span>', errs && warns ? `${warns} warning${warns > 1 ? 's' : ''} too` : `${R.counts.info} note${R.counts.info === 1 ? '' : 's'}`, 'status', 'data-act="warnings" title="Show checks"') +
+      `<div class="card stat bright"><div class="k">Global brightness</div><div class="v"><span id="brightVal">${st.brightness}</span>%</div><input type="range" min="5" max="100" step="5" value="${st.brightness}" data-id="settings" data-f="brightness" data-t="num" aria-label="Global brightness"></div>` +
+      card('Pixels', T.pixels.toLocaleString(), `${R.ports.size ? Array.from(R.ports.values()).filter(r => r.pixels).length : 0} ports in use`) +
+      card('Channels', T.channels.toLocaleString(), `${T.universes} universes of ${st.universeSize}`) +
+      card('DC power', K.fmtW(T.dcW), `full white at ${st.brightness}%`) +
+      card('PSU load', `<span class="${U.pctClass(psuPct, st.psuTargetPct)}">${U.num(psuPct, 0)}%</span>`, `${K.fmtA(T.psuA)} of ${U.num(T.psuCapA, 0)} A`) +
+      card('Mains', `${U.num(T.mainsA, 1)} A`, `busiest distro ${U.num(mainsMax, 1)} A of ${st.mainsCircuitA}`, '', `title="At full white, ${st.mainsV} V, ${st.psuEfficiency}% PSU efficiency"`) +
+      card('Season cost', `${esc(st.currency)}${U.num(T.cost, 2)}`, `${U.num(T.kWh, 0)} kWh at ${st.typicalPct}% typical`);
+  }
+
+  function status(p, R) {
+    const c = R.counts;
+    const b = U.$('#warnBtn');
+    b.innerHTML = `${c.error ? `<span class="err">● ${c.error} error${c.error > 1 ? 's' : ''}</span> ` : ''}${c.warn ? `<span class="warn">● ${c.warn} warning${c.warn > 1 ? 's' : ''}</span> ` : ''}${!c.error && !c.warn ? '<span class="ok">● No problems</span> ' : ''}<span class="soft">${c.info} note${c.info === 1 ? '' : 's'}</span>`;
+    U.$('#fileInfo').innerHTML = `${esc(S.fileName || 'Not saved to a file yet')}${S.dirty && S.fileName ? ' <span class="warn">· unsaved changes</span>' : ''} <span class="soft">· autosaved in this browser</span>`;
+    U.$('[data-act="undo"]').disabled = !S.undo.length;
+    U.$('[data-act="redo"]').disabled = !S.redo.length;
+    const list = U.$('#warnList');
+    list.innerHTML = R.warnings.length ? R.warnings.map(w => `<div class="wi ${w.level}" data-act="jump" data-id="${esc(w.ref || '')}"><span class="lvl">${w.level === 'error' ? 'Error' : w.level === 'warn' ? 'Warn' : 'Note'}</span><span>${esc(w.msg)}</span></div>`).join('') : '<div class="muted" style="padding:8px">Nothing to report.</div>';
+    U.$('#warnDrawer').hidden = !drawerOpen;
+  }
+
+  // ---------- view ----------
+  function setView(v) {
+    U.view = v;
+    U.$('#main').className = 'mode-' + v;
+    U.$$('.seg [data-view]').forEach(b => { b.classList.toggle('on', b.dataset.view === v); b.setAttribute('aria-selected', b.dataset.view === v); });
+    try { localStorage.setItem('pixelplanner.view', v); } catch (e) { }
+    render();
+    if (v !== 'form' && !fitted) requestAnimationFrame(() => { V.fit(); fitted = true; });
+  }
+
+  // ---------- field binding ----------
+  function entity(p, id) {
+    if (id === 'project') return p;
+    if (id === 'settings') return p.settings;
+    if (id.startsWith('preset:')) return p.library.presets.find(x => 'preset:' + x.id === id);
+    const e = M.find(p, id); return e ? e.obj : null;
+  }
+  function setPath(o, path, v) { const k = path.split('.'); while (k.length > 1) { const x = k.shift(); o[x] = o[x] || {}; o = o[x]; } o[k[0]] = v; }
+  function getPath(o, path) { return path.split('.').reduce((a, k) => (a == null ? a : a[k]), o); }
+
+  function onField(el) {
+    const id = el.dataset.id, f = el.dataset.f, t = el.dataset.t || 'str';
+    let v = t === 'bool' ? el.checked : el.value;
+    S.commit('field:' + f, p => {
+      const o = entity(p, id); if (!o) return;
+      if (t === 'num') {
+        const n = parseFloat(v);
+        if (!isFinite(n)) return;
+        v = n;
+        if (f === 'brightness') v = Math.min(100, Math.max(1, v));
+        if (['count', 'length', 'spacing', 'amps', 'psuSlots', 'boardSlots', 'customA', 'customV'].includes(f) || f.endsWith('.length')) v = Math.max(0, v);
+        if (f === 'count') v = Math.max(1, Math.round(v));
+      }
+      if (f.startsWith('banks.')) v = v || null;
+      if (f === 'psuId') v = v || null;
+      if (f === 'board') { M.changeBoard(o, v); return; }
+      setPath(o, f, v);
+      if (f === 'size') { const s = C.distroSizes.find(x => x.id === v); if (s && v !== 'custom') { o.psuSlots = s.psuSlots; o.boardSlots = s.boardSlots; } }
+      if (f === 'model') { const sp = M.psuSpec(o); o.vout = sp.v; }
+      if (f === 'customV' && o.model === 'custom') o.vout = v;
+      if (f === 'typeId' && o.kind === 'pixels') { const ty = M.pixelType(p, v); if (ty) { o.spacing = ty.spacing; o.gauge = ty.gauge; } }
+    });
+  }
+
+  // ---------- helpers for actions ----------
+  const portCtx = (p, id) => M.find(p, id);
+  const bankPsu = (e) => {
+    const b = C.boards[e.controller.board];
+    const bk = b.banks.find(x => x.ports.includes(e.port.num));
+    return (bk && e.controller.banks[bk.id]) || (e.distro.psus[0] || {}).id || null;
+  };
+  function mergeSplits(chain) {
+    const out = [];
+    chain.forEach(it => {
+      const prev = out[out.length - 1];
+      if (it.kind === 'pixels' && it.continued && prev && prev.kind === 'pixels' && prev.typeId === it.typeId) { prev.count += it.count; return; }
+      out.push(it);
+    });
+    out.forEach(it => { if (it.kind === 'pixels') { delete it.continued; delete it.tapOffset; } });
+    return out;
+  }
+  const uniq = a => Array.from(new Set(a));
+
+  // ---------- actions ----------
+  const A = {
+    async new() {
+      if (S.dirty && !(await U.ask({ title: 'Start a new project?', body: 'Changes not saved to a file will be lost (the current project stays in this browser only until you start the new one).', ok: 'Start new' }))) return;
+      S.load(M.newProject()); fitted = false; U.cam = { x: 20, y: 20, k: 1 };
+    },
+    async demo() {
+      if (S.dirty && !(await U.ask({ title: 'Load the demo show?', body: 'This replaces the current project. Save it first if you want to keep it.', ok: 'Load demo' }))) return;
+      S.load(M.demoProject()); fitted = false; if (U.view !== 'form') requestAnimationFrame(() => { V.fit(); fitted = true; });
+    },
+    open: () => openFile(),
+    save: () => saveFile(false),
+    saveAs: () => saveFile(true),
+    undo: () => S.doUndo(),
+    redo: () => S.doRedo(),
+    guide: () => PP.guide.open(),
+    help: () => PP.help.open('use'),
+    whatsnew: () => PP.help.open('news'),
+    warnings: () => { drawerOpen = !drawerOpen; U.$('#warnDrawer').hidden = !drawerOpen; },
+    jump: (id) => { if (!id) return; if (S.selection === id) onSelect(); else S.select(id); },
+    select: (id) => S.select(id),
+    fit: () => V.fit(),
+    zoomIn: () => V.zoom(1.2),
+    zoomOut: () => V.zoom(1 / 1.2),
+    addDistro: () => S.commit('addDistro', p => {
+      const maxY = p.distros.reduce((m, d) => Math.max(m, d.y + 400), 40);
+      const d = M.newDistro('Distro ' + (p.distros.length + 1), 40, p.distros.length ? maxY : 40, 'medium');
+      const s = M.newPsu('LRS-350-12', 1); d.psus.push(s);
+      const c = M.newController('baldrick8'); Object.keys(c.banks).forEach(k => { c.banks[k] = s.id; }); d.controllers.push(c);
+      p.distros.push(d); S.selection = d.id;
+    }),
+    async delDistro(id) {
+      const d = S.project.distros.find(x => x.id === id);
+      if (!(await U.ask({ title: `Delete ${d.name}?`, body: 'Its PSUs, boards and all their runs are removed. You can undo this.', ok: 'Delete', danger: true }))) return;
+      S.commit('delDistro', p => {
+        const dd = p.distros.find(x => x.id === id);
+        const gone = new Set(dd.psus.map(s => s.id));
+        p.distros = p.distros.filter(x => x.id !== id);
+        p.distros.forEach(x => x.controllers.forEach(c => c.ports.forEach(pt => pt.chain.forEach(it => { if (it.kind === 'inject' && gone.has(it.psuId)) it.psuId = null; }))));
+        S.selection = null;
+      });
+    },
+    balance: (id) => balance([id]),
+    balanceAll: () => balance(null),
+    autoInjectAll: () => {
+      let added = 0, ports = 0;
+      S.commit('autoInjectAll', p => {
+        p.distros.forEach(d => d.controllers.forEach(c => c.ports.forEach(pt => {
+          if (!pt.chain.some(it => it.kind === 'pixels')) return;
+          const r = K.autoInject(p, pt.id); if (r.added) { added += r.added; ports++; }
+        })));
+      });
+      U.toast(added ? `Added ${added} injection point${added > 1 ? 's' : ''} on ${ports} port${ports > 1 ? 's' : ''}.` : 'Every run is already within limits.');
+    },
+    addPsu: (id) => S.commit('addPsu', p => {
+      const d = p.distros.find(x => x.id === id);
+      const last = d.psus[d.psus.length - 1];
+      const s = M.newPsu(last ? last.model : 'LRS-350-12', d.psus.length + 1);
+      if (last && last.model === 'custom') { s.customV = last.customV; s.customA = last.customA; s.vout = last.vout; }
+      d.psus.push(s); S.selection = s.id;
+      d.controllers.forEach(c => Object.keys(c.banks).forEach(k => { if (!c.banks[k]) c.banks[k] = s.id; }));
+    }),
+    selectPsu: (id) => { S.select(id); if (U.view === 'form') U.toast('Switch to Visual or Split to see what this PSU feeds, or hover its load bar.'); },
+    async delPsu(id) {
+      const e = M.find(S.project, id);
+      if (!(await U.ask({ title: `Delete ${e.obj.name}?`, body: 'Anything it powers will show as having no PSU.', ok: 'Delete', danger: true }))) return;
+      S.commit('delPsu', p => {
+        const x = M.find(p, id);
+        x.distro.psus = x.distro.psus.filter(s => s.id !== id);
+        p.distros.forEach(d => d.controllers.forEach(c => {
+          Object.keys(c.banks).forEach(k => { if (c.banks[k] === id) c.banks[k] = null; });
+          c.ports.forEach(pt => pt.chain.forEach(it => { if (it.kind === 'inject' && it.psuId === id) it.psuId = null; }));
+        }));
+      });
+    },
+    addController: (id) => {
+      const board = (U.$('#addBoard-' + id) || {}).value || 'baldrick8';
+      S.commit('addController', p => {
+        const d = p.distros.find(x => x.id === id);
+        const c = M.newController(board);
+        const n = d.controllers.filter(x => x.board === board).length;
+        if (n) c.name += ' ' + (n + 1);
+        if (d.psus[0]) Object.keys(c.banks).forEach(k => { c.banks[k] = d.psus[0].id; });
+        d.controllers.push(c); S.selection = c.id;
+      });
+    },
+    async delController(id) {
+      const e = M.find(S.project, id);
+      if (!(await U.ask({ title: `Delete ${e.obj.name}?`, body: 'All of its port runs are removed too. You can undo this.', ok: 'Delete', danger: true }))) return;
+      S.commit('delController', p => { const x = M.find(p, id); x.distro.controllers = x.distro.controllers.filter(c => c.id !== id); S.selection = null; });
+    },
+    copy: (id, el) => {
+      const txt = el.dataset.text;
+      (navigator.clipboard ? navigator.clipboard.writeText(txt) : Promise.reject()).then(() => U.toast('Copied.'), () => U.ask({ title: 'Copy this URL', input: txt, cancel: null }));
+    },
+    addPreset: (id) => {
+      const pid = U.$('#preset-' + id).value, qty = Math.max(1, Math.min(50, parseInt(U.$('#qty-' + id).value, 10) || 1));
+      S.commit('addPreset', p => {
+        const e = portCtx(p, id), pr = p.library.presets.find(x => x.id === pid); if (!pr) return;
+        if (!e.port.chain.length) e.port.chain.push(M.newItem.cable(5, 'awg18'));
+        for (let i = 0; i < qty; i++) e.port.chain.push(M.newItem.pixels(pr.typeId, pr.count, p.library.pixelTypes));
+        if (!e.port.label) e.port.label = pr.name;
+      });
+    },
+    addCable: (id) => S.commit('addCable', p => { portCtx(p, id).port.chain.push(M.newItem.cable(5, 'awg18')); }),
+    addPixels: (id) => S.commit('addPixels', p => {
+      const ch = portCtx(p, id).port.chain;
+      const last = ch.slice().reverse().find(x => x.kind === 'pixels');
+      ch.push(M.newItem.pixels(last ? last.typeId : 'bullet12', last ? last.count : 50, p.library.pixelTypes));
+    }),
+    addInject: (id) => S.commit('addInject', p => { const e = portCtx(p, id); e.port.chain.push(M.newItem.inject(bankPsu(e), p.settings.injectLength, p.settings.injectGauge)); }),
+    autoInject: (id) => {
+      let r = { added: 0 };
+      S.commit('autoInject', p => { r = K.autoInject(p, id); });
+      const pr = U.lastR.ports.get(id);
+      U.toast(r.added ? `Added ${r.added} injection point${r.added > 1 ? 's' : ''}.${pr && pr.firstFail >= 0 ? ' Some pixels are still low: try a thicker feed or fewer pixels per port.' : ''}` : (pr && pr.firstFail >= 0 ? 'Could not fix this run with injection. Check the PSU and wire.' : 'This run is already within limits.'));
+    },
+    clearInject: (id) => S.commit('clearInject', p => { const pt = portCtx(p, id).port; pt.chain = mergeSplits(pt.chain.filter(x => x.kind !== 'inject')); }),
+    async clearPort(id) {
+      if (!(await U.ask({ title: 'Clear this run?', body: 'Removes every cable, string and injection on this port. You can undo this.', ok: 'Clear', danger: true }))) return;
+      S.commit('clearPort', p => { const pt = portCtx(p, id).port; pt.chain = []; pt.label = ''; });
+    },
+    movePort: (id) => {
+      const to = U.$('#moveTo-' + id).value; if (!to) return U.toast('Pick a port to move this run to.');
+      S.commit('movePort', p => {
+        const a = portCtx(p, id).port, b = portCtx(p, to).port;
+        ['chain', 'label', 'brightness', 'portPower'].forEach(k => { const t = a[k]; a[k] = b[k]; b[k] = t; });
+        S.selection = b.id; U.open.add('pt-' + b.id);
+      });
+      U.toast('Runs swapped.');
+    },
+    itemUp: (id) => moveItem(id, -1),
+    itemDown: (id) => moveItem(id, 1),
+    itemDup: (id) => S.commit('itemDup', p => { const e = M.find(p, id), ch = e.port.chain, i = ch.indexOf(e.obj); const c = M.clone(e.obj); c.id = M.uid('it'); delete c.auto; delete c.continued; delete c.tapOffset; ch.splice(i + 1, 0, c); S.selection = c.id; }),
+    itemDel: (id) => S.commit('itemDel', p => { const e = M.find(p, id); if (!e) return; e.port.chain = e.port.chain.filter(x => x.id !== id); if (S.selection === id) S.selection = e.port.id; }),
+    addType: () => S.commit('addType', p => { p.library.pixelTypes.push({ id: M.uid('pt'), name: 'My pixel', cat: 'bullet', v: 12, w: 0.6, ch: 3, spacing: 0.1, gauge: 'awg20' }); U.open.add('sec-library'); }),
+    delType: (id) => {
+      const used = S.project.distros.some(d => d.controllers.some(c => c.ports.some(pt => pt.chain.some(it => it.typeId === id)))) || S.project.library.presets.some(x => x.typeId === id);
+      if (used) return U.toast('That pixel type is used in a run or preset.');
+      S.commit('delType', p => { p.library.pixelTypes = p.library.pixelTypes.filter(t => t.id !== id); });
+    },
+    addPresetDef: () => S.commit('addPresetDef', p => { p.library.presets.push({ id: M.uid('pr'), name: '100 seed string', typeId: (p.library.pixelTypes.find(t => t.cat === 'seed') || p.library.pixelTypes[0]).id, count: 100 }); U.open.add('sec-library'); }),
+    delPresetDef: (id) => S.commit('delPresetDef', p => { p.library.presets = p.library.presets.filter(x => x.id !== id); }),
+    async resetLibrary() {
+      if (!(await U.ask({ title: 'Reset the library?', body: 'Pixel types and presets go back to the built-in defaults. Types used in your runs are kept.', ok: 'Reset' }))) return;
+      S.commit('resetLibrary', p => {
+        const used = new Set(); p.distros.forEach(d => d.controllers.forEach(c => c.ports.forEach(pt => pt.chain.forEach(it => { if (it.typeId) used.add(it.typeId); }))));
+        const keep = p.library.pixelTypes.filter(t => used.has(t.id) && !C.pixelTypes.some(x => x.id === t.id));
+        p.library.pixelTypes = M.clone(C.pixelTypes).concat(keep);
+        p.library.presets = M.clone(C.presets);
+      });
+    },
+    csvChannels: () => U.download(U.slug(S.project.name) + '-channels.csv', PP.guide.csvChannels(S.project, U.lastR), 'text/csv')
+  };
+
+  function moveItem(id, dir) {
+    S.commit('moveItem', p => {
+      const e = M.find(p, id), ch = e.port.chain, i = ch.indexOf(e.obj), j = i + dir;
+      if (j < 0 || j >= ch.length) return;
+      [ch[i], ch[j]] = [ch[j], ch[i]];
+    });
+  }
+
+  function balance(ids) {
+    let ch = [];
+    S.commit('balance', p => { ch = uniq(K.balance(p, ids)); });
+    if (!ch.length) U.toast('Already balanced (needs two or more PSUs of the same voltage in a distro).');
+    else U.ask({ title: 'PSUs balanced', body: `<ul>${ch.map(c => `<li>${esc(c)}</li>`).join('')}</ul><p class="muted">Undo (Ctrl+Z) to put them back.</p>`, cancel: null });
+  }
+
+  // ---------- files ----------
+  const hasFS = 'showSaveFilePicker' in window;
+  const fileOpts = { types: [{ description: 'Pixel Planner project', accept: { 'application/json': ['.json'] } }] };
+  async function saveFile(as) {
+    const text = JSON.stringify(Object.assign({}, S.project, { app: 'PixelPlanner', savedWith: PP.APP_VERSION }), null, 1);
+    const name = S.fileName || U.slug(S.project.name) + '.pixelplan.json';
+    try {
+      if (hasFS) {
+        let h = !as && S.fileHandle;
+        if (!h) h = await window.showSaveFilePicker(Object.assign({ suggestedName: name }, fileOpts));
+        const w = await h.createWritable(); await w.write(text); await w.close();
+        S.fileHandle = h; S.fileName = h.name;
+      } else {
+        U.download(name, text); S.fileName = name;
+      }
+      S.dirty = false; S.save(); status(S.project, U.lastR); U.toast('Saved ' + S.fileName);
+    } catch (e) { if (e.name !== 'AbortError') U.toast('Could not save: ' + e.message); }
+  }
+  async function openFile() {
+    if (S.dirty && !(await U.ask({ title: 'Open another project?', body: 'Changes not saved to a file will be replaced.', ok: 'Open…' }))) return;
+    if ('showOpenFilePicker' in window) {
+      try {
+        const [h] = await window.showOpenFilePicker(fileOpts);
+        const f = await h.getFile();
+        loadText(await f.text(), f.name, h);
+      } catch (e) { if (e.name !== 'AbortError') U.toast('Could not open: ' + e.message); }
+    } else U.$('#fileInput').click();
+  }
+  function loadText(text, name, handle) {
+    try { S.load(JSON.parse(text), name, handle); fitted = false; if (U.view !== 'form') requestAnimationFrame(() => { V.fit(); fitted = true; }); U.toast('Opened ' + name); }
+    catch (e) { U.toast('Could not open ' + name + ': ' + e.message, 5000); }
+  }
+
+  // ---------- events ----------
+  function bind() {
+    document.addEventListener('change', ev => {
+      const el = ev.target;
+      if (el.id === 'themeSel') { setTheme(el.value); return; }
+      if (el.id === 'fileInput') { const f = el.files[0]; if (f) f.text().then(t => loadText(t, f.name, null)); el.value = ''; return; }
+      if (el.dataset && el.dataset.id && el.dataset.f) onField(el);
+    });
+    document.addEventListener('input', ev => {
+      if (ev.target.type === 'range' && ev.target.dataset.f === 'brightness') { const v = U.$('#brightVal'); if (v) v.textContent = ev.target.value; }
+    });
+    document.addEventListener('click', ev => {
+      const v = ev.target.closest('[data-view]');
+      if (v && !ev.target.closest('#svg')) { setView(v.dataset.view); return; }
+      const a = ev.target.closest('[data-act]');
+      if (a && !a.closest('#guideDlg') && A[a.dataset.act]) { ev.preventDefault(); A[a.dataset.act](a.dataset.id, a); return; }
+      const s = ev.target.closest('#formPane [data-sel], #inspector [data-sel]');
+      if (s && !ev.target.closest('summary') && S.selection !== s.dataset.sel) {
+        S.selection = s.dataset.sel; U.$$('.sel', s.closest('.pane, .inspector')).forEach(x => x.classList.remove('sel')); s.classList.add('sel');
+        if (U.view === 'split') V.render(S.project, U.lastR);
+      } else if (s && ev.target.closest('summary')) {
+        S.selection = s.dataset.sel;
+        if (U.view === 'split') V.render(S.project, U.lastR);
+      }
+    });
+    // Remember which <details> are open; build port bodies lazily.
+    document.addEventListener('toggle', ev => {
+      const d = ev.target; if (!d.dataset || !d.dataset.openId) return;
+      const k = d.dataset.openId;
+      if (d.open) { U.open.add(k); U.open.delete('!' + k); } else { U.open.delete(k); U.open.add('!' + k); }
+      if (d.open && d.classList.contains('portrow') && !U.$('.portbody', d)) {
+        const e = M.find(S.project, d.dataset.sel);
+        if (e) d.insertAdjacentHTML('beforeend', F.portBody(S.project, U.lastR, e.controller, e.port));
+      }
+    }, true);
+    document.addEventListener('keydown', ev => {
+      const inField = /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.tagName);
+      const k = ev.key.toLowerCase();
+      if ((ev.ctrlKey || ev.metaKey) && k === 's') { ev.preventDefault(); saveFile(ev.shiftKey); }
+      else if ((ev.ctrlKey || ev.metaKey) && k === 'o') { ev.preventDefault(); openFile(); }
+      else if ((ev.ctrlKey || ev.metaKey) && k === 'z' && !inField) { ev.preventDefault(); ev.shiftKey ? S.doRedo() : S.doUndo(); }
+      else if ((ev.ctrlKey || ev.metaKey) && k === 'y' && !inField) { ev.preventDefault(); S.doRedo(); }
+      else if ((k === 'delete' || k === 'backspace') && !inField && S.selection) {
+        const e = M.find(S.project, S.selection);
+        if (e && e.type === 'item') { ev.preventDefault(); A.itemDel(S.selection); }
+      } else if (k === 'escape' && drawerOpen) { drawerOpen = false; U.$('#warnDrawer').hidden = true; }
+    });
+    window.addEventListener('resize', () => { if (U.view !== 'form' && !fitted) V.fit(); });
+  }
+
+  function setTheme(v) {
+    try { localStorage.setItem('pixelplanner.theme', v); } catch (e) { }
+    const sys = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    document.documentElement.setAttribute('data-theme', v === 'system' ? sys : v);
+  }
+
+  // ---------- boot ----------
+  function boot() {
+    PP.help.badge();
+    let th = 'system'; try { th = localStorage.getItem('pixelplanner.theme') || 'system'; } catch (e) { }
+    U.$('#themeSel').value = th;
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => { if (U.$('#themeSel').value === 'system') setTheme('system'); });
+    if (!S.restore()) S.project = M.demoProject();
+    S.on(why => { if (why === 'select') onSelect(); else render(); });
+    bind();
+    V.init();
+    let v = 'split'; try { v = localStorage.getItem('pixelplanner.view') || (window.innerWidth < 900 ? 'form' : 'split'); } catch (e) { }
+    setView(v);
+    PP.render = render;
+  }
+  boot();
+})();
+
+</script>
+</body>
+</html>
