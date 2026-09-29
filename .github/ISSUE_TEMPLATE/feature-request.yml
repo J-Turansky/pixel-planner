@@ -6,29 +6,15 @@ body:
   - type: markdown
     attributes:
       value: |
-        Thanks for helping improve Pixel Planner. Suggestions are reviewed automatically and suitable ones are built into the next version, usually within a day. You'll get a comment here with the outcome.
+        Thanks for helping improve Pixel Planner. Suggestions are reviewed automatically and suitable ones are built into the next version, usually within minutes. You'll get a comment here with the outcome.
   - type: textarea
     id: what
     attributes:
-      label: What would you like it to do?
-      description: Describe the feature or change. One idea per request, please.
-      placeholder: For example, show the total cable length per gauge in the wiring guide.
+      label: Feature description
+      description: What should it do, and why would it help? One idea per request, please.
+      placeholder: For example, show the total cable length per gauge in the wiring guide so I know what to buy.
     validations:
       required: true
-  - type: textarea
-    id: why
-    attributes:
-      label: Why would it help?
-      description: What are you trying to do, and what gets in the way today?
-    validations:
-      required: false
-  - type: textarea
-    id: example
-    attributes:
-      label: Example
-      description: Numbers, hardware or steps that show what you mean (optional).
-    validations:
-      required: false
   - type: input
     id: version
     attributes:

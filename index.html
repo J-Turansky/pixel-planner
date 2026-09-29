@@ -721,9 +721,14 @@ details.hint ul { margin: 4px 0; padding-left: 18px; font-size: 12px; color: var
 // The version shows at the bottom of the sidebar; clicking it opens What's new (the change log).
 window.PP = window.PP || {};
 PP.APP_NAME = 'Pixel Planner';
-PP.APP_VERSION = '1.4.0';
-PP.BUILT = '29 Sept 2026, 17:04';  // filled in by Build-Portable.ps1 ("Last updated" date and time)
+PP.APP_VERSION = '1.4.1';
+PP.BUILT = '29 Sept 2026, 17:09';  // filled in by Build-Portable.ps1 ("Last updated" date and time)
 PP.CHANGELOG = [
+  {
+    version: '1.4.1', date: '2026-09-29', items: [
+      'Simpler Suggest a feature form: just a title and a description, both required. Requests are now picked up within about 5 minutes.'
+    ]
+  },
   {
     version: '1.4.0', date: '2026-09-29', items: [
       'Hide or restore the main sidebar from the top bar to give your workspace more room; phone navigation stays unchanged (suggested in #1)'
@@ -3469,7 +3474,7 @@ PP.CHANGELOG = [
         <li>Open the <b>Wiring guide</b> to print a build sheet with PSU trim voltages, fuses, injection feeds, Turniput URLs, bill of materials, datasheet links and channel map.</li>
       </ol>
       <h3>Suggest a feature</h3>
-      <p>Use <b>Suggest a feature</b> in the sidebar (File menu on a phone) to send an idea. It opens a short form on GitHub, where a free account is needed; your project is never sent. Suggestions are reviewed automatically and suitable ones are built into the next version, usually within a day, with a reply on your request saying what happened. See all requests at <a href="https://github.com/J-Turansky/pixel-planner/issues" target="_blank" rel="noopener">github.com/J-Turansky/pixel-planner/issues</a>.</p>
+      <p>Use <b>Suggest a feature</b> in the sidebar (File menu on a phone) to send an idea. Give it a title and a description; it opens GitHub to send, where a free account is needed; your project is never sent. Suggestions are reviewed automatically and suitable ones are built into the next version, usually within minutes, with a reply on your request saying what happened. See all requests at <a href="https://github.com/J-Turansky/pixel-planner/issues" target="_blank" rel="noopener">github.com/J-Turansky/pixel-planner/issues</a>.</p>
       <h3>Files</h3>
       <p>Your work autosaves in this browser. Use <b>Save</b> to keep a <span class="kbd">.pixelplan.json</span> file you can back up or send to someone with this app. The file includes the room layouts and a copy of the boxes, parts and cable standards it uses. Shortcuts: <span class="kbd">Ctrl+S</span> save, <span class="kbd">Ctrl+O</span> open, <span class="kbd">Ctrl+Z</span> undo, <span class="kbd">Ctrl+Y</span> redo, <span class="kbd">Ctrl+P</span> print the wiring guide, <span class="kbd">Delete</span> removes the selected run item, or the selected item or cable in a room.</p>`,
     calc: () => `
@@ -3516,24 +3521,22 @@ PP.CHANGELOG = [
   H.REPO = 'https://github.com/J-Turansky/pixel-planner';
   H.suggestUrl = f => {
     const cut = (s, n) => String(s || '').trim().slice(0, n);
-    const q = new URLSearchParams({ template: 'feature-request.yml', labels: 'feature-request', title: 'Feature: ' + cut(f.title || f.what.split('\n')[0], 80), what: cut(f.what, 2500), why: cut(f.why, 1500), example: cut(f.example, 1500), version: PP.APP_VERSION });
+    const q = new URLSearchParams({ template: 'feature-request.yml', labels: 'feature-request', title: 'Feature: ' + cut(f.title, 80), what: cut(f.what, 4000), version: PP.APP_VERSION });
     return H.REPO + '/issues/new?' + q.toString();
   };
   H.suggest = () => {
     const d = U.$('#suggestDlg');
     d.innerHTML = `<div class="dlg-head"><b>Suggest a feature</b><span class="grow"></span><button class="ib" data-close aria-label="Close">${U.ic('x')}</button></div>
       <form class="dlg-body sug" id="sugForm">
-        <p class="soft">Ideas are reviewed automatically and suitable ones are built into the next version, usually within a day. It opens GitHub to send (a free account is needed); your project is not sent.</p>
-        <label class="fl wide">Short title<input name="title" maxlength="80" placeholder="For example: cable totals per gauge"></label>
-        <label class="fl wide">What would you like it to do? (required)<textarea name="what" rows="4" required placeholder="Describe the feature or change. One idea per request."></textarea></label>
-        <label class="fl wide">Why would it help?<textarea name="why" rows="2" placeholder="What are you trying to do, and what gets in the way today?"></textarea></label>
-        <label class="fl wide">Example<textarea name="example" rows="2" placeholder="Numbers, hardware or steps that show what you mean (optional)"></textarea></label>
+        <p class="soft">Ideas are reviewed automatically and suitable ones are built into the next version, usually within minutes. It opens GitHub to send (a free account is needed); your project is not sent.</p>
+        <label class="fl wide">Title (required)<input name="title" maxlength="80" required placeholder="For example: cable totals per gauge"></label>
+        <label class="fl wide">Feature description (required)<textarea name="what" rows="6" required placeholder="What should it do, and why would it help? One idea per request."></textarea></label>
       </form>
       <div class="dlg-foot"><a href="${H.REPO}/issues?q=label%3Afeature-request" target="_blank" rel="noopener">See existing requests</a><span class="grow"></span><button data-copy>Copy text</button><button class="primary" data-send>Continue on GitHub</button></div>`;
     const read = () => Object.fromEntries(new FormData(U.$('#sugForm', d)));
     d.onclick = ev => {
       if (ev.target.closest('[data-close]')) { d.close(); return; }
-      if (ev.target.closest('[data-copy]')) { const f = read(); navigator.clipboard && navigator.clipboard.writeText(`${f.title}\n\nWhat: ${f.what}\nWhy: ${f.why}\nExample: ${f.example}\nVersion: ${PP.APP_VERSION}`).then(() => U.toast('Copied'), () => {}); return; }
+      if (ev.target.closest('[data-copy]')) { const f = read(); navigator.clipboard && navigator.clipboard.writeText(`${f.title}\n\n${f.what}\n\nVersion: ${PP.APP_VERSION}`).then(() => U.toast('Copied'), () => {}); return; }
       if (ev.target.closest('[data-send]')) {
         const form = U.$('#sugForm', d); if (!form.reportValidity()) return;
         window.open(H.suggestUrl(read()), '_blank', 'noopener'); d.close(); U.toast('Opened GitHub. Press Submit new issue there to send it.');
