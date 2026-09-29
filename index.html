@@ -149,6 +149,7 @@ html[data-theme="light"] .badge.warn { color: var(--cp-text); }
 
 /* Top bar */
 .topbar { grid-column: 2; display: flex; align-items: center; gap: 8px; padding: 10px 16px 6px; min-width: 0; }
+.sidebar-toggle { flex: none; min-height: 36px; background: transparent; }
 .title { display: flex; flex-direction: column; min-width: 0; }
 .proj-name { font-weight: 600; font-size: 20px; width: min(420px, 100%); margin-left: -9px; background: transparent; border-color: transparent; min-height: 36px; }
 .proj-name:hover, .proj-name:focus { border-color: var(--cp-border); background: var(--cp-surface); }
@@ -522,12 +523,22 @@ details.hint ul { margin: 4px 0; padding-left: 18px; font-size: 12px; color: var
 @media (max-width: 1100px) and (min-width: 701px) {
   :root { --pp-side: 196px; }
   .summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .sidebar-toggle { width: 36px; padding: 0; }
+  .sidebar-toggle .lbl { display: none; }
+  .topbar .guide-btn .lbl { display: none; }
+}
+
+@media (min-width: 701px) {
+  body[data-sidebar="hidden"] { grid-template-columns: 0 minmax(0, 1fr); }
+  body[data-sidebar="hidden"] .side { display: none; }
+  body[data-sidebar="hidden"] .dd-menu > .m-only { display: flex; }
 }
 
 /* Phone: bottom tab bar, form-first editing, sheets for inspectors */
 @media (max-width: 700px) {
   body { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto auto auto minmax(0, 1fr); font-size: 15px; }
   .side { display: none; }
+  .sidebar-toggle { display: none; }
   .topbar, .summary, .wsbar, main, .page { grid-column: 1; }
   .topbar { padding: 8px 10px 4px; gap: 4px; padding-top: max(8px, env(safe-area-inset-top)); }
   .proj-name { font-size: 17px; margin-left: -6px; width: 100%; }
@@ -590,6 +601,7 @@ details.hint ul { margin: 4px 0; padding-left: 18px; font-size: 12px; color: var
   <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></symbol>
   <symbol id="i-form" viewBox="0 0 24 24"><path d="M9 6h12M9 12h12M9 18h12"/><circle cx="4.5" cy="6" r="1.3"/><circle cx="4.5" cy="12" r="1.3"/><circle cx="4.5" cy="18" r="1.3"/></symbol>
   <symbol id="i-split" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M11 4v16M5.5 8h3M5.5 12h3"/></symbol>
+  <symbol id="i-sidebar" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16M5.5 8h1M5.5 12h1M5.5 16h1"/></symbol>
   <symbol id="i-visual" viewBox="0 0 24 24"><rect x="3" y="4" width="7" height="6" rx="1"/><rect x="14" y="14" width="7" height="6" rx="1"/><path d="M10 7h4.5v7"/></symbol>
   <symbol id="i-room" viewBox="0 0 24 24"><path d="M3 4h18v16H3z"/><path d="M11 4v7H3M15 20v-6h6"/></symbol>
   <symbol id="i-print" viewBox="0 0 24 24"><path d="M7 9V3h10v6"/><rect x="3" y="9" width="18" height="8" rx="2"/><path d="M7 14h10v7H7z"/></symbol>
@@ -600,7 +612,7 @@ details.hint ul { margin: 4px 0; padding-left: 18px; font-size: 12px; color: var
   <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></symbol>
 </svg>
 
-<nav class="side" aria-label="Sections">
+<nav class="side" id="sidebar" aria-label="Sections">
   <div class="brand"><svg class="logo" viewBox="0 0 32 20" aria-hidden="true"><path d="M1 12c5 0 6-6 15-6s10 6 15 6" /><circle cx="6" cy="10.5" r="3.4"/><circle cx="16" cy="6" r="3.4"/><circle cx="26" cy="10.5" r="3.4"/></svg><b>Pixel Planner</b></div>
   <button class="nav" data-nav="workspace"><svg class="ic"><use href="#i-work"/></svg><span>Wiring workspace</span></button>
   <button class="nav" data-nav="power"><svg class="ic"><use href="#i-bolt"/></svg><span>Hardware &amp; power</span></button>
@@ -614,6 +626,7 @@ details.hint ul { margin: 4px 0; padding-left: 18px; font-size: 12px; color: var
 </nav>
 
 <header class="topbar">
+  <button class="sidebar-toggle" id="sidebarToggle" data-act="sidebar" title="Hide sidebar" aria-label="Hide sidebar" aria-controls="sidebar" aria-expanded="true"><svg class="ic" aria-hidden="true"><use href="#i-sidebar"/></svg><span class="lbl">Hide sidebar</span></button>
   <div class="title">
     <input id="projName" class="proj-name" data-id="project" data-f="name" title="Project name" aria-label="Project name">
     <div id="fileInfo" class="sub"></div>
@@ -708,9 +721,14 @@ details.hint ul { margin: 4px 0; padding-left: 18px; font-size: 12px; color: var
 // The version shows at the bottom of the sidebar; clicking it opens What's new (the change log).
 window.PP = window.PP || {};
 PP.APP_NAME = 'Pixel Planner';
-PP.APP_VERSION = '1.3.0';
-PP.BUILT = '29 Sept 2026, 16:52';  // filled in by Build-Portable.ps1 ("Last updated" date and time)
+PP.APP_VERSION = '1.4.0';
+PP.BUILT = '29 Sept 2026, 17:04';  // filled in by Build-Portable.ps1 ("Last updated" date and time)
 PP.CHANGELOG = [
+  {
+    version: '1.4.0', date: '2026-09-29', items: [
+      'Hide or restore the main sidebar from the top bar to give your workspace more room; phone navigation stays unchanged (suggested in #1)'
+    ]
+  },
   {
     version: '1.3.0', date: '2026-09-29', items: [
       'Suggest a feature: send an idea from the sidebar (or the File menu on a phone). It opens a short form on GitHub; suitable ideas are built into the next version automatically and you get a reply on your request.'
@@ -3417,6 +3435,7 @@ PP.CHANGELOG = [
       <p>Every change is recalculated straight away. Pixel colours show the voltage each pixel gets at your brightness: <span class="ok">green</span> fine, <span class="warn">amber</span> low (colour shift), <span class="err">red</span> too low, grey no power.</p>
       <h3>Getting around</h3>
       <p>The sidebar has the main tasks: <b>Wiring workspace</b> (build runs), <b>Hardware &amp; power</b> (every PSU and distro with datasheets, plus project settings), <b>Pixel presets</b>, the <b>Wiring guide</b> and <b>Plan checks</b>. On a phone the same sections are tabs along the bottom; Help is in the File menu. The sun or moon button switches light and dark.</p>
+      <p>On desktop or tablet, use <b>Hide sidebar</b> in the top bar to make more room, then <b>Show sidebar</b> to restore it. The choice stays as you change views and sections until you reload the page. While hidden, Help, What's new and Suggest a feature are in the File menu; Plan checks stays in the summary. The palettes inside Visual and Room are unchanged. Phones keep their bottom tabs without a sidebar toggle.</p>
       <h3>Views in the workspace</h3>
       <ul>
         <li><b>Form</b>: every distro, PSU, board and port as fields. Ports fold open to show their run.</li>
@@ -4712,6 +4731,15 @@ PP.CHANGELOG = [
     help: () => PP.help.open('use'),
     suggest: () => PP.help.suggest(),
     whatsnew: () => PP.help.open('news'),
+    sidebar: () => {
+      const hidden = document.body.dataset.sidebar !== 'hidden';
+      document.body.dataset.sidebar = hidden ? 'hidden' : 'shown';
+      const b = U.$('#sidebarToggle'), label = hidden ? 'Show sidebar' : 'Hide sidebar';
+      b.innerHTML = U.ic('sidebar') + `<span class="lbl">${label}</span>`;
+      b.title = label;
+      b.setAttribute('aria-label', label);
+      b.setAttribute('aria-expanded', String(!hidden));
+    },
     theme: () => setTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'),
     themeSystem: () => { setTheme('system'); U.toast('Following your system theme.'); },
     warnings: () => { drawerOpen = !drawerOpen; U.$('#warnDrawer').hidden = !drawerOpen; },
