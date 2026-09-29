@@ -700,9 +700,14 @@ details.hint ul { margin: 4px 0; padding-left: 18px; font-size: 12px; color: var
 // The version shows at the bottom of the sidebar; clicking it opens What's new (the change log).
 window.PP = window.PP || {};
 PP.APP_NAME = 'Pixel Planner';
-PP.APP_VERSION = '1.2.0';
-PP.BUILT = '29 Sept 2026, 12:00';  // filled in by Build-Portable.ps1 ("Last updated" date and time)
+PP.APP_VERSION = '1.2.1';
+PP.BUILT = '29 Sept 2026, 12:04';  // filled in by Build-Portable.ps1 ("Last updated" date and time)
 PP.CHANGELOG = [
+  {
+    version: '1.2.1', date: '2026-09-29', items: [
+      "What's new shows dates as day-month-year."
+    ]
+  },
   {
     version: '1.2.0', date: '2026-09-29', items: [
       'New layout: a sidebar with task sections (Wiring workspace, Hardware & power, Pixel presets, Wiring guide, Plan checks). Form, Split, Visual and Room now live inside the workspace.',
@@ -3390,6 +3395,7 @@ PP.CHANGELOG = [
 (function () {
   const U = PP.ui, esc = U.esc;
   const H = PP.help = {};
+  const dmy = s => { const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s || ''); return m ? `${m[3]}-${m[2]}-${m[1]}` : s; };
 
   const pages = {
     use: () => `
@@ -3451,7 +3457,7 @@ PP.CHANGELOG = [
       <h3>Compatibility</h3>
       <p>Every part lists its connectors. A cable's type must exist at both ends; if not it is drawn dashed and flagged. A cable that uses a resource (for example a button uses one input) needs something at one end that provides it.</p>
       <p class="soft">These are planning estimates. Pixel wattage varies a lot between suppliers; measure a string at full white and put the real figure in the Library. Always check voltages with a meter before the show.</p>`,
-    news: () => PP.CHANGELOG.map(c => `<div class="cl-ver">${esc(c.version)} <span class="soft" style="font-weight:400">${esc(c.date)}</span></div><ul>${c.items.map(i => `<li>${esc(i)}</li>`).join('')}</ul>`).join(''),
+    news: () => PP.CHANGELOG.map(c => `<div class="cl-ver">${esc(c.version)} <span class="soft" style="font-weight:400">${esc(dmy(c.date))}</span></div><ul>${c.items.map(i => `<li>${esc(i)}</li>`).join('')}</ul>`).join(''),
     about: () => `
       <p><b>${esc(PP.APP_NAME)}</b> version ${esc(PP.APP_VERSION)}${PP.BUILT ? ` <span class="soft">· last updated ${esc(PP.BUILT)}</span>` : ''}</p>
       <p>A planner for pixel shows on <a href="https://www.baldrickboard.com/" target="_blank" rel="noopener">Baldrick</a> controllers driven by FPP, with Mean Well power supplies.</p>
