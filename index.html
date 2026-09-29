@@ -311,6 +311,9 @@ main.mode-visual #visualPane { grid-template-columns: 170px 1fr 420px; }
 .pal .sw.flood { border-radius: 2px; background: var(--cp-warning); }
 .pal .sw.cable { border-radius: 2px; height: 4px; background: var(--cp-text-soft); }
 .pal .sw.inject { border-radius: 1px; transform: rotate(45deg); background: var(--cp-danger); width: 8px; height: 8px; }
+.pal .sw.psu { width: 14px; height: 12px; border-radius: 0; clip-path: polygon(50% 0, 100% 100%, 0 100%); background: var(--cp-text-soft); }
+.pal .sw.board { width: 12px; height: 12px; border-radius: 0; background: var(--cp-text-soft); }
+.pal .sw.distro { width: 16px; height: 10px; border-radius: 1px; background: var(--cp-text-soft); }
 .canvas-wrap { position: relative; overflow: hidden; background: var(--cp-bg); }
 .canvas-wrap.dragover { box-shadow: inset 0 0 0 2px var(--cp-accent); }
 #svg { width: 100%; height: 100%; display: block; cursor: grab; user-select: none; touch-action: none; }
@@ -721,9 +724,14 @@ details.hint ul { margin: 4px 0; padding-left: 18px; font-size: 12px; color: var
 // The version shows at the bottom of the sidebar; clicking it opens What's new (the change log).
 window.PP = window.PP || {};
 PP.APP_NAME = 'Pixel Planner';
-PP.APP_VERSION = '1.4.1';
-PP.BUILT = '29 Sept 2026, 17:09';  // filled in by Build-Portable.ps1 ("Last updated" date and time)
+PP.APP_VERSION = '1.5.0';
+PP.BUILT = '29 Sept 2026, 17:23';  // filled in by Build-Portable.ps1 ("Last updated" date and time)
 PP.CHANGELOG = [
+  {
+    version: '1.5.0', date: '2026-09-29', items: [
+      'Distinct hardware silhouettes in Visual and Split: triangular PSUs, square controllers and rectangular distros, with matching palette cues (suggested in #2)'
+    ]
+  },
   {
     version: '1.4.1', date: '2026-09-29', items: [
       'Simpler Suggest a feature form: just a title and a description, both required. Requests are now picked up within about 5 minutes.'
@@ -1222,7 +1230,7 @@ PP.CHANGELOG = [
     c.ports[4].label = 'Arches'; c.ports[4].chain = [I.cable(10, 'awg18'), I.pixels('bullet12', 50), I.pixels('bullet12', 50), I.pixels('bullet12', 50), I.pixels('bullet12', 50)];
     c.inputs[0].name = 'Show start button'; c.inputs[0].device = 'Big red button'; c.inputs[0].action = 'playlist'; c.inputs[0].param = 'Show Time';
     d.controllers.push(c);
-    const d2 = M.newDistro('Porch', 40, 560, 'small');
+    const d2 = M.newDistro('Porch', 40, 640, 'small');
     const e = M.newPsu('LRS-350-12', 1);
     d2.psus.push(e);
     const s = M.newController('baldrickswitchy', 'Porch Switchy');
@@ -2810,7 +2818,7 @@ PP.CHANGELOG = [
   const U = PP.ui, C = PP.catalog, M = PP.model, K = PP.calc, S = PP.store;
   const esc = U.esc;
   const V = PP.visual = {};
-  const W = 300;             // distro box width
+  const MIN_W = 300;         // minimum distro box width
   const ROW = 30;            // port row height
   const GAUGE_W = { awg22: 1, awg20: 1.3, awg18: 1.7, awg16: 2.2, awg14: 2.8, awg12: 3.4, awg10: 4.2, awg8: 5 };
   let drag = null, pan = null;
@@ -2835,16 +2843,16 @@ PP.CHANGELOG = [
     [[2, 'awg18'], [5, 'awg18'], [10, 'awg18'], [10, 'awg16']].forEach(([l, g]) => { h += pal({ t: 'cable', length: l, gauge: g }, 'cable', `Cable ${l} m ${C.wireById(g).label}`); });
     h += pal({ t: 'inject' }, 'inject', 'Power injection', 'Drop after a string to inject power there');
     h += '<h5>Hardware</h5>';
-    ['LRS-350-12', 'LRS-200-12', 'HLG-320H-12'].filter(id => C.psuById(id)).forEach(id => { h += pal({ t: 'psu', model: id }, 'cable', id, 'Drop onto a distro'); });
-    Object.entries(C.boards).forEach(([k, b]) => { h += pal({ t: 'board', board: k }, '', b.name, 'Drop onto a distro'); });
-    h += pal({ t: 'distro' }, 'cable', 'New distro', 'Drop anywhere');
+    ['LRS-350-12', 'LRS-200-12', 'HLG-320H-12'].filter(id => C.psuById(id)).forEach(id => { h += pal({ t: 'psu', model: id }, 'psu', id, 'PSU (triangle). Drop onto a distro'); });
+    Object.entries(C.boards).forEach(([k, b]) => { h += pal({ t: 'board', board: k }, 'board', b.name, 'Controller (square). Drop onto a distro'); });
+    h += pal({ t: 'distro' }, 'distro', 'New distro', 'Distro (rectangle). Drop anywhere');
     U.$('#palette').innerHTML = h;
   };
 
   // ---------- layout ----------
   function layoutDistro(p, R, d) {
-    const L = { psus: [], ctls: [], h: 0 };
-    const cols = 2, pw = 132, ph = 58;
+    const L = { psus: [], ctls: [], w: MIN_W, h: 0 };
+    const cols = 2, pw = 132, ph = 112;
     d.psus.forEach((s, i) => L.psus.push({ s, i, x: 12 + (i % cols) * (pw + 12), y: 44 + Math.floor(i / cols) * (ph + 10), w: pw, h: ph }));
     let y = 44 + Math.ceil(d.psus.length / cols) * (ph + 10) + (d.psus.length ? 24 : 12);
     d.controllers.forEach(c => {
@@ -2855,10 +2863,12 @@ PP.CHANGELOG = [
       c.relays.forEach(r => { rows.push({ kind: 'relay', r, y: ry }); ry += 24; });
       c.inputs.forEach(r => { rows.push({ kind: 'input', r, y: ry }); ry += 22; });
       if (b.dmx) { rows.push({ kind: 'dmx', y: ry }); ry += 22; }
-      const h = Math.max(ry - y + 4, 34 + b.banks.length * 26);
-      L.ctls.push({ c, b, x: 120, y, w: W - 120, h, rows });
+      const h = Math.max(180, ry - y + 4, 34 + b.banks.length * 26);
+      L.ctls.push({ c, b, x: 120, y, w: h, h, rows });
+      L.w = Math.max(L.w, 120 + h);
       y += h + 14;
     });
+    L.ctls.forEach(cl => { cl.x = L.w - cl.w; });
     L.h = Math.max(y, 90);
     return L;
   }
@@ -2873,7 +2883,7 @@ PP.CHANGELOG = [
     p.distros.forEach(d => layouts.set(d.id, layoutDistro(p, R, d)));
     p.distros.forEach(d => {
       const L = layouts.get(d.id);
-      L.psus.forEach(q => V.psuPos.set(q.s.id, { x: d.x + q.x + q.w, y: d.y + q.y + q.h / 2, cls: 'c' + (q.i % 6) }));
+      L.psus.forEach(q => V.psuPos.set(q.s.id, { x: d.x + q.x + q.w, y: d.y + q.y + q.h, cls: 'c' + (q.i % 6) }));
     });
     p.distros.forEach(d => {
       const L = layouts.get(d.id);
@@ -2890,6 +2900,7 @@ PP.CHANGELOG = [
   };
 
   function drawDistro(p, R, d, L, sel) {
+    const W = L.w;
     const D = R.distros.get(d.id);
     let g = `<g class="distro" data-distro="${d.id}" transform="translate(${d.x},${d.y})">`;
     g += `<rect class="s-distro" x="0" y="0" width="${W}" height="${L.h}" rx="10" data-drop="distro" data-id="${d.id}"/>`;
@@ -2902,15 +2913,18 @@ PP.CHANGELOG = [
     L.psus.forEach(q => {
       const r = R.psus.get(q.s.id), cls = 'c' + (q.i % 6);
       const pct = r.pct || 0, bc = U.pctClass(pct, p.settings.psuTargetPct);
+      const points = `${q.x + q.w / 2},${q.y} ${q.x + q.w},${q.y + q.h} ${q.x},${q.y + q.h}`;
+      const name = q.s.name.length > 11 ? q.s.name.slice(0, 10) + '…' : q.s.name;
       g += `<g data-id="${q.s.id}" style="cursor:pointer">${title(`${q.s.name}: ${q.s.model}, set ${q.s.vout} V\n${K.fmtA(r.amps)} of ${r.spec.a} A (${U.num(pct, 0)}%)\n${r.loads.map(l => '• ' + l.label + ': ' + K.fmtA(l.amps)).join('\n')}`)}
-        <rect class="s-psu" x="${q.x}" y="${q.y}" width="${q.w}" height="${q.h}" rx="6"/>
-        <rect class="${cls}" x="${q.x}" y="${q.y}" width="5" height="${q.h}" rx="2"/>
-        ${t(q.x + 11, q.y + 15, 's-text', q.s.name)}${t(q.x + q.w - 6, q.y + 15, 's-tiny', q.s.vout + ' V', 'text-anchor="end"')}
-        ${t(q.x + 11, q.y + 28, 's-tiny', q.s.model === 'custom' ? `Custom ${q.s.customV} V ${q.s.customA} A` : q.s.model)}
-        <rect class="s-barbg" x="${q.x + 11}" y="${q.y + 35}" width="${q.w - 20}" height="7" rx="3"/>
-        <rect class="s-${bc}" x="${q.x + 11}" y="${q.y + 35}" width="${Math.min(1, pct / 100) * (q.w - 20)}" height="7" rx="3"/>
-        ${t(q.x + 11, q.y + 53, 's-tiny', `${K.fmtA(r.amps)} / ${r.spec.a} A · ${U.num(pct, 0)}%`)}
-        ${sel === q.s.id ? `<rect class="s-sel" x="${q.x - 2}" y="${q.y - 2}" width="${q.w + 4}" height="${q.h + 4}" rx="7"/>` : ''}</g>`;
+        <polygon class="s-psu" points="${points}"/>
+        <path class="s-bankwire ${cls}" d="M${q.x + 2} ${q.y + q.h} H${q.x + q.w - 2}"/>
+        ${t(q.x + q.w / 2, q.y + 48, 's-tiny', q.s.vout + ' V', 'text-anchor="middle"')}
+        ${t(q.x + q.w / 2, q.y + 70, 's-text', name, 'text-anchor="middle"')}
+        ${t(q.x + q.w / 2, q.y + 84, 's-tiny', q.s.model === 'custom' ? `Custom ${q.s.customV} V ${q.s.customA} A` : q.s.model, 'text-anchor="middle"')}
+        <rect class="s-barbg" x="${q.x + 18}" y="${q.y + 91}" width="${q.w - 36}" height="7" rx="3"/>
+        <rect class="s-${bc}" x="${q.x + 18}" y="${q.y + 91}" width="${Math.min(1, pct / 100) * (q.w - 36)}" height="7" rx="3"/>
+        ${t(q.x + q.w / 2, q.y + 108, 's-tiny', `${K.fmtA(r.amps)} / ${r.spec.a} A · ${U.num(pct, 0)}%`, 'text-anchor="middle"')}
+        ${sel === q.s.id ? `<polygon class="s-sel" points="${points}" pointer-events="none"/>` : ''}</g>`;
     });
     if (!d.psus.length) g += t(12, 58, 's-muted', 'No PSU — drop one here');
     // Controllers
@@ -2918,9 +2932,9 @@ PP.CHANGELOG = [
     L.ctls.forEach(cl => {
       const { c, b } = cl;
       g += `<g data-id="${c.id}" style="cursor:pointer">${title(`${c.name} (${b.name})${c.ip ? '\nIP ' + c.ip : ''}\n${b.note}`)}
-        <rect class="s-board" x="${cl.x}" y="${cl.y}" width="${cl.w}" height="${cl.h}" rx="6"/>
+        <rect class="s-board" x="${cl.x}" y="${cl.y}" width="${cl.w}" height="${cl.h}" rx="2"/>
         ${t(cl.x + 8, cl.y + 15, 's-text', c.name)}${t(cl.x + 8, cl.y + 27, 's-tiny', `${b.name}${c.ip ? ' · ' + c.ip : ''}`)}</g>`;
-      if (sel === c.id) g += `<rect class="s-sel" x="${cl.x - 3}" y="${cl.y - 3}" width="${cl.w + 6}" height="${cl.h + 6}" rx="8"/>`;
+      if (sel === c.id) g += `<rect class="s-sel" x="${cl.x - 3}" y="${cl.y - 3}" width="${cl.w + 6}" height="${cl.h + 6}" rx="3"/>`;
       // Banks: power pads on the left edge, wired from their PSU.
       b.banks.forEach((bk, bi) => {
         const portRows = cl.rows.filter(r => r.kind === 'port' && bk.ports.includes(r.pt.num));
@@ -3448,6 +3462,7 @@ PP.CHANGELOG = [
         <li><b>Split</b>: both at once. Clicking in one highlights the same thing in the other.</li>
         <li><b>Room</b>: a real-scale layout of where things go. See below.</li>
       </ul>
+      <p>In Visual and Split, <b>triangles identify PSUs</b>, <b>squares identify controllers</b> and <b>rectangles enclose distros</b>. The hardware palette uses matching shapes. Select a shape to edit it; hover for its full details. Room and Box builder retain real-size layouts.</p>
       <h3>Room layouts and cables</h3>
       <ul>
         <li>Set the room's width, depth and grid in the panel on the right (click the empty floor). Everything is in metres. Add more rooms or areas with <b>+ Room</b>.</li>
