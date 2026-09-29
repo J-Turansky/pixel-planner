@@ -74,20 +74,37 @@ html[data-theme="dark"] {
   --pp-data: var(--cp-success);
   --pp-radius: 0.625rem;
   --pp-card-shadow: 0 0 2px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.14);
+  --pp-side: 232px;
+  /* Status colours used as text: darkened in light mode so small text keeps 4.5:1. */
+  --pp-ok-text: color-mix(in srgb, var(--cp-success) 68%, black);
+  --pp-warn-text: color-mix(in srgb, var(--cp-warning) 58%, black);
+  --pp-err-text: color-mix(in srgb, var(--cp-danger) 88%, black);
+  --pp-muted: var(--cp-text-muted);
+}
+html[data-theme="dark"] {
+  --pp-ok-text: var(--cp-success);
+  --pp-warn-text: var(--cp-warning);
+  --pp-err-text: var(--cp-danger);
+  --pp-muted: var(--cp-text-soft);
 }
 
 * { box-sizing: border-box; }
 html, body { height: 100%; margin: 0; }
 body {
   font-family: "Segoe UI", Aptos, Calibri, -apple-system, BlinkMacSystemFont, sans-serif;
-  font-size: 13px; background: var(--cp-bg); color: var(--cp-text);
-  display: grid; grid-template-rows: auto auto 1fr auto; overflow: hidden;
+  font-size: 14px; line-height: 1.4; background: var(--cp-bg); color: var(--cp-text);
+  display: grid; grid-template-columns: var(--pp-side) minmax(0, 1fr); grid-template-rows: auto auto auto minmax(0, 1fr); overflow: hidden;
 }
+::selection { background: var(--cp-accent-soft); color: var(--cp-text); }
+* { scrollbar-width: thin; scrollbar-color: var(--cp-border-strong) transparent; }
+.sprite { position: absolute; width: 0; height: 0; overflow: hidden; }
+.ic { width: 18px; height: 18px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 code, .mono { font-family: Consolas, "Courier New", Courier, monospace; }
 button, input, select, textarea { font: inherit; color: inherit; }
 button {
   background: var(--cp-surface); border: 1px solid var(--cp-border); border-radius: var(--pp-radius);
-  padding: 4px 10px; cursor: pointer; min-height: 28px; white-space: nowrap;
+  padding: 4px 12px; cursor: pointer; min-height: 32px; white-space: nowrap; display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  transition: background-color .12s, border-color .12s, color .12s;
 }
 button:hover { border-color: var(--cp-border-strong); background: var(--cp-surface-soft); }
 button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, summary:focus-visible { outline: 2px solid var(--cp-accent); outline-offset: 1px; }
@@ -95,60 +112,116 @@ button.primary { background: var(--cp-accent); color: var(--cp-accent-fg); borde
 button.primary:hover { background: var(--cp-accent-hover); }
 button.ghost { background: transparent; border-color: transparent; }
 button.ghost:hover { border-color: var(--cp-border); }
-button.small { min-height: 22px; padding: 1px 7px; font-size: 12px; }
+button.small { min-height: 26px; padding: 2px 9px; font-size: 13px; }
 button.danger:hover { color: var(--cp-danger); border-color: var(--cp-danger); }
 button:disabled { opacity: .45; cursor: default; }
 input, select, textarea {
-  background: var(--cp-surface); border: 1px solid var(--cp-border); border-radius: 6px; padding: 3px 6px; min-height: 26px;
+  background: var(--cp-surface); border: 1px solid var(--cp-border); border-radius: 6px; padding: 4px 8px; min-height: 32px;
 }
 input[type=number] { width: 72px; }
 input[type=checkbox] { min-height: auto; accent-color: var(--cp-accent); }
 input[type=range] { accent-color: var(--cp-accent); padding: 0; border: 0; background: transparent; }
 textarea { width: 100%; min-height: 50px; resize: vertical; }
-.muted { color: var(--cp-text-muted); }
+.muted { color: var(--pp-muted); }
 .soft { color: var(--cp-text-soft); }
 .grow { flex: 1; }
-.ok { color: var(--cp-success); }
-.warn { color: var(--cp-warning); }
-.err, .error { color: var(--cp-danger); }
+.ok { color: var(--pp-ok-text); }
+.warn { color: var(--pp-warn-text); }
+.err, .error { color: var(--pp-err-text); }
 
-/* Top bar */
-.topbar {
-  display: flex; align-items: center; gap: 10px; padding: 8px 12px; background: var(--cp-bg-elevated);
-  border-bottom: 1px solid var(--cp-border); flex-wrap: wrap;
-}
-.brand { display: flex; align-items: center; gap: 8px; font-size: 15px; }
-.logo { display: inline-flex; gap: 3px; }
-.logo i { width: 7px; height: 7px; border-radius: 50%; background: var(--cp-accent); display: block; }
-.logo i:nth-child(2) { background: var(--cp-warning); }
-.logo i:nth-child(3) { background: var(--cp-success); }
-.proj-name { font-weight: 600; width: 200px; background: transparent; border-color: transparent; }
-.proj-name:hover, .proj-name:focus { border-color: var(--cp-border); background: var(--cp-surface); }
-.tb-group { display: flex; gap: 4px; }
-.seg { display: inline-flex; border: 1px solid var(--cp-border); border-radius: var(--pp-radius); overflow: hidden; }
-.seg button { border: 0; border-radius: 0; background: var(--cp-surface); }
-.seg button + button { border-left: 1px solid var(--cp-border); }
-.seg button.on { background: var(--cp-accent); color: var(--cp-accent-fg); }
-.icon { width: 28px; padding: 0; font-weight: 700; font-family: Georgia, serif; font-style: italic; border-radius: 50%; }
-.ver { font-size: 11px; color: var(--cp-text-muted); cursor: pointer; padding: 2px 6px; border: 1px solid var(--cp-border); border-radius: 999px; }
+/* Sidebar */
+.side { grid-row: 1 / -1; grid-column: 1; display: flex; flex-direction: column; gap: 2px; padding: 14px 10px 12px; background: var(--cp-bg-elevated); border-right: 1px solid var(--cp-border); min-height: 0; overflow: auto; }
+.brand { display: flex; align-items: center; gap: 10px; font-size: 16px; padding: 4px 10px 16px; }
+.logo { width: 32px; height: 20px; flex: none; }
+.logo path { fill: none; stroke: var(--cp-border-strong); stroke-width: 1.6; }
+.logo circle:nth-of-type(1) { fill: var(--cp-accent); } .logo circle:nth-of-type(2) { fill: var(--cp-warning); } .logo circle:nth-of-type(3) { fill: var(--cp-success); }
+.nav { justify-content: flex-start; gap: 10px; width: 100%; min-height: 40px; padding: 8px 10px; border-color: transparent; background: transparent; color: var(--cp-text); font-size: 14px; text-align: left; }
+.nav:hover { background: var(--cp-surface); border-color: var(--cp-border); }
+.nav.on { background: var(--cp-accent-soft); border-color: transparent; color: var(--cp-accent); font-weight: 600; }
+.nav .ic { color: var(--pp-muted); } .nav.on .ic { color: var(--cp-accent); }
+.nav span { flex: 1; }
+.badge { min-width: 22px; padding: 0 7px; border-radius: 999px; font-size: 12px; line-height: 20px; text-align: center; background: var(--cp-surface-soft); color: var(--cp-text); }
+.badge:empty { display: none; }
+.badge.err { background: var(--cp-danger); color: var(--cp-surface); } .badge.warn { background: var(--cp-warning); color: var(--cp-accent-fg); }
+html[data-theme="light"] .badge.warn { color: var(--cp-text); }
+.ver { align-self: flex-start; margin: 8px 10px 0; min-height: 28px; font-size: 12px; color: var(--pp-muted); padding: 2px 10px; border-radius: 999px; background: transparent; }
 .ver:hover { color: var(--cp-accent); border-color: var(--cp-accent); }
 
+/* Top bar */
+.topbar { grid-column: 2; display: flex; align-items: center; gap: 8px; padding: 10px 16px 6px; min-width: 0; }
+.title { display: flex; flex-direction: column; min-width: 0; }
+.proj-name { font-weight: 600; font-size: 20px; width: min(420px, 100%); margin-left: -9px; background: transparent; border-color: transparent; min-height: 36px; }
+.proj-name:hover, .proj-name:focus { border-color: var(--cp-border); background: var(--cp-surface); }
+.sub { font-size: 13px; color: var(--pp-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tb-group { display: flex; gap: 4px; }
+.ib { width: 36px; min-height: 36px; padding: 0; background: transparent; border-color: transparent; }
+.ib:hover { background: var(--cp-surface); border-color: var(--cp-border); }
+.guide-btn { min-height: 36px; }
+.filemenu > summary { min-height: 36px; background: transparent; border-color: transparent; }
+.filemenu > summary:hover, .filemenu[open] > summary { background: var(--cp-surface); border-color: var(--cp-border); }
+.dd-menu.right { left: auto; right: 0; min-width: 240px; padding: 6px; }
+.dd-menu > button { justify-content: space-between; border-color: transparent; background: transparent; width: 100%; min-height: 36px; }
+.dd-menu > button:hover { background: var(--cp-highlight); }
+.dd-menu > button.on::after { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--cp-accent); }
+.dd-menu hr { border: 0; border-top: 1px solid var(--cp-border); margin: 4px 2px; }
+.seg { display: inline-flex; border: 1px solid var(--cp-border); border-radius: var(--pp-radius); overflow: hidden; background: var(--cp-surface); }
+.seg button { border: 0; border-radius: 0; background: transparent; }
+.seg button + button { border-left: 1px solid var(--cp-border); }
+.seg button.on { background: var(--cp-accent); color: var(--cp-accent-fg); }
+.seg button .ic { width: 16px; height: 16px; }
+
 /* Summary strip */
-.summary { display: flex; gap: 8px; padding: 8px 12px; overflow-x: auto; border-bottom: 1px solid var(--cp-border); align-items: stretch; }
+.summary { grid-column: 2; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)) minmax(0, 1.6fr); gap: 10px; padding: 6px 16px 12px; }
 .card {
   background: var(--cp-surface); border: 1px solid var(--cp-border); border-radius: 16px; box-shadow: var(--pp-card-shadow);
 }
-.stat { padding: 6px 12px; min-width: 118px; border-radius: 12px; }
-.stat .k { font-size: 11px; color: var(--cp-text-muted); text-transform: uppercase; letter-spacing: .04em; }
-.stat .v { font-size: 18px; font-weight: 600; font-variant-numeric: tabular-nums; }
-.stat .s { font-size: 11px; color: var(--cp-text-soft); }
-.stat.bright { min-width: 210px; }
-.stat.bright input { width: 100%; }
-.stat.status .v.err { color: var(--cp-danger); }
-.stat.status { cursor: pointer; }
+.stat { padding: 10px 14px; border-radius: 12px; min-width: 0; }
+.stat .k { font-size: 13px; color: var(--pp-muted); }
+.stat .v { font-size: 22px; font-weight: 600; font-variant-numeric: tabular-nums; display: flex; align-items: center; gap: 10px; line-height: 1.3; }
+.stat .s { font-size: 13px; color: var(--pp-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.stat .v .bar { flex: 1; max-width: 140px; }
+.stat[data-act], .stat[data-nav] { cursor: pointer; }
+.stat[data-act]:hover, .stat[data-nav]:hover { border-color: var(--cp-border-strong); }
+.stat.checks .s { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.stat.checks.has-err { border-color: color-mix(in srgb, var(--cp-danger) 45%, var(--cp-border)); }
+.stat.checks.has-warn { border-color: color-mix(in srgb, var(--cp-warning) 45%, var(--cp-border)); }
+.stat.checks .s b { color: var(--cp-text); }
+
+/* Workspace bar */
+.wsbar { grid-column: 2; display: flex; align-items: center; gap: 12px; padding: 0 16px 10px; flex-wrap: wrap; }
+.bright { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: var(--pp-muted); }
+.bright input { width: 160px; }
+.bright b { color: var(--cp-text); min-width: 40px; font-variant-numeric: tabular-nums; }
+
+/* Sections */
+main, .page { grid-column: 2; grid-row: 4; border-top: 1px solid var(--cp-border); }
+body:not(.sec-workspace) main, body:not(.sec-workspace) .wsbar { display: none !important; }
+.page { display: none; overflow: auto; min-height: 0; }
+body:not(.sec-workspace) .page { grid-row: 3 / 5; }
+body.sec-power #powerPage, body.sec-presets #presetsPage { display: block; }
+.page-in { max-width: 1200px; margin: 0 auto; padding: 16px 20px 40px; }
+.page-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.page-head h2 { margin: 0; font-size: 20px; }
+.lede { color: var(--pp-muted); margin: 6px 0 14px; max-width: 72ch; }
+.page h3 { font-size: 16px; margin: 22px 0 8px; }
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; }
+.kpi { padding: 10px 14px; border-radius: 12px; display: flex; flex-direction: column; }
+.kpi span { font-size: 13px; color: var(--pp-muted); } .kpi b { font-size: 22px; font-variant-numeric: tabular-nums; } .kpi small { font-size: 13px; color: var(--pp-muted); }
+.tcard { padding: 4px 12px; overflow-x: auto; }
+tr.rowlink { cursor: pointer; } tr.rowlink:hover td { background: var(--cp-highlight); }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+a { color: var(--cp-link); }
+.nowrap { white-space: nowrap; }
+.colrow { display: flex; gap: 6px; align-items: center; }
+.colrow input[type=color] { width: 44px; height: 32px; padding: 2px; }
+.tabbar { display: none; }
+button.icb { padding: 0; width: 28px; } button.icb .ic, .icon.sm .ic { width: 15px; height: 15px; }
+.icon.sm { padding: 0; display: inline-flex; }
+.dd-menu > .m-only { display: none; }
 
 /* Main layout */
 main { display: grid; min-height: 0; }
+main > .pane { min-height: 0; }
 main.mode-form { grid-template-columns: 1fr; }
 main.mode-visual { grid-template-columns: 1fr; }
 main.mode-split { grid-template-columns: minmax(420px, 44%) 1fr; }
@@ -162,13 +235,13 @@ main.mode-form #formPane { padding: 12px max(12px, calc((100% - 1200px) / 2)); }
 
 /* Form */
 .sec { margin-bottom: 14px; }
-.sec > summary, .sec-head { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; cursor: pointer; padding: 4px 0; list-style: none; }
+.sec > summary, .sec-head { display: flex; align-items: center; gap: 8px; font-size: 16px; font-weight: 600; cursor: pointer; padding: 4px 0; list-style: none; }
 .sec > summary::-webkit-details-marker, details > summary::-webkit-details-marker { display: none; }
 details > summary { list-style: none; }
-.chev { display: inline-block; transition: transform .15s; color: var(--cp-text-muted); width: 12px; }
-details[open] > summary .chev { transform: rotate(90deg); }
+.chev { display: inline-block; width: 7px; height: 7px; margin: 0 5px 0 2px; border-right: 2px solid var(--pp-muted); border-bottom: 2px solid var(--pp-muted); transform: rotate(-45deg); transition: transform .15s; flex: none; }
+details[open] > summary .chev { transform: rotate(45deg); }
 .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 8px 14px; padding: 8px 0; }
-.fld { display: flex; flex-direction: column; gap: 2px; font-size: 12px; color: var(--cp-text-muted); }
+.fld { display: flex; flex-direction: column; gap: 3px; font-size: 13px; color: var(--pp-muted); }
 .fld > input, .fld > select { color: var(--cp-text); }
 .fld.inline { flex-direction: row; align-items: center; gap: 6px; }
 .row { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
@@ -176,12 +249,12 @@ details[open] > summary .chev { transform: rotate(90deg); }
 .distro.sel, .ctl.sel, .psurow.sel, .portrow.sel, .item.sel { box-shadow: 0 0 0 2px var(--cp-accent); }
 .distro-head { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 .distro-head .name { font-weight: 600; font-size: 14px; width: 170px; }
-.pill { font-size: 11px; padding: 1px 8px; border-radius: 999px; background: var(--cp-surface-soft); border: 1px solid var(--cp-border); color: var(--cp-text-muted); white-space: nowrap; }
-.pill.ok { color: var(--cp-success); } .pill.warn { color: var(--cp-warning); } .pill.err { color: var(--cp-danger); }
-h4 { margin: 12px 0 4px; font-size: 12px; text-transform: uppercase; letter-spacing: .05em; color: var(--cp-text-muted); display: flex; align-items: center; gap: 8px; }
-table.t { width: 100%; border-collapse: collapse; font-size: 12px; }
-table.t th { text-align: left; font-weight: 600; color: var(--cp-text-muted); padding: 3px 4px; border-bottom: 1px solid var(--cp-border); white-space: nowrap; }
-table.t td { padding: 3px 4px; border-bottom: 1px solid var(--cp-border); vertical-align: middle; }
+.pill { font-size: 12px; font-weight: 400; padding: 1px 9px; border-radius: 999px; background: var(--cp-surface-soft); border: 1px solid var(--cp-border); color: var(--pp-muted); white-space: nowrap; }
+.pill.ok { color: var(--pp-ok-text); } .pill.warn { color: var(--pp-warn-text); } .pill.err { color: var(--pp-err-text); }
+h4 { margin: 14px 0 6px; font-size: 13px; font-weight: 600; color: var(--pp-muted); display: flex; align-items: center; gap: 8px; }
+table.t { width: 100%; border-collapse: collapse; font-size: 13px; }
+table.t th { text-align: left; font-weight: 600; color: var(--pp-muted); padding: 6px 6px; border-bottom: 1px solid var(--cp-border); white-space: nowrap; }
+table.t td { padding: 5px 6px; border-bottom: 1px solid var(--cp-border); vertical-align: middle; }
 table.t input[type=text], table.t input:not([type]) { width: 100%; min-width: 80px; }
 .bar { position: relative; height: 8px; background: var(--cp-surface-soft); border: 1px solid var(--cp-border); border-radius: 999px; overflow: hidden; min-width: 80px; }
 .bar > i { position: absolute; inset: 0 auto 0 0; background: var(--cp-success); border-radius: 999px; }
@@ -196,22 +269,22 @@ table.t input[type=text], table.t input:not([type]) { width: 100%; min-width: 80
 .portrow > summary { display: flex; align-items: center; gap: 8px; padding: 5px 8px; cursor: pointer; font-variant-numeric: tabular-nums; }
 .portrow > summary .pn { font-weight: 600; width: 50px; }
 .portrow > summary .pl { flex: 1; min-width: 60px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.portrow > summary .m { color: var(--cp-text-muted); font-size: 12px; white-space: nowrap; }
+.portrow > summary .m { color: var(--pp-muted); font-size: 13px; white-space: nowrap; }
 .portbody { padding: 6px 8px 8px; border-top: 1px solid var(--cp-border); }
 .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--cp-border-strong); display: inline-block; flex: none; }
 .dot.ok { background: var(--cp-success); } .dot.warn { background: var(--cp-warning); } .dot.err { background: var(--cp-danger); } .dot.none { background: var(--cp-border); }
 .chain { display: flex; flex-direction: column; gap: 4px; margin: 6px 0; }
 .item { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; padding: 4px 6px; border: 1px solid var(--cp-border); border-radius: 8px; background: var(--cp-bg-elevated); }
-.item .kind { font-size: 11px; font-weight: 600; width: 64px; text-transform: uppercase; letter-spacing: .04em; }
+.item .kind { font-size: 12px; font-weight: 600; width: 64px; }
 .item.k-cable .kind { color: var(--cp-text-soft); }
-.item.k-pixels .kind { color: var(--cp-success); }
-.item.k-inject .kind { color: var(--cp-danger); }
-.item .res { margin-left: auto; font-size: 12px; color: var(--cp-text-muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
-.item label { font-size: 12px; color: var(--cp-text-muted); display: inline-flex; align-items: center; gap: 3px; }
+.item.k-pixels .kind { color: var(--pp-ok-text); }
+.item.k-inject .kind { color: var(--pp-err-text); }
+.item .res { margin-left: auto; font-size: 12px; color: var(--pp-muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.item label { font-size: 12px; color: var(--pp-muted); display: inline-flex; align-items: center; gap: 3px; }
 .item input[type=number] { width: 62px; }
 .item input.lbl { width: 130px; }
 .item select { max-width: 170px; }
-.port-port { font-size: 11px; color: var(--cp-text-muted); padding: 2px 0; }
+.port-port { font-size: 11px; color: var(--pp-muted); padding: 2px 0; }
 .addbar { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; padding-top: 4px; }
 .url { font-family: Consolas, "Courier New", Courier, monospace; font-size: 11px; color: var(--cp-link); word-break: break-all; }
 .nw { white-space: nowrap; }
@@ -220,17 +293,17 @@ table.t input[type=text], table.t input:not([type]) { width: 100%; min-width: 80
 .psw.c3 { background: var(--cp-warning); } .psw.c4 { background: var(--cp-text-soft); } .psw.c5 { background: var(--cp-danger); }
 .flash { animation: flash 1.2s ease-out; }
 @keyframes flash { from { box-shadow: 0 0 0 4px var(--cp-accent); } to { box-shadow: 0 0 0 0 transparent; } }
-.empty { padding: 20px; text-align: center; color: var(--cp-text-muted); border: 1px dashed var(--cp-border); border-radius: 16px; }
+.empty { padding: 20px; text-align: center; color: var(--pp-muted); border: 1px dashed var(--cp-border); border-radius: 16px; }
 
 /* Visual */
 #visualPane { display: grid; grid-template-columns: 170px 1fr; grid-template-rows: auto 1fr; }
 main.mode-visual #visualPane { grid-template-columns: 170px 1fr 420px; }
 .vtools { grid-column: 1 / -1; display: flex; gap: 6px; align-items: center; padding: 6px 8px; border-bottom: 1px solid var(--cp-border); background: var(--cp-bg-elevated); flex-wrap: wrap; }
-.legend { display: inline-flex; gap: 6px; align-items: center; font-size: 12px; color: var(--cp-text-muted); margin-left: 8px; }
+.legend { display: inline-flex; gap: 6px; align-items: center; font-size: 13px; color: var(--pp-muted); margin-left: 8px; }
 .lg { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
 .lg.ok { background: var(--cp-success); } .lg.warn { background: var(--cp-warning); } .lg.err { background: var(--cp-danger); } .lg.off { background: var(--cp-border-strong); }
 .palette { overflow: auto; padding: 8px; border-right: 1px solid var(--cp-border); background: var(--cp-bg-elevated); }
-.palette h5 { margin: 8px 0 4px; font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: var(--cp-text-muted); }
+.palette h5 { margin: 10px 0 4px; font-size: 13px; font-weight: 600; color: var(--pp-muted); }
 .pal { display: flex; align-items: center; gap: 6px; padding: 5px 8px; margin: 3px 0; border: 1px solid var(--cp-border); border-radius: 8px; background: var(--cp-surface); cursor: grab; font-size: 12px; user-select: none; }
 .pal:hover { border-color: var(--cp-accent); }
 .pal .sw { width: 10px; height: 10px; border-radius: 50%; flex: none; background: var(--cp-success); }
@@ -239,11 +312,11 @@ main.mode-visual #visualPane { grid-template-columns: 170px 1fr 420px; }
 .pal .sw.inject { border-radius: 1px; transform: rotate(45deg); background: var(--cp-danger); width: 8px; height: 8px; }
 .canvas-wrap { position: relative; overflow: hidden; background: var(--cp-bg); }
 .canvas-wrap.dragover { box-shadow: inset 0 0 0 2px var(--cp-accent); }
-#svg { width: 100%; height: 100%; display: block; cursor: grab; user-select: none; }
+#svg { width: 100%; height: 100%; display: block; cursor: grab; user-select: none; touch-action: none; }
 #svg.panning { cursor: grabbing; }
 .inspector { display: none; overflow: auto; padding: 10px; border-left: 1px solid var(--cp-border); background: var(--cp-bg-elevated); }
 main.mode-visual .inspector { display: block; }
-.inspector .hint { color: var(--cp-text-muted); padding: 8px 0; }
+.inspector .hint { color: var(--pp-muted); padding: 8px 0; }
 
 /* SVG styles (colours via theme variables) */
 .s-grid { stroke: var(--cp-border); stroke-width: .5; }
@@ -281,14 +354,18 @@ main.mode-visual .inspector { display: block; }
 .s-feed.c0, .s-feed.c1, .s-feed.c2, .s-feed.c3, .s-feed.c4, .s-feed.c5, .s-bankwire.c0, .s-bankwire.c1, .s-bankwire.c2, .s-bankwire.c3, .s-bankwire.c4, .s-bankwire.c5 { fill: none; }
 
 /* Status bar, drawer, dialogs, toast */
-.statusbar { display: flex; gap: 12px; align-items: center; padding: 4px 12px; border-top: 1px solid var(--cp-border); background: var(--cp-bg-elevated); font-size: 12px; }
-.warnbtn { min-height: 22px; font-size: 12px; }
-.drawer { position: fixed; right: 12px; bottom: 36px; width: min(560px, calc(100vw - 24px)); max-height: 60vh; overflow: auto; background: var(--cp-panel-strong); border: 1px solid var(--cp-border); border-radius: 16px; box-shadow: var(--cp-shadow); padding: 10px 12px; z-index: 20; }
-.drawer-head { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
-.wi { display: flex; gap: 8px; padding: 6px 4px; border-bottom: 1px solid var(--cp-border); cursor: pointer; align-items: flex-start; }
+.drawer { position: fixed; right: 16px; top: 64px; width: min(560px, calc(100vw - 32px)); max-height: calc(100vh - 88px); overflow: auto; background: var(--cp-surface); border: 1px solid var(--cp-border); border-radius: 16px; box-shadow: var(--cp-shadow); padding: 12px 14px; z-index: 20; }
+.drawer-head { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; font-size: 16px; }
+.fixfirst { display: flex; flex-direction: column; gap: 2px; padding: 10px 12px; border-radius: 12px; background: var(--cp-surface-soft); border: 1px solid var(--cp-border); margin-bottom: 8px; cursor: pointer; }
+.fixfirst b { font-size: 13px; } .fixfirst.error b { color: var(--pp-err-text); } .fixfirst.warn b { color: var(--pp-warn-text); } .fixfirst.ok { cursor: default; } .fixfirst.ok b { color: var(--pp-ok-text); }
+.wgrp > summary { cursor: pointer; font-weight: 600; padding: 8px 2px; display: flex; gap: 8px; }
+.wi { display: flex; gap: 10px; padding: 8px 4px; border-top: 1px solid var(--cp-border); cursor: pointer; align-items: flex-start; }
 .wi:hover { background: var(--cp-highlight); }
-.wi .lvl { font-size: 10px; font-weight: 700; text-transform: uppercase; width: 44px; flex: none; padding-top: 2px; }
-.wi.error .lvl { color: var(--cp-danger); } .wi.warn .lvl { color: var(--cp-warning); } .wi.info .lvl { color: var(--cp-link); }
+.wi.error, .wi.warn, .wi.info, .fixfirst.error, .fixfirst.warn { color: var(--cp-text); }
+.wi .lvl { font-size: 12px; font-weight: 600; width: 52px; flex: none; }
+.wi.error .lvl { color: var(--pp-err-text); } .wi.warn .lvl { color: var(--pp-warn-text); } .wi.info .lvl { color: var(--cp-link); }
+.assume { display: grid; grid-template-columns: max-content 1fr; gap: 6px 14px; margin: 4px 2px 10px; font-size: 13px; }
+.assume dt { font-weight: 600; } .assume dd { margin: 0; color: var(--pp-muted); }
 .dlg { border: 1px solid var(--cp-border); border-radius: 16px; background: var(--cp-surface); color: var(--cp-text); box-shadow: var(--cp-shadow); padding: 0; max-width: min(560px, 94vw); }
 .dlg.wide { max-width: min(820px, 94vw); width: 820px; }
 .dlg.full { max-width: 96vw; width: 1100px; height: 92vh; }
@@ -301,7 +378,7 @@ main.mode-visual .inspector { display: block; }
 .dlg-body h3 { margin: 14px 0 4px; font-size: 14px; }
 .dlg-body p, .dlg-body li { color: var(--cp-text); }
 .dlg-foot { display: flex; gap: 8px; justify-content: flex-end; padding: 10px 14px; border-top: 1px solid var(--cp-border); }
-.toast { position: fixed; left: 50%; bottom: 44px; transform: translateX(-50%); background: var(--cp-panel-strong); color: var(--cp-text); border: 1px solid var(--cp-border); padding: 8px 14px; border-radius: var(--pp-radius); box-shadow: var(--cp-shadow); z-index: 50; max-width: 80vw; }
+.toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); background: var(--cp-panel-strong); color: var(--cp-text); border: 1px solid var(--cp-border); padding: 8px 14px; border-radius: var(--pp-radius); box-shadow: var(--cp-shadow); z-index: 50; max-width: 80vw; }
 .cl-ver { font-weight: 600; margin-top: 10px; }
 .kbd { font-family: Consolas, "Courier New", Courier, monospace; font-size: 11px; border: 1px solid var(--cp-border); border-bottom-width: 2px; border-radius: 4px; padding: 0 4px; }
 
@@ -314,17 +391,17 @@ main.mode-visual .inspector { display: block; }
 /* Shared inspector bits (room view, box builder, library) */
 .ins-head { display: flex; align-items: baseline; gap: 8px; justify-content: space-between; margin-bottom: 8px; font-size: 14px; }
 .ins-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 10px; margin: 6px 0; }
-.fl { display: flex; flex-direction: column; gap: 2px; font-size: 12px; color: var(--cp-text-muted); min-width: 0; }
+.fl { display: flex; flex-direction: column; gap: 3px; font-size: 13px; color: var(--pp-muted); min-width: 0; }
 .fl > input, .fl > select { color: var(--cp-text); width: 100%; }
 .fl.wide { grid-column: 1 / -1; margin: 4px 0; }
 .ins-actions { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; margin: 8px 0; }
 .ins-link { display: flex; align-items: center; gap: 6px; padding: 4px 6px; border-radius: 6px; cursor: pointer; font-size: 12px; }
 .ins-link:hover, .ins-link.on { background: var(--cp-highlight); }
-.ins-link.err { color: var(--cp-danger); }
+.ins-link.err { color: var(--pp-err-text); }
 .small { font-size: 12px; }
 p.small, .dlg-body p.small { margin: 4px 0; }
 table.mini { width: 100%; border-collapse: collapse; font-size: 12px; margin: 4px 0; }
-table.mini th { text-align: left; color: var(--cp-text-muted); font-weight: 600; padding: 3px 4px; border-bottom: 1px solid var(--cp-border); white-space: nowrap; }
+table.mini th { text-align: left; color: var(--pp-muted); font-weight: 600; padding: 3px 4px; border-bottom: 1px solid var(--cp-border); white-space: nowrap; }
 table.mini td { padding: 3px 4px; border-bottom: 1px solid var(--cp-border); vertical-align: middle; }
 table.mini td.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
 input.tiny { width: 64px; }
@@ -332,7 +409,7 @@ input.tiny { width: 64px; }
 .chips { display: flex; flex-wrap: wrap; gap: 4px; margin: 4px 0; }
 .chip { font-size: 11px; padding: 1px 8px; border-radius: 999px; border: 1px solid var(--c, var(--cp-border)); background: var(--cp-surface); }
 .stat-line { padding: 6px 8px; border-radius: 8px; background: var(--cp-surface-soft); margin: 6px 0; }
-.stat-line.err { color: var(--cp-danger); } .stat-line.ok { color: var(--cp-success); }
+.stat-line.err { color: var(--pp-err-text); } .stat-line.ok { color: var(--pp-ok-text); }
 .sw.hw, .pal .sw.hw { display: inline-block; width: 10px; height: 10px; border-radius: 3px; flex: none; background: var(--c, var(--cp-text-soft)); border: 1px solid var(--cp-border-strong); vertical-align: -1px; margin-right: 2px; }
 .icon.sm { width: 22px; min-height: 22px; font-family: inherit; font-style: normal; font-weight: 400; font-size: 11px; }
 button.sm { min-height: 22px; padding: 1px 8px; font-size: 12px; }
@@ -341,9 +418,9 @@ button.sm { min-height: 22px; padding: 1px 8px; font-size: 12px; }
 .cap { display: grid; grid-template-columns: 1fr auto; gap: 2px 8px; font-size: 12px; }
 .cap .bar { grid-column: 1 / -1; min-width: 0; height: 6px; }
 .cap-v { font-variant-numeric: tabular-nums; }
-.cap.err .cap-v { color: var(--cp-danger); font-weight: 600; } .cap.warn .cap-v { color: var(--cp-warning); }
+.cap.err .cap-v { color: var(--pp-err-text); font-weight: 600; } .cap.warn .cap-v { color: var(--pp-warn-text); }
 details.hint > summary { cursor: pointer; color: var(--cp-link); font-size: 12px; margin: 8px 0 4px; }
-details.hint ul { margin: 4px 0; padding-left: 18px; font-size: 12px; color: var(--cp-text-muted); }
+details.hint ul { margin: 4px 0; padding-left: 18px; font-size: 12px; color: var(--pp-muted); }
 .dist-caps { margin: 6px 0 2px; }
 .dist-caps .caps { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 6px 14px; }
 
@@ -356,7 +433,7 @@ details.hint ul { margin: 4px 0; padding-left: 18px; font-size: 12px; color: var
 .dd > summary { list-style: none; cursor: pointer; border: 1px solid var(--cp-border); border-radius: var(--pp-radius); padding: 4px 10px; background: var(--cp-surface); min-height: 28px; display: inline-flex; align-items: center; gap: 4px; }
 .dd-menu { position: absolute; top: calc(100% + 4px); left: 0; z-index: 30; background: var(--cp-panel-strong); border: 1px solid var(--cp-border); border-radius: 10px; box-shadow: var(--cp-shadow); padding: 6px 8px; min-width: 190px; display: flex; flex-direction: column; gap: 2px; }
 .dd-menu label { display: flex; align-items: center; gap: 6px; font-size: 12px; padding: 2px 0; cursor: pointer; }
-.rpal > summary { cursor: pointer; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; color: var(--cp-text-muted); padding: 6px 2px 2px; }
+.rpal > summary { cursor: pointer; font-size: 13px; font-weight: 600; color: var(--pp-muted); padding: 6px 2px 2px; }
 #rsvg { width: 100%; height: 100%; display: block; cursor: grab; user-select: none; touch-action: none; }
 #rsvg.panning { cursor: grabbing; }
 .r-outside { fill: var(--cp-bg); }
@@ -380,10 +457,11 @@ details.hint ul { margin: 4px 0; padding-left: 18px; font-size: 12px; color: var
 @media (prefers-reduced-motion: reduce) { .r-flow { animation: none; } }
 .r-lab rect { fill: var(--cp-panel-strong); stroke: var(--cp-border); }
 .r-lab text { fill: var(--cp-text); font-size: 9.5px; font-variant-numeric: tabular-nums; }
-.r-lab.err rect { stroke: var(--cp-danger); } .r-lab.err text { fill: var(--cp-danger); font-weight: 600; }
+.r-lab.err rect { stroke: var(--cp-danger); } .r-lab.err text { fill: var(--pp-err-text); font-weight: 600; }
 .r-lab.none text { fill: var(--cp-text-muted); }
 .r-lab { cursor: pointer; }
 .r-node { cursor: move; }
+.r-box.tinted, .r-prop.tinted { fill: color-mix(in srgb, var(--nc) 22%, var(--cp-surface)); stroke: var(--nc); }
 .r-box { fill: var(--cp-surface-soft); stroke: var(--cp-text-soft); stroke-width: 1.6; }
 .r-node.sel .r-box, .r-node.sel .r-prop, .r-node.sel .r-dev > * { stroke: var(--cp-accent); stroke-width: 2.4; }
 .r-prop { fill: var(--cp-bg-elevated); stroke: var(--cp-border-strong); stroke-width: 1; }
@@ -435,37 +513,142 @@ details.hint ul { margin: 4px 0; padding-left: 18px; font-size: 12px; color: var
   .bx-body { grid-template-columns: 1fr; }
   .bx-pal { display: none; }
 }
+
+/* Tablet: slimmer sidebar */
+@media (max-width: 1100px) and (min-width: 701px) {
+  :root { --pp-side: 196px; }
+  .summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+/* Phone: bottom tab bar, form-first editing, sheets for inspectors */
+@media (max-width: 700px) {
+  body { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto auto auto minmax(0, 1fr); font-size: 15px; }
+  .side { display: none; }
+  .topbar, .summary, .wsbar, main, .page { grid-column: 1; }
+  .topbar { padding: 8px 10px 4px; gap: 4px; padding-top: max(8px, env(safe-area-inset-top)); }
+  .proj-name { font-size: 17px; margin-left: -6px; width: 100%; }
+  .topbar .lbl { display: none; }
+  .ib, .filemenu > summary, .guide-btn { min-width: 44px; min-height: 44px; }
+  .guide-btn { padding: 0 10px; }
+  .summary { display: flex; overflow-x: auto; gap: 6px; padding: 4px 10px 8px; scroll-snap-type: x proximity; scrollbar-width: none; }
+  .stat { padding: 6px 10px; flex: 0 0 auto; min-width: 128px; scroll-snap-align: start; }
+  .stat .v { font-size: 17px; } .stat .k { font-size: 12px; }
+  .stat .s { display: none; }
+  .stat.checks { flex: 1 0 200px; } .stat.checks .s { display: -webkit-box; -webkit-line-clamp: 1; font-size: 12px; }
+  .stat .v .bar { display: none; }
+  .wsbar { padding: 0 10px 8px; }
+  .wsbar .seg { display: none; }
+  .bright { flex: 1; } .bright input { flex: 1; width: auto; }
+  main, .page { padding-bottom: calc(64px + env(safe-area-inset-bottom)); }
+  body:not(.sec-workspace) .page { grid-row: 3 / 5; }
+  .page-in { padding: 12px 10px 24px; }
+  main.mode-split { grid-template-columns: 1fr; grid-template-rows: 1fr; }
+  main.mode-split #visualPane { display: none; }
+  main.mode-form #formPane { padding: 10px; }
+  button, input, select, .dd > summary, .sec > summary, .portrow > summary { min-height: 44px; }
+  button.small, button.sm, .icon.sm { min-height: 36px; min-width: 36px; }
+  input, select { font-size: 16px; }
+  input[type=checkbox], input[type=radio] { min-height: 0; width: 22px; height: 22px; }
+  input[type=range] { min-height: 32px; }
+  table.t, .tcard table { display: block; overflow-x: auto; }
+  .grid, .ins-grid { grid-template-columns: 1fr 1fr; }
+  #visualPane, main.mode-visual #visualPane { grid-template-columns: 1fr; grid-template-rows: auto 1fr auto; }
+  .vtools, .rtools { gap: 4px; padding: 6px; overflow-x: auto; flex-wrap: nowrap; }
+  .vtools .legend { display: none; }
+  main.mode-visual .inspector, #rinspector { max-height: 38vh; border-left: 0; border-top: 1px solid var(--cp-border); border-radius: 16px 16px 0 0; box-shadow: var(--cp-shadow); }
+  main.mode-visual .inspector:has(.hint:only-child) { max-height: 64px; }
+  #roomPane { grid-template-columns: 1fr; grid-template-rows: auto 1fr auto; }
+  .dlg, .dlg.wide, .dlg.full { max-width: 100vw; width: 100vw; max-height: 100dvh; height: 100dvh; margin: 0; border-radius: 0; border: 0; }
+  .dlg.full .dlg-body { height: calc(100dvh - 52px); }
+  .dd-menu > .m-only { display: flex; }
+  .drawer { left: 8px; right: 8px; top: auto; bottom: calc(68px + env(safe-area-inset-bottom)); width: auto; max-height: 70vh; }
+  .toast { bottom: calc(76px + env(safe-area-inset-bottom)); }
+  .tabbar { display: grid; grid-template-columns: repeat(5, 1fr); position: fixed; left: 0; right: 0; bottom: 0; z-index: 25; background: var(--cp-bg-elevated); border-top: 1px solid var(--cp-border); padding-bottom: env(safe-area-inset-bottom); }
+  .tabbar button { flex-direction: column; gap: 2px; min-height: 58px; border: 0; border-radius: 0; background: transparent; font-size: 12px; color: var(--pp-muted); }
+  .tabbar button .ic { width: 22px; height: 22px; }
+  .tabbar button.on { color: var(--cp-accent); font-weight: 600; }
+}
+
 </style>
 </head>
-<body>
+<body class="sec-workspace">
+<svg class="sprite" aria-hidden="true" focusable="false">
+  <symbol id="i-work" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><path d="M14 17.5h7M17.5 14v7"/></symbol>
+  <symbol id="i-bolt" viewBox="0 0 24 24"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></symbol>
+  <symbol id="i-string" viewBox="0 0 24 24"><path d="M2 8c4 0 5 8 10 8s6-8 10-8"/><circle cx="5.5" cy="9.5" r="2"/><circle cx="12" cy="16" r="2"/><circle cx="18.5" cy="9.5" r="2"/></symbol>
+  <symbol id="i-doc" viewBox="0 0 24 24"><path d="M6 3h8l5 5v13H6z"/><path d="M14 3v5h5M9.5 13h6M9.5 17h6"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6z"/><path d="m9 12 2 2 4-4"/></symbol>
+  <symbol id="i-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.6 9.4a2.5 2.5 0 1 1 3.4 2.4c-.6.3-1 .9-1 1.6v.4M12 17h.01"/></symbol>
+  <symbol id="i-undo" viewBox="0 0 24 24"><path d="M9 14 4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/></symbol>
+  <symbol id="i-redo" viewBox="0 0 24 24"><path d="m15 14 5-5-5-5"/><path d="M20 9H10a6 6 0 0 0 0 12h3"/></symbol>
+  <symbol id="i-file" viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></symbol>
+  <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></symbol>
+  <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></symbol>
+  <symbol id="i-form" viewBox="0 0 24 24"><path d="M9 6h12M9 12h12M9 18h12"/><circle cx="4.5" cy="6" r="1.3"/><circle cx="4.5" cy="12" r="1.3"/><circle cx="4.5" cy="18" r="1.3"/></symbol>
+  <symbol id="i-split" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M11 4v16M5.5 8h3M5.5 12h3"/></symbol>
+  <symbol id="i-visual" viewBox="0 0 24 24"><rect x="3" y="4" width="7" height="6" rx="1"/><rect x="14" y="14" width="7" height="6" rx="1"/><path d="M10 7h4.5v7"/></symbol>
+  <symbol id="i-room" viewBox="0 0 24 24"><path d="M3 4h18v16H3z"/><path d="M11 4v7H3M15 20v-6h6"/></symbol>
+  <symbol id="i-print" viewBox="0 0 24 24"><path d="M7 9V3h10v6"/><rect x="3" y="9" width="18" height="8" rx="2"/><path d="M7 14h10v7H7z"/></symbol>
+  <symbol id="i-up" viewBox="0 0 24 24"><path d="M12 19V5M6 11l6-6 6 6"/></symbol>
+  <symbol id="i-down" viewBox="0 0 24 24"><path d="M12 5v14M6 13l6 6 6-6"/></symbol>
+  <symbol id="i-copy" viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+</svg>
+
+<nav class="side" aria-label="Sections">
+  <div class="brand"><svg class="logo" viewBox="0 0 32 20" aria-hidden="true"><path d="M1 12c5 0 6-6 15-6s10 6 15 6" /><circle cx="6" cy="10.5" r="3.4"/><circle cx="16" cy="6" r="3.4"/><circle cx="26" cy="10.5" r="3.4"/></svg><b>Pixel Planner</b></div>
+  <button class="nav" data-nav="workspace"><svg class="ic"><use href="#i-work"/></svg><span>Wiring workspace</span></button>
+  <button class="nav" data-nav="power"><svg class="ic"><use href="#i-bolt"/></svg><span>Hardware &amp; power</span></button>
+  <button class="nav" data-nav="presets"><svg class="ic"><use href="#i-string"/></svg><span>Pixel presets</span></button>
+  <button class="nav" data-act="guide"><svg class="ic"><use href="#i-doc"/></svg><span>Wiring guide</span></button>
+  <span class="grow"></span>
+  <button class="nav" data-act="warnings" id="navChecks"><svg class="ic"><use href="#i-check"/></svg><span>Plan checks</span><b class="badge" id="checkBadge"></b></button>
+  <button class="nav" data-act="help"><svg class="ic"><use href="#i-help"/></svg><span>Help</span></button>
+  <button class="ver" id="verBadge" data-act="whatsnew" title="What's new"></button>
+</nav>
+
 <header class="topbar">
-  <div class="brand"><span class="logo" aria-hidden="true"><i></i><i></i><i></i></span><b>Pixel Planner</b></div>
-  <input id="projName" class="proj-name" data-id="project" data-f="name" title="Project name" aria-label="Project name">
-  <div class="tb-group">
-    <button data-act="new" title="New project">New</button>
-    <button data-act="open" title="Open a .pixelplan.json file (Ctrl+O)">Open</button>
-    <button data-act="save" title="Save (Ctrl+S)">Save</button>
-    <button data-act="saveAs" title="Save as a new file">Save as</button>
-    <button data-act="demo" title="Load the demo show">Demo</button>
-  </div>
-  <div class="tb-group">
-    <button data-act="undo" title="Undo (Ctrl+Z)" aria-label="Undo">↶</button>
-    <button data-act="redo" title="Redo (Ctrl+Y)" aria-label="Redo">↷</button>
-  </div>
-  <div class="seg" role="tablist" aria-label="View">
-    <button data-view="form" role="tab">Form</button>
-    <button data-view="split" role="tab">Split</button>
-    <button data-view="visual" role="tab">Visual</button>
-    <button data-view="room" role="tab" title="Real-scale room layout with routed cables">Room</button>
+  <div class="title">
+    <input id="projName" class="proj-name" data-id="project" data-f="name" title="Project name" aria-label="Project name">
+    <div id="fileInfo" class="sub"></div>
   </div>
   <span class="grow"></span>
-  <button class="primary" data-act="guide" title="Wiring guide, bill of materials and channel map">Wiring guide</button>
-  <select id="themeSel" title="Theme" aria-label="Theme"><option value="system">System</option><option value="light">Light</option><option value="dark">Dark</option></select>
-  <button class="icon" data-act="help" title="How to use, how it calculates, and what's new" aria-label="Help">i</button>
-  <span class="ver" id="verBadge" data-act="whatsnew" title="What's new"></span>
+  <div class="tb-group">
+    <button class="ib" data-act="undo" title="Undo (Ctrl+Z)" aria-label="Undo"><svg class="ic"><use href="#i-undo"/></svg></button>
+    <button class="ib" data-act="redo" title="Redo (Ctrl+Y)" aria-label="Redo"><svg class="ic"><use href="#i-redo"/></svg></button>
+  </div>
+  <details class="dd filemenu" id="fileMenu">
+    <summary title="New, open, save" aria-label="File"><svg class="ic"><use href="#i-file"/></svg><span class="lbl">File</span></summary>
+    <div class="dd-menu right" role="menu">
+      <button data-act="new" role="menuitem">New project</button>
+      <button data-act="open" role="menuitem">Open… <span class="kbd">Ctrl+O</span></button>
+      <button data-act="save" role="menuitem">Save <span class="kbd">Ctrl+S</span></button>
+      <button data-act="saveAs" role="menuitem">Save as…</button>
+      <hr>
+      <button data-act="printGuide" role="menuitem">Print wiring guide <span class="kbd">Ctrl+P</span></button>
+      <button data-act="demo" role="menuitem">Load the demo show</button>
+      <hr>
+      <button data-act="themeSystem" role="menuitem" id="themeSystem">Follow system theme</button>
+      <button data-act="help" role="menuitem" class="m-only">Help</button>
+      <button data-act="whatsnew" role="menuitem" class="m-only">What's new</button>
+    </div>
+  </details>
+  <button class="ib" id="themeBtn" data-act="theme" title="Switch light / dark" aria-label="Switch light or dark theme"><svg class="ic"><use href="#i-moon"/></svg></button>
+  <button class="primary guide-btn" data-act="guide" title="Wiring guide, bill of materials and channel map"><svg class="ic"><use href="#i-doc"/></svg><span class="lbl">Wiring guide</span></button>
 </header>
 
-<section class="summary" id="summary"></section>
+<section class="summary" id="summary" aria-label="Plan summary"></section>
+
+<div class="wsbar" id="wsbar">
+  <div class="seg" role="tablist" aria-label="Workspace view">
+    <button data-view="form" role="tab"><svg class="ic"><use href="#i-form"/></svg>Form</button>
+    <button data-view="split" role="tab"><svg class="ic"><use href="#i-split"/></svg>Split</button>
+    <button data-view="visual" role="tab"><svg class="ic"><use href="#i-visual"/></svg>Visual</button>
+    <button data-view="room" role="tab" title="Real-scale room layout with routed cables"><svg class="ic"><use href="#i-room"/></svg>Room</button>
+  </div>
+  <span class="grow"></span>
+  <label class="bright" title="Scales every pixel's current. Set the same cap in xLights/FPP or on the Baldrick port.">Brightness <input type="range" id="brightRange" min="5" max="100" step="5" data-id="settings" data-f="brightness" data-t="num" aria-label="Global brightness"><b id="brightVal"></b></label>
+</div>
 
 <main id="main" class="mode-split">
   <div id="formPane" class="pane"></div>
@@ -488,16 +671,18 @@ details.hint ul { margin: 4px 0; padding-left: 18px; font-size: 12px; color: var
     <div class="inspector" id="rinspector"></div>
   </div>
 </main>
+<section id="powerPage" class="page" aria-label="Hardware and power"></section>
+<section id="presetsPage" class="page" aria-label="Pixel presets"></section>
 
-<footer class="statusbar">
-  <button id="warnBtn" data-act="warnings" class="warnbtn"></button>
-  <span id="fileInfo"></span>
-  <span class="grow"></span>
-  <span class="muted">Tip: drag presets from the palette onto a port in the Visual view.</span>
-</footer>
-
+<nav class="tabbar" aria-label="Sections">
+  <button data-tab="form"><svg class="ic"><use href="#i-form"/></svg><span>Form</span></button>
+  <button data-tab="visual"><svg class="ic"><use href="#i-visual"/></svg><span>Visual</span></button>
+  <button data-tab="room"><svg class="ic"><use href="#i-room"/></svg><span>Room</span></button>
+  <button data-tab="power"><svg class="ic"><use href="#i-bolt"/></svg><span>Power</span></button>
+  <button data-tab="presets"><svg class="ic"><use href="#i-string"/></svg><span>Presets</span></button>
+</nav>
 <aside id="warnDrawer" class="drawer" hidden>
-  <div class="drawer-head"><b>Checks</b><span class="grow"></span><button data-act="warnings" aria-label="Close">✕</button></div>
+  <div class="drawer-head"><b>Plan checks</b><span class="grow"></span><button class="ib" data-act="warnings" aria-label="Close"><svg class="ic"><use href="#i-x"/></svg></button></div>
   <div id="warnList"></div>
 </aside>
 
@@ -507,17 +692,31 @@ details.hint ul { margin: 4px 0; padding-left: 18px; font-size: 12px; color: var
 <dialog id="libDlg" class="dlg full"></dialog>
 <dialog id="compDlg" class="dlg wide"></dialog>
 <dialog id="askDlg" class="dlg"></dialog>
-<div id="toast" class="toast" hidden></div>
+<div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
 <input type="file" id="fileInput" accept=".json,.pixelplan.json,application/json" hidden>
 
 <script>
 // Bump APP_VERSION on every code change and add an entry to CHANGELOG (newest first).
-// The version shows in the top-right corner and the "i" dialog shows the change log.
+// The version shows at the bottom of the sidebar; clicking it opens What's new (the change log).
 window.PP = window.PP || {};
 PP.APP_NAME = 'Pixel Planner';
-PP.APP_VERSION = '1.1.0';
-PP.BUILT = '29 Sept 2026, 11:33';  // filled in by Build-Portable.ps1 ("Last updated" date and time)
+PP.APP_VERSION = '1.2.0';
+PP.BUILT = '29 Sept 2026, 12:00';  // filled in by Build-Portable.ps1 ("Last updated" date and time)
 PP.CHANGELOG = [
+  {
+    version: '1.2.0', date: '2026-09-29', items: [
+      'New layout: a sidebar with task sections (Wiring workspace, Hardware & power, Pixel presets, Wiring guide, Plan checks). Form, Split, Visual and Room now live inside the workspace.',
+      'Leaner summary: four cards for pixels and channels, estimated load, PSU budget and plan checks, with the one thing to fix first. Brightness moved next to the views.',
+      'Plan checks panel shows what to fix first, groups errors, warnings and notes, and lists the assumptions behind every number (pixel draw, wire, PSU target, mains, data, cost).',
+      'Hardware & power page: every PSU with its load bar and Mean Well datasheet, every distro with mains current and the Baldrick board manual, plus all project settings.',
+      'Wiring guide: new assumptions section and a sources and datasheets table. Print or save as PDF from the File menu or with Ctrl+P; printouts are always light.',
+      'Room view: rotate items (R, Shift+R or the panel), nudge with the arrow keys (Shift for 1 m) and give any item its own colour.',
+      'Pixel presets can set their own spacing and string wire, and "Add to chain" adds a preset to the selected port or after the selected string.',
+      'Light and dark theme switch in the top bar, or follow the system theme from the File menu.',
+      'Phone layout: bottom tabs for Form, Visual, Room, Power and Presets, larger touch targets, pan and zoom on the diagrams, and panels that slide up from the bottom.',
+      'Bigger, clearer text and better contrast for warnings and status colours in both themes.'
+    ]
+  },
   {
     version: '1.1.0', date: '2026-09-29', items: [
       'New Room view: lay out controller boxes, pixel props, sensors and effects at real scale in metres, on a grid you can snap to.',
@@ -625,6 +824,10 @@ PP.CHANGELOG = [
     { id: 'HLG-600H-24', v: 24, a: 25, adj: [22.4, 25.6], ip: 'IP65/67 waterproof' }
   ];
   C.psuById = id => C.psus.find(p => p.id === id);
+  // Manufacturer documents, linked from the wiring guide.
+  C.boardUrl = key => C.boards[key] ? 'https://www.baldrickboard.com/en/boards/' + key + '/manual' : '';
+  C.psuSeries = id => String(id || '').replace(/-\d+$/, '');
+  C.psuUrl = id => C.psuById(id) ? 'https://www.meanwell.com/Upload/PDF/' + C.psuSeries(id) + '/' + C.psuSeries(id) + '-SPEC.PDF' : '';
 
   // Copper wire: ohms per metre for ONE conductor, and a conservative continuous current for
   // pixel extensions/feeds (bundled, outdoors). Loop resistance (+V and GND) is twice ohmPerM.
@@ -933,6 +1136,13 @@ PP.CHANGELOG = [
     pixels: (typeId, count, lib) => {
       const t = (lib || C.pixelTypes).find(x => x.id === typeId) || C.pixelTypes[0];
       return { id: M.uid('it'), kind: 'pixels', typeId: t.id, count: count || 50, spacing: t.spacing, gauge: t.gauge, label: '' };
+    },
+    // A preset's own spacing and string wire win over its pixel type's defaults.
+    preset: (pr, lib) => {
+      const it = M.newItem.pixels(pr.typeId, pr.count, lib);
+      if (pr.spacing != null && pr.spacing !== '' && isFinite(+pr.spacing)) it.spacing = +pr.spacing;
+      if (pr.gauge) it.gauge = pr.gauge;
+      return it;
     },
     inject: (psuId, length = 3, gauge = 'awg16') => ({ id: M.uid('it'), kind: 'inject', psuId, length, gauge, isolate: false, label: '' })
   };
@@ -1413,7 +1623,28 @@ PP.CHANGELOG = [
     R.warnings.sort((a, b) => order[a.level] - order[b.level]);
     R.counts = { error: 0, warn: 0, info: 0 };
     R.warnings.forEach(w => R.counts[w.level]++);
+    R.assumptions = K.assumptions(p, R);
     return R;
+  };
+
+  // The planning assumptions behind the numbers, shown next to the checks and in the wiring guide.
+  K.assumptions = (p, R) => {
+    const st = p.settings, used = new Map();
+    p.distros.forEach(d => d.controllers.forEach(c => c.ports.forEach(pt => pt.chain.forEach(it => {
+      if (it.kind === 'pixels') { const t = M.pixelType(p, it.typeId); if (t) used.set(t.id, t); }
+    }))));
+    const a = [];
+    const types = Array.from(used.values());
+    if (types.length) a.push({ k: 'Pixel draw', v: 'Full-white watts from your pixel library: ' + types.map(t => t.name + ' ' + t.w + ' W').join(', ') + '. Measure one of yours if you can.' });
+    a.push({ k: 'Brightness', v: 'Loads use ' + st.brightness + '% global brightness, multiplied by each port\'s own brightness.' });
+    a.push({ k: 'Wire', v: 'Copper resistance at 20 °C for +V and GND; connectors, joints and heat are not included. Current limits are conservative for bundled outdoor cable.' });
+    a.push({ k: 'PSUs', v: 'Rated output from the Mean Well datasheet with no temperature derating; your design target is ' + st.psuTargetPct + '% load. ' + st.psuEfficiency + '% efficiency for mains draw.' });
+    a.push({ k: 'Mains', v: st.mainsV + ' V supply on a ' + st.mainsCircuitA + ' A circuit, per distro.' });
+    a.push({ k: 'Controllers', v: 'Port limits are Baldrick figures at 40 fps (' + st.universeSize + ' channels per universe). Fuse and bank ratings come from the board specs.' });
+    a.push({ k: 'Data', v: 'Data runs longer than ' + st.dataWarnM + ' m between pixels are flagged.' });
+    if (p.rooms && p.rooms.some(r => r.cables.length)) a.push({ k: 'Room cables', v: 'Routed length edge to edge plus ' + st.cableSlackM + ' m slack per cable (unless a cable sets its own).' });
+    a.push({ k: 'Running cost', v: st.typicalPct + '% average of full white, ' + st.hoursPerNight + ' h a night for ' + st.nights + ' nights at ' + st.currency + st.tariff + '/kWh.' });
+    return a;
   };
 
   function countBefore(r, k) { let n = 0; for (let i = 0; i < k; i++) if (r.L.nodes[i].kind === 'pixel') n++; return n; }
@@ -1732,12 +1963,14 @@ PP.CHANGELOG = [
     const c = H.comp(p, n.ref);
     return c ? [Math.max(0.3, c.w / 100), Math.max(0.3, c.h / 100)] : [0.3, 0.3];
   };
-  H.rect = (p, n) => { const [w, h] = H.nodeSize(p, n); return { cx: +n.x, cy: +n.y, w, h }; };
+  H.rect = (p, n) => { const [w, h] = H.nodeSize(p, n); return { cx: +n.x, cy: +n.y, w, h, rot: +n.rot || 0 }; };
   // Where a line from the node's centre towards q leaves the node outline.
   const clip = (r, q) => {
     const dx = q.x - r.cx, dy = q.y - r.cy;
     if (!dx && !dy) return { x: r.cx, y: r.cy };
-    const t = Math.min(dx ? (r.w / 2) / Math.abs(dx) : Infinity, dy ? (r.h / 2) / Math.abs(dy) : Infinity, 1);
+    // Work in the node's own (unrotated) frame; the ray fraction t is the same in both frames.
+    const a = -(r.rot || 0) * Math.PI / 180, lx = dx * Math.cos(a) - dy * Math.sin(a), ly = dx * Math.sin(a) + dy * Math.cos(a);
+    const t = Math.min(lx ? (r.w / 2) / Math.abs(lx) : Infinity, ly ? (r.h / 2) / Math.abs(ly) : Infinity, 1);
     return { x: r.cx + dx * t, y: r.cy + dy * t };
   };
   // Full routed path: node A edge -> pivots -> node B edge.
@@ -2070,6 +2303,7 @@ PP.CHANGELOG = [
   };
   U.$ = (s, el = document) => el.querySelector(s);
   U.$$ = (s, el = document) => Array.from(el.querySelectorAll(s));
+  U.ic = n => `<svg class="ic" aria-hidden="true" focusable="false"><use href="#i-${n}"/></svg>`;
   U.esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   U.num = (v, d = 2) => (v == null || !isFinite(v)) ? '-' : (+v).toFixed(d).replace(/\.?0+$/, m => m.startsWith('.') ? '' : m);
 
@@ -2152,12 +2386,12 @@ PP.CHANGELOG = [
       ? `<input type="checkbox" data-id="${id}" data-f="${f}" data-t="bool"${v ? ' checked' : ''} ${attrs}>`
       : `<input ${t === 'num' ? 'type="number"' : 'type="text"'} data-id="${id}" data-f="${f}" data-t="${t}" value="${esc(v)}" ${attrs}>`;
   const sel = (id, f, opts, attrs = '', t = 'str') => `<select data-id="${id}" data-f="${f}" data-t="${t}" ${attrs}>${opts}</select>`;
-  const btn = (act, label, id = '', cls = '', title = '', extra = '') => `<button class="${cls}" data-act="${act}" data-id="${id}" ${title ? `title="${esc(title)}"` : ''} ${extra}>${label}</button>`;
+  const btn = (act, label, id = '', cls = '', title = '', extra = '') => `<button class="${cls}${label.startsWith('<svg') ? ' icb' : ''}" data-act="${act}" data-id="${id}" ${title ? `title="${esc(title)}"${label.startsWith('<svg') ? ` aria-label="${esc(title)}"` : ''}` : ''} ${extra}>${label}</button>`;
   const det = (key, cls, summary, body, defOpen = false) => {
     const open = U.open.has(key) || (defOpen && !U.open.has('!' + key));
     return `<details class="${cls}" data-open-id="${key}"${open ? ' open' : ''}><summary>${summary}</summary>${body}</details>`;
   };
-  const chev = '<span class="chev">▶</span>';
+  const chev = '<span class="chev" aria-hidden="true"></span>';
 
   // ---------- whole form ----------
   F.render = (p, R) => {
@@ -2166,7 +2400,6 @@ PP.CHANGELOG = [
     const act = document.activeElement;
     const focusKey = act && pane.contains(act) && act.dataset && act.dataset.id ? act.dataset.id + '|' + act.dataset.f : null;
     let h = '';
-    h += det('sec-settings', 'sec', `${chev}Project settings <span class="pill">${p.settings.brightness}% brightness</span><span class="pill">warn below ${100 - p.settings.warnDropPct}% V</span>`, settings(p));
     h += `<div class="sec"><div class="sec-head">Distros <span class="pill">${p.distros.length}</span><span class="grow"></span>
       ${btn('balanceAll', 'Balance all PSUs', '', 'small', 'Spread banks and injection feeds across the PSUs in each distro')}
       ${btn('autoInjectAll', 'Auto-inject all', '', 'small', 'Add injection points to every run that drops too low')}
@@ -2174,7 +2407,6 @@ PP.CHANGELOG = [
     if (!p.distros.length) h += `<div class="empty">No distros yet. A distro is an enclosure holding a controller and its PSUs.<br><br>${btn('addDistro', '+ Add a distro', '', 'primary')} ${btn('demo', 'Load the demo show')}</div>`;
     p.distros.forEach(d => { h += F.distro(p, R, d); });
     h += '</div>';
-    h += det('sec-library', 'sec', `${chev}Library: pixel types and string presets <span class="pill">${p.library.pixelTypes.length} types</span><span class="pill">${p.library.presets.length} presets</span>`, library(p));
     h += det('sec-channels', 'sec', `${chev}Channel map <span class="pill">${R.totals.channels} channels</span><span class="pill">${R.totals.universes} universes</span>`, channels(p, R));
     h += `<div class="sec"><textarea data-id="project" data-f="notes" data-t="str" placeholder="Project notes (appear in the wiring guide)">${esc(p.notes)}</textarea></div>`;
     pane.innerHTML = h;
@@ -2229,7 +2461,7 @@ PP.CHANGELOG = [
         <span class="pill ${U.pctClass(mainsPct)}" title="Mains current at full white, including PSU losses and relay loads">${U.num(D.mainsA, 1)} A mains</span>
         <span class="grow"></span>
         ${btn('balance', 'Balance PSUs', d.id, 'small', 'Spread banks and injection feeds across this distro\'s PSUs')}
-        ${btn('delDistro', '✕', d.id, 'small ghost danger', 'Delete distro')}
+        ${btn('delDistro', U.ic('x'), d.id, 'small ghost danger', 'Delete distro')}
       </div>`;
     const HX = R.hw && R.hw.caps.get(d.id);
     if (HX && PP.room) {
@@ -2258,7 +2490,7 @@ PP.CHANGELOG = [
       <td>${inp(s.id, 'vout', s.vout, 'num', `step="0.1" min="${spec.adj[0]}" max="${spec.adj[1]}" style="width:60px" title="Trim range ${spec.adj[0]}-${spec.adj[1]} V"`)}</td>
       <td>${U.bar(r.pct, st.psuTargetPct)}<div class="soft" style="font-size:11px">${U.num(r.pct, 0)}% of ${spec.a} A</div></td>
       <td class="nw">${K.fmtA(r.amps)}</td><td class="nw">${K.fmtW(r.watts)}</td>
-      <td class="nw">${btn('delPsu', '✕', s.id, 'small ghost danger', 'Delete PSU')}</td></tr>`;
+      <td class="nw">${btn('delPsu', U.ic('x'), s.id, 'small ghost danger', 'Delete PSU')}</td></tr>`;
   };
 
   // ---------- controller ----------
@@ -2271,7 +2503,7 @@ PP.CHANGELOG = [
         <label class="fld inline">IP ${inp(c.id, 'ip', c.ip, 'str', 'placeholder="192.168.1.x" style="width:120px"')}</label>
         ${b.ports ? `<span class="pill">${CR.pixels} px</span><span class="pill">${CR.channels} ch</span>` : ''}
         <span class="grow"></span>
-        ${btn('delController', '✕', c.id, 'small ghost danger', 'Delete controller')}
+        ${btn('delController', U.ic('x'), c.id, 'small ghost danger', 'Delete controller')}
       </div>
       <div class="soft" style="font-size:11px;margin-top:3px">${esc(b.note)}</div>
       <div class="banks">`;
@@ -2407,7 +2639,7 @@ PP.CHANGELOG = [
     return `<div class="item k-${it.kind}" id="f-${id}" data-sel="${id}">${body}
       <input class="lbl" data-id="${id}" data-f="label" data-t="str" value="${esc(it.label)}" placeholder="note" aria-label="Note">
       <span class="res">${res}</span>
-      <span class="row" style="gap:2px">${btn('itemUp', '↑', id, 'small ghost', 'Move up')}${btn('itemDown', '↓', id, 'small ghost', 'Move down')}${btn('itemDup', '⧉', id, 'small ghost', 'Duplicate')}${btn('itemDel', '✕', id, 'small ghost danger', 'Remove')}</span></div>`;
+      <span class="row" style="gap:2px">${btn('itemUp', U.ic('up'), id, 'small ghost', 'Move up')}${btn('itemDown', U.ic('down'), id, 'small ghost', 'Move down')}${btn('itemDup', U.ic('copy'), id, 'small ghost', 'Duplicate')}${btn('itemDel', U.ic('x'), id, 'small ghost danger', 'Remove')}</span></div>`;
   };
 
   // ---------- library ----------
@@ -2420,15 +2652,58 @@ PP.CHANGELOG = [
         <td>${inp(t.id, 'v', t.v, 'num', 'style="width:56px"')}</td><td>${inp(t.id, 'w', t.w, 'num', 'step="0.01" style="width:64px"')}</td>
         <td>${sel(t.id, 'ch', U.opt(3, '3 RGB', t.ch) + U.opt(4, '4 RGBW', t.ch) + U.opt(1, '1', t.ch), '', 'num')}</td>
         <td>${inp(t.id, 'spacing', t.spacing, 'num', 'step="0.01" style="width:64px"')}</td><td>${sel(t.id, 'gauge', U.wireOptions(t.gauge))}</td>
-        <td>${btn('delType', '✕', t.id, 'small ghost danger')}</td></tr>`;
+        <td>${btn('delType', U.ic('x'), t.id, 'small ghost danger', 'Delete pixel type')}</td></tr>`;
     });
-    h += `</table><h4>String presets ${btn('addPresetDef', '+ Preset', '', 'small')}</h4><table class="t"><tr><th>Name</th><th>Pixel type</th><th>Pixels per string</th><th></th></tr>`;
+    h += `</table><h4>String presets ${btn('addPresetDef', '+ Preset', '', 'small')}</h4><table class="t"><tr><th>Name</th><th>Pixel type</th><th>Pixels</th><th>Spacing m</th><th>String wire</th><th>Full white</th><th></th></tr>`;
     p.library.presets.forEach(x => {
-      const id = 'preset:' + x.id;
-      h += `<tr><td>${inp(id, 'name', x.name)}</td><td>${sel(id, 'typeId', U.pixelTypeOptions(p, x.typeId))}</td><td>${inp(id, 'count', x.count, 'num', 'min="1"')}</td><td>${btn('delPresetDef', '✕', x.id, 'small ghost danger')}</td></tr>`;
+      const id = 'preset:' + x.id, t = M.pixelType(p, x.typeId);
+      const wOpts = U.opt('', t ? 'Type default (' + C.wireById(t.gauge).label + ')' : 'Type default', x.gauge || '') + U.wireOptions(x.gauge || '__');
+      const watts = t ? t.w * (+x.count || 0) : 0;
+      h += `<tr><td>${inp(id, 'name', x.name)}</td><td>${sel(id, 'typeId', U.pixelTypeOptions(p, x.typeId))}</td><td>${inp(id, 'count', x.count, 'num', 'min="1" style="width:64px"')}</td>
+        <td>${inp(id, 'spacing', x.spacing == null ? '' : x.spacing, 'num', `step="0.01" min="0" style="width:72px" placeholder="${t ? t.spacing : ''}" title="Leave blank to use the pixel type's spacing"`)}</td><td>${sel(id, 'gauge', wOpts)}</td>
+        <td class="num">${U.num(watts, watts < 10 ? 1 : 0)} W<div class="soft small">${t ? U.num(watts / t.v, 2) + ' A at ' + t.v + ' V' : ''}</div></td>
+        <td class="nowrap">${btn('presetToChain', 'Add to chain', x.id, 'small', 'Add to the selected port, or after the selected string')}${btn('delPresetDef', U.ic('x'), x.id, 'small ghost danger', 'Delete preset')}</td></tr>`;
     });
     return h + `</table><div class="row" style="margin-top:8px">${btn('resetLibrary', 'Reset library to defaults', '', 'small')}<span class="soft">Library travels with the project file.</span></div></div>`;
   }
+
+  // ---------- Hardware & power page ----------
+  F.powerPage = (p, R) => {
+    const st = p.settings, T = R.totals;
+    const pct = T.psuCapA ? T.psuA / T.psuCapA * 100 : 0;
+    let h = `<div class="page-in"><div class="page-head"><h2>Hardware and power</h2><span class="grow"></span>
+      ${btn('balanceAll', 'Balance all PSUs', '', '', 'Spread banks and injection feeds across the PSUs in each distro')}
+      ${btn('libOpen', 'Hardware library', '', '', 'Reusable cable standards, hardware and boxes')}${btn('boxOpen', 'Box builder', '', '', 'Build reusable controller boxes')}</div>
+      <p class="lede">Every PSU against your ${st.psuTargetPct}% design target, mains draw per distro and the settings the numbers depend on.</p>`;
+    h += `<div class="kpis">
+      <div class="card kpi"><span>PSU budget</span><b class="${U.pctClass(pct, st.psuTargetPct)}">${U.num(pct, 0)}%</b><small>${K.fmtA(T.psuA)} of ${U.num(T.psuCapA, 0)} A</small></div>
+      <div class="card kpi"><span>DC at full white</span><b>${K.fmtW(T.dcW)}</b><small>at ${st.brightness}% brightness</small></div>
+      <div class="card kpi"><span>Mains</span><b>${U.num(T.mainsA, 1)} A</b><small>${U.num(T.acW, 0)} W at ${st.mainsV} V</small></div>
+      <div class="card kpi"><span>Season cost</span><b>${esc(st.currency)}${U.num(T.cost, 2)}</b><small>${U.num(T.kWh, 0)} kWh at ${st.typicalPct}% typical</small></div></div>`;
+    h += `<h3>Power supplies</h3><div class="card tcard"><table class="t budget"><tr><th>PSU</th><th>Distro</th><th>Model</th><th>Load</th><th class="num">Amps</th><th>Datasheet</th></tr>`;
+    if (!R.psus.size) h += `<tr><td colspan="6" class="muted">No PSUs yet. Add a distro in the Wiring workspace.</td></tr>`;
+    R.psus.forEach((r, id) => {
+      const d = p.distros.find(x => x.id === r.distroId), cls = U.pctClass(r.pct, st.psuTargetPct), u = C.psuUrl(r.psu.model);
+      h += `<tr class="rowlink" data-act="jump" data-id="${id}"><td><b>${esc(r.psu.name)}</b></td><td>${esc(d ? d.name : '')}</td><td>${esc(r.psu.model === 'custom' ? 'Custom' : r.psu.model)}<div class="soft small">${esc(r.spec.ip)}</div></td>
+        <td style="min-width:140px"><div class="bar ${cls}"><i style="width:${Math.min(100, r.pct)}%"></i><span class="tgt" style="left:${st.psuTargetPct}%"></span></div><span class="${cls} small">${U.num(r.pct, 0)}%</span></td>
+        <td class="num">${K.fmtA(r.amps)} / ${r.spec.a} A</td><td>${u ? `<a href="${esc(u)}" target="_blank" rel="noopener">${esc(C.psuSeries(r.psu.model))} PDF</a>` : '<span class="soft">-</span>'}</td></tr>`;
+    });
+    h += '</table></div>';
+    h += `<h3>Distros and mains</h3><div class="card tcard"><table class="t"><tr><th>Distro</th><th class="num">Pixels</th><th class="num">DC</th><th>Mains</th><th>Boards</th></tr>`;
+    p.distros.forEach(d => {
+      const D = R.distros.get(d.id), mp = D.mainsA / st.mainsCircuitA * 100, cls = mp > 100 ? 'err' : mp > 80 ? 'warn' : 'ok';
+      h += `<tr class="rowlink" data-act="jump" data-id="${d.id}"><td><b>${esc(d.name)}</b></td><td class="num">${D.pixels.toLocaleString()}</td><td class="num">${K.fmtW(D.dcW)}</td>
+        <td style="min-width:140px"><div class="bar ${cls}"><i style="width:${Math.min(100, mp)}%"></i><span class="tgt" style="left:80%"></span></div><span class="small ${cls}">${U.num(D.mainsA, 1)} of ${st.mainsCircuitA} A</span></td>
+        <td>${d.controllers.map(c => `<a href="${esc(C.boardUrl(c.board))}" target="_blank" rel="noopener" title="Baldrick manual">${esc(c.name)}</a>`).join(', ') || '<span class="soft">none</span>'}</td></tr>`;
+    });
+    h += '</table></div>';
+    h += `<h3>Settings</h3>${settings(p)}</div>`;
+    return h;
+  };
+
+  // ---------- Pixel presets page ----------
+  F.presetsPage = (p) => `<div class="page-in"><div class="page-head"><h2>Pixel presets</h2></div>
+    <p class="lede">Pixel types hold the full-white watts, spacing and string wire; presets are the strings you buy. A preset can override spacing and wire. Select a port or a string in the workspace, then press <b>Add to chain</b>.</p>${library(p)}</div>`;
 
   // ---------- channels ----------
   function channels(p, R) {
@@ -2792,7 +3067,7 @@ PP.CHANGELOG = [
       if (data.t === 'preset') {
         const pr = p.library.presets.find(x => x.id === data.id); if (!pr) return;
         if (!chain.length) add.push(M.newItem.cable(5, 'awg18'));
-        add.push(M.newItem.pixels(pr.typeId, pr.count, p.library.pixelTypes));
+        add.push(M.newItem.preset(pr, p.library.pixelTypes));
         if (!e.port.label) e.port.label = pr.name;
       } else if (data.t === 'cable') add.push(M.newItem.cable(data.length, data.gauge));
       else if (data.t === 'inject') {
@@ -2880,6 +3155,8 @@ PP.CHANGELOG = [
   const G = PP.guide = {};
 
   const THEME_VARS = ['--cp-bg', '--cp-bg-elevated', '--cp-surface', '--cp-surface-soft', '--cp-border', '--cp-border-strong', '--cp-text', '--cp-text-muted', '--cp-text-soft', '--cp-accent', '--cp-accent-soft', '--cp-success', '--cp-warning', '--cp-danger', '--cp-link', '--cp-highlight'];
+  // Printed guides always use the light palette.
+  const LIGHT = '--cp-bg:#f7f4ef;--cp-bg-elevated:#fcfbf8;--cp-surface:#ffffff;--cp-surface-soft:#f5f5f5;--cp-border:#dedede;--cp-border-strong:#919191;--cp-text:#242424;--cp-text-muted:#5c5c5c;--cp-text-soft:#6f6f6f;--cp-accent:#b11f4b;--cp-success:#16a34a;--cp-danger:#dc2626;--cp-warning:#b45309;--cp-link:#0078d4;';
   const themeCss = () => {
     const cs = getComputedStyle(document.documentElement);
     return ':root{' + THEME_VARS.map(v => `${v}:${cs.getPropertyValue(v).trim()};`).join('') + '}';
@@ -2980,7 +3257,8 @@ PP.CHANGELOG = [
       ol{margin:4px 0 8px 18px;padding:0}li{margin:3px 0}.card{border:1px solid var(--cp-border);border-radius:10px;padding:10px 14px;margin:8px 0;background:var(--cp-bg-elevated);break-inside:avoid}
       .kpis{display:flex;gap:10px;flex-wrap:wrap}.kpi{border:1px solid var(--cp-border);border-radius:10px;padding:6px 12px;min-width:110px}.kpi b{display:block;font-size:17px}.kpi span{font-size:11px;color:var(--cp-text-muted)}
       .mono{font-family:Consolas,"Courier New",monospace;font-size:12px;word-break:break-all;color:var(--cp-link)}.tick{display:inline-block;width:12px;height:12px;border:1.5px solid var(--cp-border-strong);border-radius:3px;margin-right:6px;vertical-align:-2px}
-      @media print{body{margin:10mm}h2{break-after:avoid}.card{break-inside:avoid}}
+      a{color:var(--cp-link)}.assume{display:grid;grid-template-columns:max-content 1fr;gap:4px 14px;margin:6px 0}.assume dt{font-weight:600}.assume dd{margin:0}
+      @media print{:root{${LIGHT}}body{margin:10mm;background:#fff}h2{break-after:avoid}.card{break-inside:avoid}a{text-decoration:none}}
     </style></head><body>`;
     h += `<h1>${esc(p.name)} — wiring guide${scopeName ? ' · ' + esc(scopeName) : ''}</h1><div class="muted">${esc(PP.APP_NAME)} ${esc(PP.APP_VERSION)} · ${esc(date)} · global brightness ${st.brightness}%</div>`;
     if (p.notes) h += `<p>${esc(p.notes).replace(/\n/g, '<br>')}</p>`;
@@ -2990,6 +3268,7 @@ PP.CHANGELOG = [
       <div class="kpi"><b>${K.fmtA(T.psuA)} / ${U.num(T.psuCapA, 0)} A</b><span>PSU load</span></div><div class="kpi"><b>${esc(st.currency)}${U.num(T.cost, 2)}</b><span>season cost (${st.typicalPct}% typical)</span></div></div>`;
     const errs = R.warnings.filter(w => w.level !== 'info');
     if (errs.length) h += `<h2>Check before you build (${errs.length})</h2><ul>${errs.map(w => `<li class="${w.level}">${esc(w.msg)}</li>`).join('')}</ul>`;
+    if (R.assumptions && R.assumptions.length) h += `<h2>Assumptions</h2><dl class="assume">${R.assumptions.map(a => `<dt>${esc(a.k)}</dt><dd>${esc(a.v)}</dd>`).join('')}</dl>`;
 
     // Network
     h += `<h2>Network</h2><table><tr><th>Controller</th><th>Board</th><th>Distro</th><th>IP</th><th>Pixels</th><th>Channels</th></tr>`;
@@ -3049,6 +3328,16 @@ PP.CHANGELOG = [
       h += `</table><p class="muted">Lengths are measured edge to edge along the routed path in the room layout, plus slack. Colours are your cable standards.</p>`;
     }
 
+    // Sources: manuals and datasheets for the hardware in scope.
+    const boards = new Set(), series = new Map();
+    p.distros.filter(inScope).forEach(d => { d.controllers.forEach(c => boards.add(c.board)); d.psus.forEach(s => { if (s.model !== 'custom' && C.psuById(s.model)) series.set(C.psuSeries(s.model), s.model); }); });
+    if (boards.size || series.size) {
+      h += '<h2>Sources and datasheets</h2><table><tr><th>Hardware</th><th>Document</th></tr>';
+      boards.forEach(k => { const u = C.boardUrl(k); h += `<tr><td>${esc(C.boards[k].name)}</td><td><a href="${esc(u)}" target="_blank" rel="noopener">Baldrick manual</a> <span class="mono">${esc(u)}</span></td></tr>`; });
+      series.forEach((id, s) => { const u = C.psuUrl(id); h += `<tr><td>Mean Well ${esc(s)} series</td><td><a href="${esc(u)}" target="_blank" rel="noopener">Datasheet (PDF)</a> <span class="mono">${esc(u)}</span></td></tr>`; });
+      h += '</table><p class="muted">Check ratings against the current documents before you build; manufacturers revise them.</p>';
+    }
+
     // Channel map
     h += `<h2>Channel map</h2><table><tr><th>Controller</th><th>Port</th><th>Label</th><th>Pixels</th><th>Start</th><th>End</th><th>Universes</th></tr>`;
     p.distros.filter(inScope).forEach(d => d.controllers.forEach(c => c.ports.forEach(pt => {
@@ -3067,7 +3356,7 @@ PP.CHANGELOG = [
     if (t === 'distro' && p.distros.some(d => d.id === id)) return { distro: id };
     return null;
   };
-  G.open = () => {
+  G.open = (o = {}) => {
     const p = S.project, R = U.lastR || K.run(p);
     let scope = parseScope(p, scopeKey); if (!scope) scopeKey = '';
     let html = G.build(p, R, scope);
@@ -3076,10 +3365,11 @@ PP.CHANGELOG = [
       (p.rooms.some(r => r.nodes.length) ? `<optgroup label="Room">${p.rooms.map(r => U.opt('room:' + r.id, r.name, scopeKey)).join('')}</optgroup>` : '') +
       `<optgroup label="Distro / box">${p.distros.map(x => U.opt('distro:' + x.id, x.name, scopeKey)).join('')}</optgroup>`;
     d.innerHTML = `<div class="dlg-head"><b>Wiring guide</b><select id="guideScope" aria-label="What to include" title="Build the guide and bill of materials for the whole project, one room or one box">${opts}</select><span class="grow"></span>
-      <button data-g="print" class="primary">Print / PDF</button><button data-g="html">Download HTML</button><button data-g="bom">BOM CSV</button><button data-g="ch">Channel map CSV</button><button data-g="close" aria-label="Close">✕</button></div>
+      <button data-g="print" class="primary">Print / PDF</button><button data-g="html">Download HTML</button><button data-g="bom">BOM CSV</button><button data-g="ch">Channel map CSV</button><button class="ib" data-g="close" aria-label="Close">${U.ic('x')}</button></div>
       <div class="dlg-body"><iframe id="guideFrame" title="Wiring guide"></iframe></div>`;
     const f = U.$('#guideFrame', d);
     f.srcdoc = html;
+    if (o.print) f.addEventListener('load', () => f.contentWindow.print(), { once: true });
     U.$('#guideScope', d).onchange = ev => { scopeKey = ev.target.value; scope = parseScope(p, scopeKey); html = G.build(p, R, scope); f.srcdoc = html; };
     d.onclick = ev => {
       const b = ev.target.closest('[data-g]'); if (!b) return;
@@ -3106,10 +3396,12 @@ PP.CHANGELOG = [
       <h3>The idea</h3>
       <p>Build your show as <b>distros</b> (weatherproof boxes). Each distro holds Mean Well <b>PSUs</b> and Baldrick <b>boards</b>. Each board port drives a <b>run</b>: a chain of cables, pixel strings or floods and power injection points, in the order they are wired, for example <i>port → 5 m 18 AWG → 100 seeds → 100 seeds → injection → 4 × 10 W floods</i>.</p>
       <p>Every change is recalculated straight away. Pixel colours show the voltage each pixel gets at your brightness: <span class="ok">green</span> fine, <span class="warn">amber</span> low (colour shift), <span class="err">red</span> too low, grey no power.</p>
-      <h3>Views</h3>
+      <h3>Getting around</h3>
+      <p>The sidebar has the main tasks: <b>Wiring workspace</b> (build runs), <b>Hardware &amp; power</b> (every PSU and distro with datasheets, plus project settings), <b>Pixel presets</b>, the <b>Wiring guide</b> and <b>Plan checks</b>. On a phone the same sections are tabs along the bottom; Help is in the File menu. The sun or moon button switches light and dark.</p>
+      <h3>Views in the workspace</h3>
       <ul>
-        <li><b>Form</b>: every setting as fields. Ports fold open to show their run.</li>
-        <li><b>Visual</b>: a wiring diagram. Drag presets, cables and injections from the left onto a port (the pad on the right of a board), onto a string to insert after it, or onto the <b>+</b> at the end of a run. Drop PSUs and boards onto a distro. Drag a distro by its title bar. Scroll to zoom, drag the background to pan. The panel on the right edits whatever you click.</li>
+        <li><b>Form</b>: every distro, PSU, board and port as fields. Ports fold open to show their run.</li>
+        <li><b>Visual</b>: a wiring diagram. Drag presets, cables and injections from the left onto a port (the pad on the right of a board), onto a string to insert after it, or onto the <b>+</b> at the end of a run. Drop PSUs and boards onto a distro. Drag a distro by its title bar. Scroll to zoom, drag the background to pan. The panel on the right edits whatever you click. On a phone, drag with one finger to pan and use + and − to zoom.</li>
         <li><b>Split</b>: both at once. Clicking in one highlights the same thing in the other.</li>
         <li><b>Room</b>: a real-scale layout of where things go. See below.</li>
       </ul>
@@ -3119,6 +3411,7 @@ PP.CHANGELOG = [
         <li>Drag <b>controller boxes</b>, distros, <b>pixel runs</b> (linked to a port, so their pixels count), and sensors, buttons, actuators or effects in from the left.</li>
         <li>To connect two things, hover one and drag from the small circle on its right edge onto the other. The cable type is picked from the connectors both ends have; change it in the panel.</li>
         <li>Select a cable to route it: drag a <b>+</b> to add a pivot, drag pivots to go around paths and doors, double-click a pivot to remove it. Drag a square end onto another item to move that end. Hold <span class="kbd">Alt</span> to place off the grid; pivots line up with their neighbours so runs stay square.</li>
+        <li>Select an item and press <span class="kbd">R</span> to rotate it 90° (<span class="kbd">Shift+R</span> the other way), or use the arrow keys to nudge it one grid step (<span class="kbd">Shift</span> for 1 m). The panel also sets any angle and a colour of your own.</li>
         <li>Pick a <b>cable standard</b> for each cable (or type a custom length). A standard that is too short turns the cable red with the shortfall shown. <b>Fit cables</b> gives every cable the shortest standard that fits.</li>
         <li><b>Flow</b> animates cable direction, <b>Lengths</b> shows every length (selected and short cables always do), and <b>Cables</b> hides types you are not working on.</li>
       </ul>
@@ -3130,15 +3423,15 @@ PP.CHANGELOG = [
       </ul>
       <h3>Typical workflow</h3>
       <ol>
-        <li>Set global brightness and your limits in <b>Project settings</b>.</li>
+        <li>Set brightness next to the views, and your limits under <b>Hardware &amp; power → Project settings</b>.</li>
         <li>Add a distro, pick its size, add PSUs, add a board, and pick which PSU feeds each power input (bank).</li>
-        <li>Build each port's run with presets. Edit the <b>Library</b> to match your pixels' real wattage and spacing, or to add presets like “100 seed string”.</li>
+        <li>Build each port's run with presets. Use <b>Pixel presets</b> to match your pixels' real wattage, spacing and string wire, or to add presets like “100 seed string”; <b>Add to chain</b> puts one on the selected port.</li>
         <li>Press <b>Auto-inject</b> on a port (or <b>Auto-inject all</b>) to add injection points until every pixel is in the green, then <b>Balance PSUs</b> to spread the load.</li>
-        <li>Clear the checks in the status bar (click one to jump to it).</li>
-        <li>Open the <b>Wiring guide</b> to print a build sheet with PSU trim voltages, fuses, injection feeds, Turniput URLs, bill of materials and channel map.</li>
+        <li>Open <b>Plan checks</b> and clear the errors, starting with the one it says to fix first (click one to jump to it). Check the assumptions listed there match your hardware.</li>
+        <li>Open the <b>Wiring guide</b> to print a build sheet with PSU trim voltages, fuses, injection feeds, Turniput URLs, bill of materials, datasheet links and channel map.</li>
       </ol>
       <h3>Files</h3>
-      <p>Your work autosaves in this browser. Use <b>Save</b> to keep a <span class="kbd">.pixelplan.json</span> file you can back up or send to someone with this app. The file includes the room layouts and a copy of the boxes, parts and cable standards it uses. Shortcuts: <span class="kbd">Ctrl+S</span> save, <span class="kbd">Ctrl+O</span> open, <span class="kbd">Ctrl+Z</span> undo, <span class="kbd">Ctrl+Y</span> redo, <span class="kbd">Delete</span> removes the selected run item, or the selected item or cable in a room.</p>`,
+      <p>Your work autosaves in this browser. Use <b>Save</b> to keep a <span class="kbd">.pixelplan.json</span> file you can back up or send to someone with this app. The file includes the room layouts and a copy of the boxes, parts and cable standards it uses. Shortcuts: <span class="kbd">Ctrl+S</span> save, <span class="kbd">Ctrl+O</span> open, <span class="kbd">Ctrl+Z</span> undo, <span class="kbd">Ctrl+Y</span> redo, <span class="kbd">Ctrl+P</span> print the wiring guide, <span class="kbd">Delete</span> removes the selected run item, or the selected item or cable in a room.</p>`,
     calc: () => `
       <h3>Voltage drop</h3>
       <p>Each port is modelled as a ladder of wire resistances. Every pixel is a load that draws its full-white watts × brightness ÷ voltage. The +V and GND wires both count (round-trip resistance). The solver finds the voltage at every single pixel, including current shared between the port and any injection points, and the current in every wire.</p>
@@ -3147,6 +3440,8 @@ PP.CHANGELOG = [
       <p>An injection point is a feed from a PSU with its own length and gauge. If <b>isolate +V</b> is ticked the +V between the previous section and this one is cut (needed when the feed comes from a different PSU); ground is always shared. <b>Auto-inject</b> places the fewest points it can, furthest along the run first, choosing a gauge from your default upwards, and sizes each feed to the thinnest wire that is rated for its current.</p>
       <h3>Checks</h3>
       <p>PSU load against your target (default 80% continuous), PSU trim range, Baldrick fuse per port (7.5 A), power bank limits, board input voltage, wire ampacity, channel limit per port (2,250 ch = 750 RGB pixels at 40 fps), data gaps over ${esc(PP.store.project ? PP.store.project.settings.dataWarnM : 5)} m, relay ratings, enclosure slots and mains current per distro against your circuit.</p>
+      <h3>Assumptions</h3>
+      <p>Plan checks and the wiring guide list every assumption behind the numbers: pixel draw per type at your brightness, wire gauge and resistance, PSU target and efficiency, mains voltage and circuit, data length limit, room cable slack and running cost inputs. If one is wrong for your hardware, change it in Pixel presets or Hardware &amp; power.</p>
       <h3>Mains and cost</h3>
       <p>Mains amps = DC watts ÷ PSU efficiency ÷ mains voltage, plus relay loads. Running cost uses the “typical show load” percentage, hours per night and nights per season.</p>
       <h3>Room cable lengths</h3>
@@ -3169,7 +3464,7 @@ PP.CHANGELOG = [
     const d = U.$('#helpDlg');
     d.innerHTML = `<div class="dlg-head"><b>${esc(PP.APP_NAME)} <span class="soft" style="font-weight:400">v${esc(PP.APP_VERSION)}</span></b><span class="grow"></span>
       <div class="seg" role="tablist">${tabs.map(([k, l]) => `<button data-tab="${k}" role="tab" class="${k === tab ? 'on' : ''}" aria-selected="${k === tab}">${l}</button>`).join('')}</div>
-      <button data-close aria-label="Close">✕</button></div><div class="dlg-body" id="helpBody">${pages[tab]()}</div>`;
+      <button class="ib" data-close aria-label="Close">${U.ic('x')}</button></div><div class="dlg-body" id="helpBody">${pages[tab]()}</div>`;
     d.onclick = ev => {
       const t = ev.target.closest('[data-tab]');
       if (t) { H.open(t.dataset.tab); return; }
@@ -3357,13 +3652,16 @@ PP.CHANGELOG = [
   function drawNode(p, R, room, n, sel) {
     const r = H.rect(p, n);
     const x = (r.cx - r.w / 2) * PX, y = (r.cy - r.h / 2) * PX, w = r.w * PX, h = r.h * PX;
+    const rad = r.rot * Math.PI / 180, bh = Math.abs(w * Math.sin(rad)) + Math.abs(h * Math.cos(rad));
+    const top = r.cy * PX - bh / 2, bot = r.cy * PX + bh / 2;
+    const tint = n.color ? ` style="--nc:${esc(n.color)}"` : '';
     const isSel = sel === n.id || (n.kind === 'distro' && sel === n.ref);
     let body = '', tip = H.nodeName(p, n, R), label = '', cls = n.kind, capState = 'ok';
     const capsFor = R.hw.caps.get(n.kind === 'distro' ? n.ref : n.id);
     if (capsFor) { const rows = H.capRows(capsFor.caps); capState = rows.some(c => c.state === 'err') ? 'err' : rows.some(c => c.state === 'warn') ? 'warn' : 'ok'; }
     if (n.kind === 'distro') {
       const d = H.distroOf(p, n), t = d && d.boxTpl && H.box(p, d.boxTpl);
-      body = `<rect class="r-box" x="${x}" y="${y}" width="${w}" height="${h}" rx="4"/>`;
+      body = `<rect class="r-box${n.color ? ' tinted' : ''}" x="${x}" y="${y}" width="${w}" height="${h}" rx="4"${tint}/>`;
       if (n.open && t) {
         const k = w / Math.max(1, t.w), k2 = h / Math.max(1, t.h);
         t.items.forEach(it => {
@@ -3378,28 +3676,29 @@ PP.CHANGELOG = [
         tip += `\n${t ? 'Controller box: ' + t.name : 'Distro'}\n${comps.map(x => x.def.name).join(', ')}`;
         if (syms) tip += `\n(${syms})`;
       }
-      label = `<text class="r-label" x="${x + w / 2}" y="${y - 5}" text-anchor="middle">${esc(H.nodeName(p, n, R))}</text>`;
+      label = `<text class="r-label" x="${x + w / 2}" y="${top - 5}" text-anchor="middle">${esc(H.nodeName(p, n, R))}</text>`;
       body += `<circle class="r-dot ${capState}" cx="${x + w - 5}" cy="${y + 5}" r="3.5"><title>${capState === 'err' ? 'Over capacity' : capState === 'warn' ? 'Nearly full' : 'Capacity OK'}</title></circle>`;
     } else if (n.kind === 'prop') {
       const px = H.propPixels(p, R, n), dots = Math.max(2, Math.min(40, Math.round(Math.max(w, h) / 8)));
-      body = `<rect class="r-prop" x="${x}" y="${y}" width="${w}" height="${h}" rx="3"/>`;
+      body = `<rect class="r-prop${n.color ? ' tinted' : ''}" x="${x}" y="${y}" width="${w}" height="${h}" rx="3"${tint}/>`;
       const horiz = w >= h;
       for (let k = 0; k < dots; k++) {
         const f = (k + 0.5) / dots;
         body += `<circle class="r-px" cx="${horiz ? x + w * f : x + w / 2}" cy="${horiz ? y + h / 2 : y + h * f}" r="${Math.min(2.2, Math.min(w, h) / 3)}"/>`;
       }
       tip += `\n${px.toLocaleString()} pixels${n.portId ? '' : ' (not linked to a port)'}`;
-      label = `<text class="r-label" x="${x + w / 2}" y="${y - 4}" text-anchor="middle">${esc(H.nodeName(p, n, R))}</text>`;
+      label = `<text class="r-label" x="${x + w / 2}" y="${top - 4}" text-anchor="middle">${esc(H.nodeName(p, n, R))}</text>`;
     } else {
       const def = H.comp(p, n.ref);
       const cat = C.hwCat(def ? def.cat : 'custom');
-      body = `<g class="r-dev" style="--c:${cat.color}">${shapeFor(cat.id, x, y, w, h)}</g><text class="r-sym" x="${x + w / 2}" y="${y + h / 2 + 3.5}" text-anchor="middle" style="font-size:${Math.max(6, Math.min(11, Math.min(w, h) / 2.4))}px">${esc(def ? def.sym : '?')}</text>`;
+      body = `<g class="r-dev" style="--c:${esc(n.color || cat.color)}">${shapeFor(cat.id, x, y, w, h)}</g><text class="r-sym" x="${x + w / 2}" y="${y + h / 2 + 3.5}" text-anchor="middle" style="font-size:${Math.max(6, Math.min(11, Math.min(w, h) / 2.4))}px">${esc(def ? def.sym : '?')}</text>`;
       tip += def ? `\n${def.name} · ${cat.name}\nPorts: ${Object.keys(def.ports || {}).filter(k => def.ports[k] > 0).map(k => C.portType(k).name).join(', ') || 'none'}` : '';
-      if (n.label || isSel || p.settings.roomLabels) label = `<text class="r-label" x="${x + w / 2}" y="${y + h + 11}" text-anchor="middle">${esc(H.nodeName(p, n, R))}</text>`;
+      if (n.label || isSel || p.settings.roomLabels) label = `<text class="r-label" x="${x + w / 2}" y="${bot + 11}" text-anchor="middle">${esc(H.nodeName(p, n, R))}</text>`;
       if (capsFor && H.capRows(capsFor.caps).length) body += `<circle class="r-dot ${capState}" cx="${x + w}" cy="${y}" r="3"/>`;
     }
-    return `<g class="r-node ${cls}${isSel ? ' sel' : ''}" data-rn="${n.id}">${body}${label}
-      <circle class="r-conn" data-conn="${n.id}" cx="${x + w + 8}" cy="${y + h / 2}" r="5"><title>Drag to another item to connect a cable</title></circle><title>${esc(tip)}</title></g>`;
+    const tf = r.rot ? ` transform="rotate(${r.rot} ${r.cx * PX} ${r.cy * PX})"` : '';
+    return `<g class="r-node ${cls}${isSel ? ' sel' : ''}" data-rn="${n.id}"><g${tf}>${body}
+      <circle class="r-conn" data-conn="${n.id}" cx="${x + w + 8}" cy="${y + h / 2}" r="5"><title>Drag to another item to connect a cable</title></circle></g>${label}<title>${esc(tip)}</title></g>`;
   }
 
   // ---------- inspector ----------
@@ -3444,7 +3743,7 @@ PP.CHANGELOG = [
         <li>Drag boxes, pixel runs and devices in from the left. Drag an item to move it.</li>
         <li>To connect, drag from the small circle on an item's right edge onto another item.</li>
         <li>Select a cable, then drag a <b>+</b> on it to add a pivot. Drag pivots to route around things; double-click a pivot to remove it. Drag a square end onto another item to move that end.</li>
-        <li>Hold Alt while dragging to place things off the grid. Delete removes the selected item or cable.</li>
+        <li>Hold Alt while dragging to place things off the grid. Arrow keys nudge the selected item by one grid step (Shift: 1 m). R rotates it 90°. Delete removes the selected item or cable.</li>
       </ul></details>`;
   }
 
@@ -3456,7 +3755,10 @@ PP.CHANGELOG = [
       <label class="fl wide"><span>Label in room</span><input data-id="${n.id}" data-f="label" value="${esc(n.label)}" placeholder="${esc(H.nodeName(p, Object.assign({}, n, { label: '' }), R))}"></label>
       ${fld(n.id, 'x', 'X (m)', +(+n.x).toFixed(2), 'step="0.1"')}${fld(n.id, 'y', 'Y (m)', +(+n.y).toFixed(2), 'step="0.1"')}
       ${fld(n.id, 'w', 'Width (m)', n.w, `step="0.05" min="0" placeholder="${+dw.toFixed(2)}"`)}${fld(n.id, 'h', 'Depth (m)', n.h, `step="0.05" min="0" placeholder="${+dh.toFixed(2)}"`)}
-    </div>`;
+      ${fld(n.id, 'rot', 'Rotation (°)', +n.rot || 0, 'step="15"')}
+      <label class="fl"><span>Colour</span><span class="colrow"><input type="color" data-id="${n.id}" data-f="color" value="${esc(n.color || '#808080')}" aria-label="Item colour">${n.color ? `<button class="ghost small" data-act="rColor" data-id="${n.id}" title="Use the default colour">Reset</button>` : '<span class="soft small">Default</span>'}</span></label>
+    </div>
+    <div class="ins-actions"><button data-act="rRot" data-id="${n.id}" data-d="-90" title="Rotate 90° anticlockwise">Rotate left</button><button data-act="rRot" data-id="${n.id}" data-d="90" title="Rotate 90° clockwise">Rotate right</button></div>`;
     if (n.kind === 'distro') {
       const d = H.distroOf(p, n);
       if (!d) h += '<p class="err">This distro has been deleted from the project.</p>';
@@ -3512,7 +3814,7 @@ PP.CHANGELOG = [
       <tr><td><b>Required</b></td><td class="num"><b>${esc(H.fmtM(i.req))}</b></td></tr></table>`;
     h += `<label class="fl wide"><span>Physical cable</span><select data-id="${c.id}" data-f="std">${so}</select></label>`;
     if (!c.std) h += `<div class="ins-grid">${fld(c.id, 'len', 'Custom length (m)', c.len || '', `min="0" step="0.5" placeholder="${i.lead ? i.lead.len : 'not set'}"`)}</div>`;
-    const status = i.phys == null ? `<p class="muted">No cable chosen yet.</p>` : i.short ? `<p class="stat-line err">✕ ${esc(H.fmtM(i.phys))} cable is <b>${esc(H.fmtM(-i.spare))} too short</b>. A cable can't stretch: choose a longer one or re-route.</p>` : `<p class="stat-line ok">✓ ${esc(H.fmtM(i.phys))} cable fits with ${esc(H.fmtM(i.spare))} spare.</p>`;
+    const status = i.phys == null ? `<p class="muted">No cable chosen yet.</p>` : i.short ? `<p class="stat-line err">${esc(H.fmtM(i.phys))} cable is <b>${esc(H.fmtM(-i.spare))} too short</b>. A cable can't stretch: choose a longer one or re-route.</p>` : `<p class="stat-line ok">${esc(H.fmtM(i.phys))} cable fits with ${esc(H.fmtM(i.spare))} spare.</p>`;
     h += status;
     if (i.std) h += `<p class="muted small"><span class="sw hw" style="--c:${esc(i.std.color)}"></span>${esc(i.std.tag || '')} ${esc(i.std.connector || '')}${i.std.notes ? ' · ' + esc(i.std.notes) : ''}</p>`;
     const fit = H.fitStd(p, i);
@@ -3520,7 +3822,7 @@ PP.CHANGELOG = [
     if (i.lead) h += `<p class="muted small">The run's lead cable in the Form is ${esc(H.fmtM(i.lead.len))}.</p>`;
     if (i.provider) h += `<p class="muted small">${i.linked ? 'Counted from the port run on' : `Uses ${i.amount} ${esc(C.resources[i.res].name.toLowerCase())} on`} ${esc(H.nodeName(p, i.provider, R))}.</p>`;
     h += `<h4>Route (${c.pts.length} pivot${c.pts.length === 1 ? '' : 's'})</h4>`;
-    h += c.pts.length ? `<table class="mini">${c.pts.map((q, k) => `<tr><td>Pivot ${k + 1}</td><td class="num">${esc(U.num(q.x, 2))}, ${esc(U.num(q.y, 2))} m</td><td><button class="icon sm" data-act="rPivDel" data-id="${c.id}" data-i="${k}" aria-label="Remove pivot ${k + 1}">✕</button></td></tr>`).join('')}</table>` : '<p class="muted small">Straight. Drag the + on the cable to add a pivot.</p>';
+    h += c.pts.length ? `<table class="mini">${c.pts.map((q, k) => `<tr><td>Pivot ${k + 1}</td><td class="num">${esc(U.num(q.x, 2))}, ${esc(U.num(q.y, 2))} m</td><td><button class="icon sm" data-act="rPivDel" data-id="${c.id}" data-i="${k}" aria-label="Remove pivot ${k + 1}">${U.ic('x')}</button></td></tr>`).join('')}</table>` : '<p class="muted small">Straight. Drag the + on the cable to add a pivot.</p>';
     h += `<label class="fl wide"><span>Label</span><input data-id="${c.id}" data-f="label" value="${esc(c.label)}" placeholder="e.g. under the path"></label>`;
     h += `<div class="ins-actions"><button data-act="rPivClear" data-id="${c.id}"${c.pts.length ? '' : ' disabled'}>Straighten</button><button data-act="rReverse" data-id="${c.id}" title="Swap the ends (flow direction)">Reverse</button><button data-act="rDel" data-id="${c.id}">Delete cable</button></div>`;
     return h;
@@ -3613,6 +3915,8 @@ PP.CHANGELOG = [
       RM.refit(); RM.fitOnce();
     },
     rDel: (id) => RM.del(id),
+    rRot: (id, el) => S.commit('rotate', p => { const e = M.find(p, id); if (e && e.type === 'rnode') e.obj.rot = ((((+e.obj.rot || 0) + +el.dataset.d) % 360) + 360) % 360; }),
+    rColor: (id) => S.commit('color', p => { const e = M.find(p, id); if (e && e.type === 'rnode') delete e.obj.color; }),
     rDup: (id) => S.commit('roomDup', p => {
       const e = M.find(p, id); if (!e || e.type !== 'rnode') return;
       const n = M.clone(e.obj); n.id = M.uid('rn'); n.x = r2(+n.x + 0.5); n.y = r2(+n.y + 0.5);
@@ -3872,7 +4176,7 @@ PP.CHANGELOG = [
     d.innerHTML = `<div class="dlg-head"><b>Box builder</b><input class="bx-name" data-bk="name" value="${esc(t.name)}" aria-label="Box name"><span class="soft">${B.dirty ? 'unsaved' : H.lib.boxes[t.id] ? 'saved in your library' : 'from this project'}</span><span class="grow"></span>
         <button data-bx="new" title="Start a new empty box">New</button><button data-bx="copy" title="Save a copy with a new name">Save as copy</button>
         <button data-bx="save" class="primary" title="Save to your reusable library${users.length ? ' and update the boxes in this project' : ''}">Save to library</button>
-        <button data-bx="place" title="Save, then add one to the current room">Place in room</button><button data-bx="close" aria-label="Close">✕</button></div>
+        <button data-bx="place" title="Save, then add one to the current room">Place in room</button><button data-bx="close" class="ib" aria-label="Close">${U.ic('x')}</button></div>
       <div class="bx-body">
         <div class="bx-pal"><div class="muted small" style="padding:4px 6px">Drag parts into the box</div>${pal}<button data-bx="newComp" class="sm" style="margin:6px">+ Custom component</button></div>
         <div class="bx-canvas" id="bxcanvas">${svg}</div>
@@ -4009,7 +4313,7 @@ PP.CHANGELOG = [
           <td><input data-lk="name" value="${esc(s.name)}"></td><td><select data-lk="type">${C.portTypes.map(t => U.opt(t.id, t.name, s.type)).join('')}</select></td>
           <td><input data-lk="length" type="number" min="0.1" step="0.5" value="${esc(s.length)}" class="tiny"></td><td><input data-lk="tag" value="${esc(s.tag)}" class="tiny" placeholder="Blue"></td>
           <td><input data-lk="connector" value="${esc(s.connector)}"></td><td><input data-lk="notes" value="${esc(s.notes)}"></td>
-          <td class="num">${used.get(s.id) || ''}<div class="soft small">${esc(source('cables', s.id))}</div></td><td><button class="icon sm" data-l="delStd" data-id="${esc(s.id)}" aria-label="Delete ${esc(H.stdName(s))}">✕</button></td></tr>`).join('')}</table>
+          <td class="num">${used.get(s.id) || ''}<div class="soft small">${esc(source('cables', s.id))}</div></td><td><button class="icon sm" data-l="delStd" data-id="${esc(s.id)}" aria-label="Delete ${esc(H.stdName(s))}">${U.ic('x')}</button></td></tr>`).join('')}</table>
         <div class="ins-actions"><button data-l="addStd">+ Cable standard</button></div>`;
     } else if (LT === 'components') {
       body = `<p class="muted small">Every part you can drop into a room or a box. Edit a built-in to change its size, ports or limits (you can reset it later), or add your own sensors, actuators and effects.</p><div class="ins-actions"><button data-l="newComp" class="primary">+ New component</button></div>`;
@@ -4017,14 +4321,14 @@ PP.CHANGELOG = [
         const list = H.comps(p).filter(c => c.cat === cat.id); if (!list.length) return;
         body += `<h4><span class="sw hw" style="--c:${cat.color}"></span>${esc(cat.name)}</h4><table class="mini lib-t">${list.map(c => `<tr><td><b>${esc(c.name)}</b> <span class="soft">${esc(c.sym)}</span><div class="soft small">${esc(Object.keys(c.ports || {}).filter(k => c.ports[k] > 0).map(k => C.portType(k).name + (c.ports[k] > 1 ? ' ×' + c.ports[k] : '')).join(', '))}</div></td>
           <td class="soft small">${c.w}×${c.h} cm</td><td class="soft small">${esc(source('components', c.id))}</td>
-          <td class="num"><button class="sm" data-l="editComp" data-id="${esc(c.id)}">Edit</button>${!H.builtin[c.id] && H.lib.components[c.id] ? ` <button class="icon sm" data-l="delComp" data-id="${esc(c.id)}" aria-label="Delete ${esc(c.name)}">✕</button>` : ''}</td></tr>`).join('')}</table>`;
+          <td class="num"><button class="sm" data-l="editComp" data-id="${esc(c.id)}">Edit</button>${!H.builtin[c.id] && H.lib.components[c.id] ? ` <button class="icon sm" data-l="delComp" data-id="${esc(c.id)}" aria-label="Delete ${esc(c.name)}">${U.ic('x')}</button>` : ''}</td></tr>`).join('')}</table>`;
       });
     } else if (LT === 'boxes') {
       const bx = H.boxes(p);
       body = `<p class="muted small">Reusable controller box layouts. Placing one in a room creates a distro with its PSUs and boards, ready to wire in the Form.</p><div class="ins-actions"><button data-l="newBox" class="primary">+ New box</button></div>
         <table class="mini lib-t">${bx.map(b => { const caps = H.capRows(H.capsFrom(itemDefs(b))); return `<tr><td><b>${esc(b.name)}</b><div class="soft small">${b.w}×${b.h}×${b.d} cm · ${b.items.length} parts${b.notes ? ' · ' + esc(b.notes) : ''}</div><div class="soft small">${caps.slice(0, 5).map(c => esc(c.name) + ' ' + c.cap.toLocaleString() + (c.unit ? ' ' + c.unit : '')).join(' · ')}</div></td>
           <td class="soft small">${esc(source('boxes', b.id))}</td>
-          <td class="num"><button class="sm" data-l="editBox" data-id="${esc(b.id)}">Edit</button> <button class="sm" data-l="placeBox" data-id="${esc(b.id)}">Place in room</button>${H.lib.boxes[b.id] ? ` <button class="icon sm" data-l="delBox" data-id="${esc(b.id)}" aria-label="Delete ${esc(b.name)}">✕</button>` : ''}</td></tr>`; }).join('') || '<tr><td class="muted">No boxes yet.</td></tr>'}</table>`;
+          <td class="num"><button class="sm" data-l="editBox" data-id="${esc(b.id)}">Edit</button> <button class="sm" data-l="placeBox" data-id="${esc(b.id)}">Place in room</button>${H.lib.boxes[b.id] ? ` <button class="icon sm" data-l="delBox" data-id="${esc(b.id)}" aria-label="Delete ${esc(b.name)}">${U.ic('x')}</button>` : ''}</td></tr>`; }).join('') || '<tr><td class="muted">No boxes yet.</td></tr>'}</table>`;
     } else {
       const n = k => Object.keys(H.lib[k]).length, np = k => Object.keys(p.hw[k]).length;
       body = `<p>Your library lives in this browser and is shared by every project you open here. Projects also keep their own copy of the hardware they use, so a saved project opens the same anywhere.</p>
@@ -4033,7 +4337,7 @@ PP.CHANGELOG = [
         <h4>This project</h4><div class="ins-actions"><button data-l="push" title="Copy the cables, parts and boxes this project uses into your library">Add this project's hardware to my library</button><button data-l="pull" title="Replace this project's copies with the versions in your library">Update this project from my library</button></div>
         <p class="muted small">Import adds to your library and replaces items with the same id.</p>`;
     }
-    d.innerHTML = `<div class="dlg-head"><b>Hardware library</b><div class="seg sm">${tabs.map(([k, l]) => `<button data-l="tab" data-id="${k}" class="${LT === k ? 'on' : ''}">${l}</button>`).join('')}</div><span class="grow"></span><button data-l="close" aria-label="Close">✕</button></div><div class="dlg-body">${body}</div>`;
+    d.innerHTML = `<div class="dlg-head"><b>Hardware library</b><div class="seg sm">${tabs.map(([k, l]) => `<button data-l="tab" data-id="${k}" class="${LT === k ? 'on' : ''}">${l}</button>`).join('')}</div><span class="grow"></span><button data-l="close" class="ib" aria-label="Close">${U.ic('x')}</button></div><div class="dlg-body">${body}</div>`;
   }
   const stdSave = (id, f, v) => { const s = clone(H.std(S.project, id)); s[f] = f === 'length' ? Math.max(0.1, numOr(v, s.length)) : v; H.put('cables', s); };
   async function libClick(ev) {
@@ -4165,16 +4469,21 @@ PP.CHANGELOG = [
     U.$('#projName').value = p.name;
     document.title = `${p.name} — ${PP.APP_NAME}`;
     summary(p, R);
-    if (U.view !== 'visual' && U.view !== 'room') F.render(p, R);
-    if (U.view === 'split' || U.view === 'visual') { V.renderPalette(p); V.render(p, R); }
-    if (U.view === 'visual') inspector(p, R);
-    if (U.view === 'room') { PP.room.renderTools(p); PP.room.renderPalette(p); PP.room.render(p, R); PP.room.inspector(p, R); }
+    if (U.section === 'power') paint(U.$('#powerPage'), F.powerPage(p, R));
+    else if (U.section === 'presets') paint(U.$('#presetsPage'), F.presetsPage(p, R));
+    else {
+      if (U.view !== 'visual' && U.view !== 'room') F.render(p, R);
+      if (U.view === 'split' || U.view === 'visual') { V.renderPalette(p); V.render(p, R); }
+      if (U.view === 'visual') inspector(p, R);
+      if (U.view === 'room') { PP.room.renderTools(p); PP.room.renderPalette(p); PP.room.render(p, R); PP.room.inspector(p, R); }
+    }
     status(p, R);
     U._renderMs = performance.now() - t0;
   }
 
   function onSelect() {
     const p = S.project, R = U.lastR;
+    if (U.section !== 'workspace') return;
     if (U.view === 'room') { PP.room.render(p, R); PP.room.inspector(p, R); return; }
     if (U.view !== 'visual') F.markSelection(true);
     if (U.view !== 'form') V.render(p, R);
@@ -4193,41 +4502,78 @@ PP.CHANGELOG = [
     if (s && el.contains(s)) s.classList.add('sel');
   }
 
+  // Four headline cards; Plan checks names the one thing to fix first.
   function summary(p, R) {
     const T = R.totals, st = p.settings;
     const psuPct = T.psuCapA ? T.psuA / T.psuCapA * 100 : 0;
-    const mainsMax = Math.max(0, ...Array.from(R.distros.values()).map(d => d.mainsA));
+    const busiest = Array.from(R.distros.entries()).sort((a, b) => b[1].mainsA - a[1].mainsA)[0];
+    const portsUsed = Array.from(R.ports.values()).filter(r => r.pixels).length;
     const card = (k, v, s = '', cls = '', extra = '') => `<div class="card stat ${cls}" ${extra}><div class="k">${k}</div><div class="v">${v}</div><div class="s">${s}</div></div>`;
-    const errs = R.counts.error, warns = R.counts.warn;
+    const c = R.counts, first = R.warnings.find(w => w.level === 'error') || R.warnings.find(w => w.level === 'warn');
+    const pc = U.pctClass(psuPct, st.psuTargetPct);
+    let head, sub;
+    if (c.error) { head = `<span class="err">${c.error} to fix</span>`; sub = c.warn ? `and ${c.warn} warning${c.warn > 1 ? 's' : ''}` : 'before you build'; }
+    else if (c.warn) { head = `<span class="warn">${c.warn} to review</span>`; sub = 'no blockers'; }
+    else { head = '<span class="ok">Ready to build</span>'; sub = 'no errors or warnings'; }
     U.$('#summary').innerHTML =
-      card('Status', errs ? `<span class="err">${errs} error${errs > 1 ? 's' : ''}</span>` : warns ? `<span class="warn">${warns} warning${warns > 1 ? 's' : ''}</span>` : '<span class="ok">All good</span>', errs && warns ? `${warns} warning${warns > 1 ? 's' : ''} too` : `${R.counts.info} note${R.counts.info === 1 ? '' : 's'}`, 'status', 'data-act="warnings" title="Show checks"') +
-      `<div class="card stat bright"><div class="k">Global brightness</div><div class="v"><span id="brightVal">${st.brightness}</span>%</div><input type="range" min="5" max="100" step="5" value="${st.brightness}" data-id="settings" data-f="brightness" data-t="num" aria-label="Global brightness"></div>` +
-      card('Pixels', T.pixels.toLocaleString(), `${R.ports.size ? Array.from(R.ports.values()).filter(r => r.pixels).length : 0} ports in use`) +
-      card('Channels', T.channels.toLocaleString(), `${T.universes} universes of ${st.universeSize}`) +
-      card('DC power', K.fmtW(T.dcW), `full white at ${st.brightness}%`) +
-      card('PSU load', `<span class="${U.pctClass(psuPct, st.psuTargetPct)}">${U.num(psuPct, 0)}%</span>`, `${K.fmtA(T.psuA)} of ${U.num(T.psuCapA, 0)} A`) +
-      card('Mains', `${U.num(T.mainsA, 1)} A`, `busiest distro ${U.num(mainsMax, 1)} A of ${st.mainsCircuitA}`, '', `title="At full white, ${st.mainsV} V, ${st.psuEfficiency}% PSU efficiency"`) +
-      card('Season cost', `${esc(st.currency)}${U.num(T.cost, 2)}`, `${U.num(T.kWh, 0)} kWh at ${st.typicalPct}% typical`);
+      card('Pixels and channels', T.pixels.toLocaleString(), `${T.channels.toLocaleString()} ch · ${T.universes} universe${T.universes === 1 ? '' : 's'} · ${portsUsed} port${portsUsed === 1 ? '' : 's'}`) +
+      card('Estimated load', K.fmtW(T.dcW), `${U.num(T.mainsA, 1)} A mains${busiest ? ` · busiest ${esc(p.distros.find(d => d.id === busiest[0]).name)} ${U.num(busiest[1].mainsA, 1)} of ${st.mainsCircuitA} A` : ''}`, '', `title="Full white at ${st.brightness}% brightness, ${st.mainsV} V, ${st.psuEfficiency}% PSU efficiency"`) +
+      card('PSU design budget', `<span class="${pc}">${U.num(psuPct, 0)}%</span><span class="bar ${pc}" aria-hidden="true"><i style="width:${Math.min(100, psuPct)}%"></i><span class="tgt" style="left:${st.psuTargetPct}%"></span></span>`, `${K.fmtA(T.psuA)} of ${U.num(T.psuCapA, 0)} A · target ${st.psuTargetPct}%`, 'budget', 'data-nav="power" title="Open Hardware and power"') +
+      card('Plan checks', head, `${first ? '<b>Fix first:</b> ' + esc(first.msg) : sub}`, 'checks' + (c.error ? ' has-err' : c.warn ? ' has-warn' : ''), `data-act="warnings" role="button" tabindex="0" title="Show every check and the assumptions behind them"`);
   }
 
   function status(p, R) {
     const c = R.counts;
-    const b = U.$('#warnBtn');
-    b.innerHTML = `${c.error ? `<span class="err">● ${c.error} error${c.error > 1 ? 's' : ''}</span> ` : ''}${c.warn ? `<span class="warn">● ${c.warn} warning${c.warn > 1 ? 's' : ''}</span> ` : ''}${!c.error && !c.warn ? '<span class="ok">● No problems</span> ' : ''}<span class="soft">${c.info} note${c.info === 1 ? '' : 's'}</span>`;
+    const badge = U.$('#checkBadge');
+    badge.textContent = c.error || c.warn || '';
+    badge.className = 'badge' + (c.error ? ' err' : c.warn ? ' warn' : '');
     U.$('#fileInfo').innerHTML = `${esc(S.fileName || 'Not saved to a file yet')}${S.dirty && S.fileName ? ' <span class="warn">· unsaved changes</span>' : ''} <span class="soft">· autosaved in this browser</span>`;
     U.$('[data-act="undo"]').disabled = !S.undo.length;
     U.$('[data-act="redo"]').disabled = !S.redo.length;
-    const list = U.$('#warnList');
-    list.innerHTML = R.warnings.length ? R.warnings.map(w => `<div class="wi ${w.level}" data-act="jump" data-id="${esc(w.ref || '')}"><span class="lvl">${w.level === 'error' ? 'Error' : w.level === 'warn' ? 'Warn' : 'Note'}</span><span>${esc(w.msg)}</span></div>`).join('') : '<div class="muted" style="padding:8px">Nothing to report.</div>';
+    const b = U.$('#brightRange'); if (document.activeElement !== b) b.value = p.settings.brightness;
+    U.$('#brightVal').textContent = p.settings.brightness + '%';
+    const item = w => `<div class="wi ${w.level}" data-act="jump" data-id="${esc(w.ref || '')}"><span class="lvl">${w.level === 'error' ? 'Fix' : w.level === 'warn' ? 'Review' : 'Note'}</span><span>${esc(w.msg)}</span></div>`;
+    const grp = (title, list, open) => list.length ? `<details class="wgrp"${open ? ' open' : ''}><summary>${title} <span class="soft">${list.length}</span></summary>${list.map(item).join('')}</details>` : '';
+    const E = R.warnings.filter(w => w.level === 'error'), W = R.warnings.filter(w => w.level === 'warn'), I = R.warnings.filter(w => w.level === 'info');
+    const first = E[0] || W[0];
+    U.$('#warnList').innerHTML =
+      (first ? `<div class="fixfirst ${first.level}" data-act="jump" data-id="${esc(first.ref || '')}"><b>Fix first</b><span>${esc(first.msg)}</span></div>` : '<div class="fixfirst ok"><b>Ready to build</b><span>No errors or warnings. Check the assumptions below still match your hardware.</span></div>') +
+      grp('Errors: fix before you build', E, true) + grp('Warnings: worth reviewing', W, !E.length) + grp('Notes', I, false) +
+      `<details class="wgrp"><summary>Assumptions <span class="soft">${R.assumptions.length}</span></summary><dl class="assume">${R.assumptions.map(a => `<dt>${esc(a.k)}</dt><dd>${esc(a.v)}</dd>`).join('')}</dl></details>`;
     U.$('#warnDrawer').hidden = !drawerOpen;
   }
+
+  // ---------- sections (sidebar / mobile tabs) ----------
+  function paint(el, html) {
+    const act = document.activeElement;
+    const key = act && el.contains(act) && act.dataset && act.dataset.id ? act.dataset.id + '|' + act.dataset.f : null;
+    const sc = el.scrollTop;
+    el.innerHTML = html; el.scrollTop = sc;
+    if (key) { const [id, f] = key.split('|'); const x = U.$$('[data-id]', el).find(q => q.dataset.id === id && q.dataset.f === f); if (x) x.focus({ preventScroll: true }); }
+  }
+  function setSection(s) {
+    U.section = s;
+    document.body.className = 'sec-' + s;
+    U.$$('.side [data-nav]').forEach(b => b.classList.toggle('on', b.dataset.nav === s));
+    try { localStorage.setItem('pixelplanner.section', s); } catch (e) { }
+    marks();
+    render();
+    if (s === 'workspace') { if (U.view === 'room') PP.room.fitOnce(); else if (U.view !== 'form' && !fitted) requestAnimationFrame(() => { V.fit(); fitted = true; }); }
+  }
+  function marks() {
+    const tab = U.section === 'workspace' ? (U.view === 'split' ? 'form' : U.view) : U.section;
+    U.$$('.tabbar [data-tab]').forEach(b => { const on = b.dataset.tab === tab; b.classList.toggle('on', on); b.setAttribute('aria-current', on ? 'page' : 'false'); });
+  }
+  PP.setSection = setSection;
 
   // ---------- view ----------
   function setView(v) {
     U.view = v;
+    if (U.section !== 'workspace') { U.section = 'workspace'; document.body.className = 'sec-workspace'; U.$$('.side [data-nav]').forEach(b => b.classList.toggle('on', b.dataset.nav === 'workspace')); try { localStorage.setItem('pixelplanner.section', 'workspace'); } catch (e) { } }
     U.$('#main').className = 'mode-' + v;
     U.$$('.seg [data-view]').forEach(b => { b.classList.toggle('on', b.dataset.view === v); b.setAttribute('aria-selected', b.dataset.view === v); });
     try { localStorage.setItem('pixelplanner.view', v); } catch (e) { }
+    marks();
     render();
     if (v === 'room') PP.room.fitOnce();
     else if (v !== 'form' && !fitted) requestAnimationFrame(() => { V.fit(); fitted = true; });
@@ -4252,6 +4598,7 @@ PP.CHANGELOG = [
       if (t === 'num') {
         const n = parseFloat(v);
         if (String(v).trim() === '' && ['w', 'h', 'slack', 'len'].includes(f) && (o.kind || o.a)) { o[f] = null; return; }
+        if (String(v).trim() === '' && f === 'spacing' && id.startsWith('preset:')) { o.spacing = null; return; }
         if (!isFinite(n)) return;
         v = n;
         if (f === 'brightness') v = Math.min(100, Math.max(1, v));
@@ -4259,6 +4606,7 @@ PP.CHANGELOG = [
         if (f === 'count') v = Math.max(1, Math.round(v));
         if (f === 'grid') v = Math.max(0.05, v);
         if (f === 'pixels') v = Math.round(v);
+        if (f === 'rot') v = ((Math.round(v) % 360) + 360) % 360;
         if ((f === 'w' || f === 'h') && o.nodes) v = Math.max(1, v);
       }
       if (f.startsWith('banks.')) v = v || null;
@@ -4309,8 +4657,11 @@ PP.CHANGELOG = [
     undo: () => S.doUndo(),
     redo: () => S.doRedo(),
     guide: () => PP.guide.open(),
+    printGuide: () => PP.guide.open({ print: true }),
     help: () => PP.help.open('use'),
     whatsnew: () => PP.help.open('news'),
+    theme: () => setTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'),
+    themeSystem: () => { setTheme('system'); U.toast('Following your system theme.'); },
     warnings: () => { drawerOpen = !drawerOpen; U.$('#warnDrawer').hidden = !drawerOpen; },
     jump: (id) => {
       if (!id) return;
@@ -4322,6 +4673,7 @@ PP.CHANGELOG = [
         return;
       }
       if (e && U.view === 'room') { S.selection = id; setView(e.type === 'distro' ? 'room' : 'split'); return; }
+      if (U.section !== 'workspace') { S.selection = id; if (e && e.type === 'item') U.open.add('pt-' + e.port.id); setView(U.view); return; }
       if (S.selection === id) onSelect(); else S.select(id);
     },
     select: (id) => S.select(id),
@@ -4411,9 +4763,31 @@ PP.CHANGELOG = [
       S.commit('addPreset', p => {
         const e = portCtx(p, id), pr = p.library.presets.find(x => x.id === pid); if (!pr) return;
         if (!e.port.chain.length) e.port.chain.push(M.newItem.cable(5, 'awg18'));
-        for (let i = 0; i < qty; i++) e.port.chain.push(M.newItem.pixels(pr.typeId, pr.count, p.library.pixelTypes));
+        for (let i = 0; i < qty; i++) e.port.chain.push(M.newItem.preset(pr, p.library.pixelTypes));
         if (!e.port.label) e.port.label = pr.name;
       });
+    },
+    // Library "Add to chain": append the preset to the selected port, or after the selected string.
+    presetToChain: (id) => {
+      const p0 = S.project, e0 = S.selection ? M.find(p0, S.selection) : null;
+      let portId = null, after = null;
+      if (e0 && e0.type === 'port') portId = e0.obj.id;
+      else if (e0 && e0.type === 'item') { portId = e0.port.id; after = e0.obj.id; }
+      else if (e0 && e0.type === 'rnode' && e0.obj.portId) portId = e0.obj.portId;
+      if (!portId) return U.toast('Select a port or a string first (in the Form, Visual or Room view), then press Add to chain.', 4500);
+      let name = '', where = '';
+      S.commit('presetToChain', p => {
+        const e = M.find(p, portId), pr = p.library.presets.find(x => x.id === id); if (!e || !pr) return;
+        const ch = e.port.chain, add = [];
+        if (!ch.length) add.push(M.newItem.cable(5, 'awg18'));
+        add.push(M.newItem.preset(pr, p.library.pixelTypes));
+        const at = after ? ch.findIndex(x => x.id === after) + 1 : ch.length;
+        ch.splice(at, 0, ...add);
+        if (!e.port.label) e.port.label = pr.name;
+        S.selection = add[add.length - 1].id;
+        name = pr.name; where = e.controller.name + ' port ' + e.port.num;
+      });
+      if (name) U.toast('Added ' + name + ' to ' + where + '.');
     },
     addCable: (id) => S.commit('addCable', p => { portCtx(p, id).port.chain.push(M.newItem.cable(5, 'awg18')); }),
     addPixels: (id) => S.commit('addPixels', p => {
@@ -4519,16 +4893,21 @@ PP.CHANGELOG = [
   function bind() {
     document.addEventListener('change', ev => {
       const el = ev.target;
-      if (el.id === 'themeSel') { setTheme(el.value); return; }
       if (el.id === 'fileInput') { const f = el.files[0]; if (f) f.text().then(t => loadText(t, f.name, null)); el.value = ''; return; }
       if (el.closest && el.closest('#boxDlg, #libDlg, #compDlg')) return;
       if (PP.room.onChange(el)) return;
       if (el.dataset && el.dataset.id && el.dataset.f) onField(el);
     });
     document.addEventListener('input', ev => {
-      if (ev.target.type === 'range' && ev.target.dataset.f === 'brightness') { const v = U.$('#brightVal'); if (v) v.textContent = ev.target.value; }
+      if (ev.target.type === 'range' && ev.target.dataset.f === 'brightness') { const v = U.$('#brightVal'); if (v) v.textContent = ev.target.value + '%'; }
     });
     document.addEventListener('click', ev => {
+      const fm = U.$('#fileMenu'); if (fm.open && (!fm.contains(ev.target) || ev.target.closest('.dd-menu button'))) fm.open = false;
+      if (ev.target.closest('a[href]')) return;
+      const nv = ev.target.closest('[data-nav]');
+      if (nv && !ev.target.closest('dialog')) { setSection(nv.dataset.nav); return; }
+      const tb = ev.target.closest('.tabbar [data-tab]');
+      if (tb) { const k = tb.dataset.tab; if (k === 'power' || k === 'presets') setSection(k); else setView(k); return; }
       const v = ev.target.closest('[data-view]');
       if (v && !ev.target.closest('#svg') && !ev.target.closest('dialog')) { setView(v.dataset.view); return; }
       const a = ev.target.closest('[data-act]');
@@ -4564,23 +4943,47 @@ PP.CHANGELOG = [
         const e = M.find(S.project, S.selection);
         if (e && e.type === 'item') { ev.preventDefault(); A.itemDel(S.selection); }
         else if (e && (e.type === 'rnode' || e.type === 'rcable') && U.view === 'room') { ev.preventDefault(); PP.room.del(S.selection); }
+      } else if ((ev.ctrlKey || ev.metaKey) && k === 'p' && !inDlg) { ev.preventDefault(); A.printGuide(); }
+      else if (U.view === 'room' && !inField && !inDlg && !ev.ctrlKey && !ev.metaKey && !ev.altKey && S.selection && (/^arrow/.test(k) || k === 'r')) {
+        const e = M.find(S.project, S.selection);
+        const nid = e && (e.type === 'rnode' ? e.obj.id : e.type === 'distro' ? ((PP.room.current(S.project).nodes.find(n => n.kind === 'distro' && n.ref === e.obj.id)) || {}).id : null);
+        if (!nid) return;
+        ev.preventDefault();
+        S.commit(k === 'r' ? 'rotate' : 'nudge', p => {
+          const x = M.find(p, nid); if (!x) return; const n = x.obj;
+          if (k === 'r') { n.rot = ((((+n.rot || 0) + (ev.shiftKey ? -90 : 90)) % 360) + 360) % 360; return; }
+          const st = ev.shiftKey ? 1 : (+x.room.grid || 0.5), r2 = v => Math.round(v * 100) / 100;
+          if (k === 'arrowleft') n.x = r2(+n.x - st); if (k === 'arrowright') n.x = r2(+n.x + st);
+          if (k === 'arrowup') n.y = r2(+n.y - st); if (k === 'arrowdown') n.y = r2(+n.y + st);
+        });
       } else if (k === 'escape' && drawerOpen) { drawerOpen = false; U.$('#warnDrawer').hidden = true; }
+      else if (k === 'escape' && U.$('#fileMenu').open) U.$('#fileMenu').open = false;
+      else if ((k === 'enter' || k === ' ') && document.activeElement && document.activeElement.matches('.stat[data-act]')) { ev.preventDefault(); A[document.activeElement.dataset.act](); }
     });
     window.addEventListener('resize', () => { if (U.view !== 'form' && !fitted) V.fit(); });
   }
 
   function setTheme(v) {
     try { localStorage.setItem('pixelplanner.theme', v); } catch (e) { }
+    U.themePref = v;
     const sys = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-    document.documentElement.setAttribute('data-theme', v === 'system' ? sys : v);
+    const eff = v === 'system' ? sys : v;
+    document.documentElement.setAttribute('data-theme', eff);
+    const b = U.$('#themeBtn');
+    U.$('use', b).setAttribute('href', eff === 'dark' ? '#i-sun' : '#i-moon');
+    b.title = eff === 'dark' ? 'Switch to light theme' : 'Switch to dark theme';
+    b.setAttribute('aria-label', b.title);
+    U.$('#themeSystem').classList.toggle('on', v === 'system');
+    if (U.view === 'room' && PP.room && U.lastR) PP.room.render(S.project, U.lastR);
   }
 
   // ---------- boot ----------
   function boot() {
     PP.help.badge();
     let th = 'system'; try { th = localStorage.getItem('pixelplanner.theme') || 'system'; } catch (e) { }
-    U.$('#themeSel').value = th;
-    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => { if (U.$('#themeSel').value === 'system') setTheme('system'); });
+    U.section = 'workspace';
+    setTheme(th);
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => { if (U.themePref === 'system') setTheme('system'); });
     if (!S.restore()) S.project = M.demoProject();
     S.on(why => { if (why === 'select') onSelect(); else { if (why === 'load') { PP.room.refit(); U.roomId = null; } render(); if (why === 'load' && U.view === 'room') PP.room.fitOnce(); } });
     bind();
@@ -4588,7 +4991,9 @@ PP.CHANGELOG = [
     PP.room.init();
     PP.boxes.init();
     let v = 'split'; try { v = localStorage.getItem('pixelplanner.view') || (window.innerWidth < 900 ? 'form' : 'split'); } catch (e) { }
+    let sec = 'workspace'; try { sec = localStorage.getItem('pixelplanner.section') || 'workspace'; } catch (e) { }
     setView(v);
+    if (sec !== 'workspace') setSection(sec);
     PP.render = render;
   }
   boot();
