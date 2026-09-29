@@ -372,6 +372,10 @@ main.mode-visual .inspector { display: block; }
 .dlg::backdrop { background: rgba(0,0,0,.35); }
 .dlg-head { display: flex; align-items: center; gap: 8px; padding: 10px 14px; border-bottom: 1px solid var(--cp-border); }
 .dlg-head b { font-size: 15px; }
+.sug .fl { font-size: 13px; margin: 0 0 10px; }
+.sug textarea { width: 100%; resize: vertical; font: inherit; color: var(--cp-text); background: var(--cp-surface); border: 1px solid var(--cp-border); border-radius: 6px; padding: 6px 8px; }
+#suggestDlg { width: 560px; }
+.dlg-foot a { align-self: center; }
 .dlg-body { padding: 12px 16px; overflow: auto; max-height: calc(88vh - 60px); line-height: 1.5; }
 .dlg.full .dlg-body { height: calc(92vh - 52px); max-height: none; padding: 0; }
 .dlg.full iframe { width: 100%; height: 100%; border: 0; background: var(--cp-surface); }
@@ -592,6 +596,7 @@ details.hint ul { margin: 4px 0; padding-left: 18px; font-size: 12px; color: var
   <symbol id="i-up" viewBox="0 0 24 24"><path d="M12 19V5M6 11l6-6 6 6"/></symbol>
   <symbol id="i-down" viewBox="0 0 24 24"><path d="M12 5v14M6 13l6 6 6-6"/></symbol>
   <symbol id="i-copy" viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></symbol>
+  <symbol id="i-idea" viewBox="0 0 24 24"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2V16h5v-.1c0-.8.4-1.5 1-2A6 6 0 0 0 12 3z"/></symbol>
   <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></symbol>
 </svg>
 
@@ -603,6 +608,7 @@ details.hint ul { margin: 4px 0; padding-left: 18px; font-size: 12px; color: var
   <button class="nav" data-act="guide"><svg class="ic"><use href="#i-doc"/></svg><span>Wiring guide</span></button>
   <span class="grow"></span>
   <button class="nav" data-act="warnings" id="navChecks"><svg class="ic"><use href="#i-check"/></svg><span>Plan checks</span><b class="badge" id="checkBadge"></b></button>
+  <button class="nav" data-act="suggest"><svg class="ic"><use href="#i-idea"/></svg><span>Suggest a feature</span></button>
   <button class="nav" data-act="help"><svg class="ic"><use href="#i-help"/></svg><span>Help</span></button>
   <button class="ver" id="verBadge" data-act="whatsnew" title="What's new"></button>
 </nav>
@@ -629,6 +635,7 @@ details.hint ul { margin: 4px 0; padding-left: 18px; font-size: 12px; color: var
       <button data-act="demo" role="menuitem">Load the demo show</button>
       <hr>
       <button data-act="themeSystem" role="menuitem" id="themeSystem">Follow system theme</button>
+      <button data-act="suggest" role="menuitem" class="m-only">Suggest a feature</button>
       <button data-act="help" role="menuitem" class="m-only">Help</button>
       <button data-act="whatsnew" role="menuitem" class="m-only">What's new</button>
     </div>
@@ -692,6 +699,7 @@ details.hint ul { margin: 4px 0; padding-left: 18px; font-size: 12px; color: var
 <dialog id="libDlg" class="dlg full"></dialog>
 <dialog id="compDlg" class="dlg wide"></dialog>
 <dialog id="askDlg" class="dlg"></dialog>
+<dialog id="suggestDlg" class="dlg"></dialog>
 <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
 <input type="file" id="fileInput" accept=".json,.pixelplan.json,application/json" hidden>
 
@@ -700,9 +708,14 @@ details.hint ul { margin: 4px 0; padding-left: 18px; font-size: 12px; color: var
 // The version shows at the bottom of the sidebar; clicking it opens What's new (the change log).
 window.PP = window.PP || {};
 PP.APP_NAME = 'Pixel Planner';
-PP.APP_VERSION = '1.2.1';
-PP.BUILT = '29 Sept 2026, 12:04';  // filled in by Build-Portable.ps1 ("Last updated" date and time)
+PP.APP_VERSION = '1.3.0';
+PP.BUILT = '29 Sept 2026, 16:52';  // filled in by Build-Portable.ps1 ("Last updated" date and time)
 PP.CHANGELOG = [
+  {
+    version: '1.3.0', date: '2026-09-29', items: [
+      'Suggest a feature: send an idea from the sidebar (or the File menu on a phone). It opens a short form on GitHub; suitable ideas are built into the next version automatically and you get a reply on your request.'
+    ]
+  },
   {
     version: '1.2.1', date: '2026-09-29', items: [
       "What's new shows dates as day-month-year."
@@ -3436,6 +3449,8 @@ PP.CHANGELOG = [
         <li>Open <b>Plan checks</b> and clear the errors, starting with the one it says to fix first (click one to jump to it). Check the assumptions listed there match your hardware.</li>
         <li>Open the <b>Wiring guide</b> to print a build sheet with PSU trim voltages, fuses, injection feeds, Turniput URLs, bill of materials, datasheet links and channel map.</li>
       </ol>
+      <h3>Suggest a feature</h3>
+      <p>Use <b>Suggest a feature</b> in the sidebar (File menu on a phone) to send an idea. It opens a short form on GitHub, where a free account is needed; your project is never sent. Suggestions are reviewed automatically and suitable ones are built into the next version, usually within a day, with a reply on your request saying what happened. See all requests at <a href="https://github.com/J-Turansky/pixel-planner/issues" target="_blank" rel="noopener">github.com/J-Turansky/pixel-planner/issues</a>.</p>
       <h3>Files</h3>
       <p>Your work autosaves in this browser. Use <b>Save</b> to keep a <span class="kbd">.pixelplan.json</span> file you can back up or send to someone with this app. The file includes the room layouts and a copy of the boxes, parts and cable standards it uses. Shortcuts: <span class="kbd">Ctrl+S</span> save, <span class="kbd">Ctrl+O</span> open, <span class="kbd">Ctrl+Z</span> undo, <span class="kbd">Ctrl+Y</span> redo, <span class="kbd">Ctrl+P</span> print the wiring guide, <span class="kbd">Delete</span> removes the selected run item, or the selected item or cable in a room.</p>`,
     calc: () => `
@@ -3477,6 +3492,36 @@ PP.CHANGELOG = [
       if (ev.target.closest('[data-close]')) d.close();
     };
     if (!d.open) d.showModal();
+  };
+  // Feature requests become GitHub issues on the public site repo; an automation reviews and builds them.
+  H.REPO = 'https://github.com/J-Turansky/pixel-planner';
+  H.suggestUrl = f => {
+    const cut = (s, n) => String(s || '').trim().slice(0, n);
+    const q = new URLSearchParams({ template: 'feature-request.yml', labels: 'feature-request', title: 'Feature: ' + cut(f.title || f.what.split('\n')[0], 80), what: cut(f.what, 2500), why: cut(f.why, 1500), example: cut(f.example, 1500), version: PP.APP_VERSION });
+    return H.REPO + '/issues/new?' + q.toString();
+  };
+  H.suggest = () => {
+    const d = U.$('#suggestDlg');
+    d.innerHTML = `<div class="dlg-head"><b>Suggest a feature</b><span class="grow"></span><button class="ib" data-close aria-label="Close">${U.ic('x')}</button></div>
+      <form class="dlg-body sug" id="sugForm">
+        <p class="soft">Ideas are reviewed automatically and suitable ones are built into the next version, usually within a day. It opens GitHub to send (a free account is needed); your project is not sent.</p>
+        <label class="fl wide">Short title<input name="title" maxlength="80" placeholder="For example: cable totals per gauge"></label>
+        <label class="fl wide">What would you like it to do? (required)<textarea name="what" rows="4" required placeholder="Describe the feature or change. One idea per request."></textarea></label>
+        <label class="fl wide">Why would it help?<textarea name="why" rows="2" placeholder="What are you trying to do, and what gets in the way today?"></textarea></label>
+        <label class="fl wide">Example<textarea name="example" rows="2" placeholder="Numbers, hardware or steps that show what you mean (optional)"></textarea></label>
+      </form>
+      <div class="dlg-foot"><a href="${H.REPO}/issues?q=label%3Afeature-request" target="_blank" rel="noopener">See existing requests</a><span class="grow"></span><button data-copy>Copy text</button><button class="primary" data-send>Continue on GitHub</button></div>`;
+    const read = () => Object.fromEntries(new FormData(U.$('#sugForm', d)));
+    d.onclick = ev => {
+      if (ev.target.closest('[data-close]')) { d.close(); return; }
+      if (ev.target.closest('[data-copy]')) { const f = read(); navigator.clipboard && navigator.clipboard.writeText(`${f.title}\n\nWhat: ${f.what}\nWhy: ${f.why}\nExample: ${f.example}\nVersion: ${PP.APP_VERSION}`).then(() => U.toast('Copied'), () => {}); return; }
+      if (ev.target.closest('[data-send]')) {
+        const form = U.$('#sugForm', d); if (!form.reportValidity()) return;
+        window.open(H.suggestUrl(read()), '_blank', 'noopener'); d.close(); U.toast('Opened GitHub. Press Submit new issue there to send it.');
+      }
+    };
+    if (!d.open) d.showModal();
+    setTimeout(() => { const i = U.$('#sugForm [name=title]', d); if (i) i.focus(); }, 30);
   };
   H.badge = () => {
     const b = U.$('#verBadge');
@@ -4665,6 +4710,7 @@ PP.CHANGELOG = [
     guide: () => PP.guide.open(),
     printGuide: () => PP.guide.open({ print: true }),
     help: () => PP.help.open('use'),
+    suggest: () => PP.help.suggest(),
     whatsnew: () => PP.help.open('news'),
     theme: () => setTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'),
     themeSystem: () => { setTheme('system'); U.toast('Following your system theme.'); },
