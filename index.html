@@ -154,6 +154,8 @@ main.mode-visual { grid-template-columns: 1fr; }
 main.mode-split { grid-template-columns: minmax(420px, 44%) 1fr; }
 main.mode-form #visualPane { display: none; }
 main.mode-visual #formPane { display: none; }
+main.mode-room { grid-template-columns: 1fr; }
+main.mode-room #formPane, main.mode-room #visualPane, main:not(.mode-room) #roomPane { display: none; }
 .pane { min-height: 0; min-width: 0; position: relative; }
 #formPane { overflow: auto; padding: 12px; border-right: 1px solid var(--cp-border); }
 main.mode-form #formPane { padding: 12px max(12px, calc((100% - 1200px) / 2)); }
@@ -309,6 +311,130 @@ main.mode-visual .inspector { display: block; }
   .palette { display: none; }
 }
 
+/* Shared inspector bits (room view, box builder, library) */
+.ins-head { display: flex; align-items: baseline; gap: 8px; justify-content: space-between; margin-bottom: 8px; font-size: 14px; }
+.ins-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 10px; margin: 6px 0; }
+.fl { display: flex; flex-direction: column; gap: 2px; font-size: 12px; color: var(--cp-text-muted); min-width: 0; }
+.fl > input, .fl > select { color: var(--cp-text); width: 100%; }
+.fl.wide { grid-column: 1 / -1; margin: 4px 0; }
+.ins-actions { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; margin: 8px 0; }
+.ins-link { display: flex; align-items: center; gap: 6px; padding: 4px 6px; border-radius: 6px; cursor: pointer; font-size: 12px; }
+.ins-link:hover, .ins-link.on { background: var(--cp-highlight); }
+.ins-link.err { color: var(--cp-danger); }
+.small { font-size: 12px; }
+p.small, .dlg-body p.small { margin: 4px 0; }
+table.mini { width: 100%; border-collapse: collapse; font-size: 12px; margin: 4px 0; }
+table.mini th { text-align: left; color: var(--cp-text-muted); font-weight: 600; padding: 3px 4px; border-bottom: 1px solid var(--cp-border); white-space: nowrap; }
+table.mini td { padding: 3px 4px; border-bottom: 1px solid var(--cp-border); vertical-align: middle; }
+table.mini td.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+input.tiny { width: 64px; }
+.chk { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; }
+.chips { display: flex; flex-wrap: wrap; gap: 4px; margin: 4px 0; }
+.chip { font-size: 11px; padding: 1px 8px; border-radius: 999px; border: 1px solid var(--c, var(--cp-border)); background: var(--cp-surface); }
+.stat-line { padding: 6px 8px; border-radius: 8px; background: var(--cp-surface-soft); margin: 6px 0; }
+.stat-line.err { color: var(--cp-danger); } .stat-line.ok { color: var(--cp-success); }
+.sw.hw, .pal .sw.hw { display: inline-block; width: 10px; height: 10px; border-radius: 3px; flex: none; background: var(--c, var(--cp-text-soft)); border: 1px solid var(--cp-border-strong); vertical-align: -1px; margin-right: 2px; }
+.icon.sm { width: 22px; min-height: 22px; font-family: inherit; font-style: normal; font-weight: 400; font-size: 11px; }
+button.sm { min-height: 22px; padding: 1px 8px; font-size: 12px; }
+.seg.sm button { min-height: 24px; font-size: 12px; }
+.caps { display: flex; flex-direction: column; gap: 6px; margin: 4px 0 8px; }
+.cap { display: grid; grid-template-columns: 1fr auto; gap: 2px 8px; font-size: 12px; }
+.cap .bar { grid-column: 1 / -1; min-width: 0; height: 6px; }
+.cap-v { font-variant-numeric: tabular-nums; }
+.cap.err .cap-v { color: var(--cp-danger); font-weight: 600; } .cap.warn .cap-v { color: var(--cp-warning); }
+details.hint > summary { cursor: pointer; color: var(--cp-link); font-size: 12px; margin: 8px 0 4px; }
+details.hint ul { margin: 4px 0; padding-left: 18px; font-size: 12px; color: var(--cp-text-muted); }
+.dist-caps { margin: 6px 0 2px; }
+.dist-caps .caps { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 6px 14px; }
+
+/* Room view */
+#roomPane { display: grid; grid-template-columns: 190px 1fr 360px; grid-template-rows: auto 1fr; }
+#rinspector { display: block; }
+.rtools .tg.on { background: var(--cp-accent-soft); border-color: var(--cp-accent); color: var(--cp-accent); }
+.rtools select { max-width: 180px; }
+.dd { position: relative; }
+.dd > summary { list-style: none; cursor: pointer; border: 1px solid var(--cp-border); border-radius: var(--pp-radius); padding: 4px 10px; background: var(--cp-surface); min-height: 28px; display: inline-flex; align-items: center; gap: 4px; }
+.dd-menu { position: absolute; top: calc(100% + 4px); left: 0; z-index: 30; background: var(--cp-panel-strong); border: 1px solid var(--cp-border); border-radius: 10px; box-shadow: var(--cp-shadow); padding: 6px 8px; min-width: 190px; display: flex; flex-direction: column; gap: 2px; }
+.dd-menu label { display: flex; align-items: center; gap: 6px; font-size: 12px; padding: 2px 0; cursor: pointer; }
+.rpal > summary { cursor: pointer; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; color: var(--cp-text-muted); padding: 6px 2px 2px; }
+#rsvg { width: 100%; height: 100%; display: block; cursor: grab; user-select: none; touch-action: none; }
+#rsvg.panning { cursor: grabbing; }
+.r-outside { fill: var(--cp-bg); }
+.r-floor { fill: var(--cp-surface); }
+.r-grid { fill: none; stroke: var(--cp-border); stroke-width: .6; }
+.r-wall { fill: none; stroke: var(--cp-border-strong); stroke-width: 3; }
+.r-dim { fill: var(--cp-text-muted); font-size: 12px; }
+.r-name { fill: var(--cp-text); font-size: 15px; font-weight: 600; }
+.r-scale path { stroke: var(--cp-text-muted); stroke-width: 1.5; fill: none; }
+.r-scale text { fill: var(--cp-text-muted); font-size: 11px; }
+.r-cable { cursor: pointer; }
+.r-hit { fill: none; stroke: transparent; stroke-width: 14; }
+.r-line { fill: none; stroke-width: 3.2; stroke-linecap: round; stroke-linejoin: round; }
+.r-halo { fill: none; stroke: var(--cp-accent); stroke-width: 8; opacity: .35; stroke-linecap: round; stroke-linejoin: round; }
+.r-cable:hover .r-line { stroke-width: 4.5; }
+.r-cable.bad .r-line { stroke-dasharray: 2 4; }
+.r-shortdash { fill: none; stroke: var(--cp-danger); stroke-width: 7; opacity: .35; stroke-dasharray: 6 5; }
+.r-flows { pointer-events: none; }
+.r-flow { fill: none; stroke: var(--cp-surface); stroke-width: 1.6; stroke-dasharray: 3 11; stroke-linecap: round; opacity: .9; animation: rflow 0.9s linear infinite; }
+@keyframes rflow { to { stroke-dashoffset: -14; } }
+@media (prefers-reduced-motion: reduce) { .r-flow { animation: none; } }
+.r-lab rect { fill: var(--cp-panel-strong); stroke: var(--cp-border); }
+.r-lab text { fill: var(--cp-text); font-size: 9.5px; font-variant-numeric: tabular-nums; }
+.r-lab.err rect { stroke: var(--cp-danger); } .r-lab.err text { fill: var(--cp-danger); font-weight: 600; }
+.r-lab.none text { fill: var(--cp-text-muted); }
+.r-lab { cursor: pointer; }
+.r-node { cursor: move; }
+.r-box { fill: var(--cp-surface-soft); stroke: var(--cp-text-soft); stroke-width: 1.6; }
+.r-node.sel .r-box, .r-node.sel .r-prop, .r-node.sel .r-dev > * { stroke: var(--cp-accent); stroke-width: 2.4; }
+.r-prop { fill: var(--cp-bg-elevated); stroke: var(--cp-border-strong); stroke-width: 1; }
+.r-px { fill: var(--cp-warning); }
+.r-dev > * { fill: var(--cp-surface); stroke: var(--c, var(--cp-border-strong)); stroke-width: 1.8; }
+.r-sub > * { fill: var(--cp-surface); stroke: var(--c, var(--cp-border-strong)); stroke-width: 1; }
+.r-sub text { fill: var(--cp-text); stroke: none; font-size: 6px; }
+.r-sym { fill: var(--cp-text); font-size: 10px; font-weight: 600; pointer-events: none; }
+.r-label { fill: var(--cp-text); font-size: 10px; pointer-events: none; paint-order: stroke; stroke: var(--cp-surface); stroke-width: 3px; }
+.r-dot { stroke: var(--cp-surface); stroke-width: 1; }
+.r-dot.ok { fill: var(--cp-success); } .r-dot.warn { fill: var(--cp-warning); } .r-dot.err { fill: var(--cp-danger); }
+.r-conn { fill: var(--cp-surface); stroke: var(--cp-accent); stroke-width: 1.5; cursor: crosshair; opacity: 0; transition: opacity .12s; }
+.r-node:hover .r-conn, .r-node.sel .r-conn { opacity: 1; }
+.r-conn:hover { fill: var(--cp-accent); }
+.r-mid circle { fill: var(--cp-surface); stroke: var(--cp-accent); stroke-width: 1.4; cursor: copy; }
+.r-mid path { stroke: var(--cp-accent); stroke-width: 1.4; pointer-events: none; }
+.r-piv { fill: var(--cp-accent); stroke: var(--cp-surface); stroke-width: 1.5; cursor: move; }
+.r-end { fill: var(--cp-surface); stroke: var(--cp-accent); stroke-width: 1.6; cursor: move; }
+.r-rubber { stroke: var(--cp-accent); stroke-width: 2; stroke-dasharray: 5 4; pointer-events: none; }
+
+/* Box builder */
+#boxDlg { display: none; }
+#boxDlg[open] { display: flex; flex-direction: column; }
+.bx-name { font-weight: 600; width: 220px; }
+.bx-body { flex: 1; min-height: 0; display: grid; grid-template-columns: 200px 1fr 330px; }
+.bx-pal { overflow: auto; padding: 6px 8px; border-right: 1px solid var(--cp-border); background: var(--cp-bg-elevated); }
+.bx-canvas { min-width: 0; min-height: 0; background: var(--cp-bg); padding: 10px; }
+#bxsvg { width: 100%; height: 100%; display: block; user-select: none; touch-action: none; }
+.bx-side { overflow: auto; padding: 10px 12px; border-left: 1px solid var(--cp-border); background: var(--cp-bg-elevated); }
+.bx-base { fill: var(--cp-surface); stroke: var(--cp-border-strong); stroke-width: 2; }
+.bx-grid line { stroke: var(--cp-border); stroke-width: .6; }
+.bx-item { cursor: move; }
+.bx-item > :first-child { fill: var(--cp-surface-soft); stroke: var(--c, var(--cp-border-strong)); stroke-width: 2; }
+.bx-item.sel > :first-child { stroke: var(--cp-accent); stroke-width: 3; fill: var(--cp-accent-soft); }
+.bx-item.bad > :first-child { stroke: var(--cp-danger); stroke-dasharray: 5 3; }
+.bx-sym { fill: var(--cp-text); font-size: 13px; font-weight: 700; pointer-events: none; }
+.bx-lbl { fill: var(--cp-text-muted); font-size: 9px; pointer-events: none; }
+#libDlg .dlg-body { padding: 12px 16px; }
+#libDlg .dlg-head .seg { margin-left: 12px; }
+.lib-t input:not([type=color]):not(.tiny), .lib-t select { width: 100%; min-width: 70px; }
+.lib-t input[type=color] { width: 36px; height: 26px; padding: 1px; }
+.ce-ports { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 6px 10px; }
+.ce-res input { width: 80px; }
+
+@media (max-width: 900px) {
+  #roomPane { grid-template-columns: 1fr; grid-template-rows: auto 1fr auto; }
+  .rpalette { display: none; }
+  #rinspector { max-height: 40vh; border-left: 0; border-top: 1px solid var(--cp-border); }
+  .bx-body { grid-template-columns: 1fr; }
+  .bx-pal { display: none; }
+}
 </style>
 </head>
 <body>
@@ -330,6 +456,7 @@ main.mode-visual .inspector { display: block; }
     <button data-view="form" role="tab">Form</button>
     <button data-view="split" role="tab">Split</button>
     <button data-view="visual" role="tab">Visual</button>
+    <button data-view="room" role="tab" title="Real-scale room layout with routed cables">Room</button>
   </div>
   <span class="grow"></span>
   <button class="primary" data-act="guide" title="Wiring guide, bill of materials and channel map">Wiring guide</button>
@@ -354,6 +481,12 @@ main.mode-visual .inspector { display: block; }
     <div class="canvas-wrap" id="canvasWrap"><svg id="svg" xmlns="http://www.w3.org/2000/svg"></svg></div>
     <div class="inspector" id="inspector"></div>
   </div>
+  <div id="roomPane" class="pane">
+    <div class="vtools rtools" id="rtools"></div>
+    <div class="palette rpalette" id="rpalette"></div>
+    <div class="canvas-wrap" id="rcanvas"><svg id="rsvg" xmlns="http://www.w3.org/2000/svg"></svg></div>
+    <div class="inspector" id="rinspector"></div>
+  </div>
 </main>
 
 <footer class="statusbar">
@@ -370,6 +503,9 @@ main.mode-visual .inspector { display: block; }
 
 <dialog id="helpDlg" class="dlg wide"></dialog>
 <dialog id="guideDlg" class="dlg full"></dialog>
+<dialog id="boxDlg" class="dlg full"></dialog>
+<dialog id="libDlg" class="dlg full"></dialog>
+<dialog id="compDlg" class="dlg wide"></dialog>
 <dialog id="askDlg" class="dlg"></dialog>
 <div id="toast" class="toast" hidden></div>
 <input type="file" id="fileInput" accept=".json,.pixelplan.json,application/json" hidden>
@@ -379,9 +515,23 @@ main.mode-visual .inspector { display: block; }
 // The version shows in the top-right corner and the "i" dialog shows the change log.
 window.PP = window.PP || {};
 PP.APP_NAME = 'Pixel Planner';
-PP.APP_VERSION = '1.0.0';
-PP.BUILT = '28 Sept 2026, 18:49';  // filled in by Build-Portable.ps1 ("Last updated" date and time)
+PP.APP_VERSION = '1.1.0';
+PP.BUILT = '29 Sept 2026, 11:33';  // filled in by Build-Portable.ps1 ("Last updated" date and time)
 PP.CHANGELOG = [
+  {
+    version: '1.1.0', date: '2026-09-29', items: [
+      'New Room view: lay out controller boxes, pixel props, sensors and effects at real scale in metres, on a grid you can snap to.',
+      'Cables in a room are routed through pivot points you can add, drag and remove. Lengths are measured along the route, edge to edge, plus a slack allowance.',
+      'Cable standards library (for example 5 m pixel extension, Blue) with colour coding. A cable that is too short for its route is flagged as an error; "Fit cables" picks the shortest standard that fits.',
+      'Choosing a standard for a pixel run can set the run\'s lead cable in the Form, so voltage drop uses the real length.',
+      'Box builder: design reusable controller boxes (PSUs, boards, Pi, switch, sound card, amp) at real size, with overlap checks and your own operating limits per part.',
+      'Box capacity adds up pixel outputs, pixels, inputs, relays, Ethernet, USB, audio, DMX and PSU watts, counts what is used by runs and connected devices, and warns when full.',
+      'Hardware library with sensors, buttons, actuators, effects and custom components. Connections are typed, and a cable between parts without a matching connector is flagged.',
+      'Your library is shared by every project in this browser and can be exported and imported. Projects keep their own copy, so older files still open the same.',
+      'Wiring guide: build it for the whole project, one room or one box, with a cable schedule, box contents and capacity. The bill of materials now includes boxes, hardware and room cables.',
+      'Form: each distro shows its capacity.'
+    ]
+  },
   {
     version: '1.0.0', date: '2026-09-28', items: [
       'First release: plan Baldrick controllers, distros, Mean Well PSUs, pixel runs and power injection.',
@@ -538,6 +688,155 @@ PP.CHANGELOG = [
     { id: 'custom', name: 'Custom', psuSlots: 2, boardSlots: 1 }
   ];
 
+  // ---------- installation hardware (room layouts, controller boxes) ----------
+  // Resources a component can provide (capacity) and a connection can use.
+  C.resources = {
+    pixelOutputs: { name: 'Pixel outputs' },
+    pixels: { name: 'Pixels' },
+    inputs: { name: 'Inputs' },
+    analogIn: { name: 'Analogue inputs' },
+    relays: { name: 'Relay outputs' },
+    dmxCh: { name: 'DMX channels' },
+    ethernet: { name: 'Ethernet ports' },
+    usb: { name: 'USB ports' },
+    audioOut: { name: 'Audio channels' },
+    ampOut: { name: 'Amplifier outputs' },
+    videoOut: { name: 'Video outputs' },
+    mainsOut: { name: 'Mains sockets' },
+    psuW: { name: 'PSU capacity', unit: 'W' }
+  };
+
+  // Typed ports / cable types. res = the resource a cable of this type uses at its providing end.
+  // color = default drawing colour when a cable has no standard (data, editable per standard).
+  C.portTypes = [
+    { id: 'pixel', name: 'Pixel / data', res: 'pixelOutputs', color: '#e8457a' },
+    { id: 'dc', name: 'Low-voltage DC', res: null, color: '#d97706' },
+    { id: 'eth', name: 'Ethernet', res: 'ethernet', color: '#2f8fdc' },
+    { id: 'dmx', name: 'DMX', res: 'dmxCh', color: '#8b5cf6' },
+    { id: 'input', name: 'Contact input', res: 'inputs', color: '#16a37f' },
+    { id: 'analog', name: 'Analogue input', res: 'analogIn', color: '#0ea5a4' },
+    { id: 'relay', name: 'Relay output', res: 'relays', color: '#b45309' },
+    { id: 'audio', name: 'Audio (line)', res: 'audioOut', color: '#6366f1' },
+    { id: 'speaker', name: 'Speaker', res: 'ampOut', color: '#a16207' },
+    { id: 'usb', name: 'USB', res: 'usb', color: '#64748b' },
+    { id: 'video', name: 'Video (HDMI)', res: 'videoOut', color: '#0f766e' },
+    { id: 'mains', name: 'Mains power', res: 'mainsOut', color: '#57534e' },
+    { id: 'custom', name: 'Generic / custom', res: null, color: '#78716c' }
+  ];
+  C.portType = id => C.portTypes.find(t => t.id === id) || C.portTypes[C.portTypes.length - 1];
+
+  // Hardware categories: one shape per category keeps the symbol language consistent.
+  C.hwCats = [
+    { id: 'controller', name: 'Controllers', shape: 'rect', color: '#b11f4b' },
+    { id: 'compute', name: 'Computers', shape: 'rect', color: '#2563eb' },
+    { id: 'network', name: 'Network', shape: 'rect', color: '#0284c7' },
+    { id: 'power', name: 'Power', shape: 'hex', color: '#d97706' },
+    { id: 'audio', name: 'Audio', shape: 'round', color: '#6366f1' },
+    { id: 'input', name: 'Inputs and sensors', shape: 'circle', color: '#16a37f' },
+    { id: 'output', name: 'Outputs and actuators', shape: 'diamond', color: '#c2410c' },
+    { id: 'effect', name: 'Effects and fixtures', shape: 'diamond', color: '#8b5cf6' },
+    { id: 'custom', name: 'Custom', shape: 'round', color: '#78716c' }
+  ];
+  C.hwCat = id => C.hwCats.find(c => c.id === id) || C.hwCats[C.hwCats.length - 1];
+
+  // Generic component definitions. w/h in cm (box builder footprint).
+  // ports: connection types the device exposes. provides: manufacturer capacity.
+  // limits: your operating limit (overrides provides). consumes: what it uses at the other end of a cable.
+  // internal: what it uses from other components inside the same controller box.
+  const dev = (id, name, cat, sym, o = {}) => Object.assign({ id, name, cat, sym, w: 8, h: 6, ports: {}, provides: {}, limits: {}, consumes: {}, internal: {}, notes: '', builtin: true }, o);
+  C.components = [
+    dev('baldrick8', 'Baldrick8', 'controller', 'B8', { board: 'baldrick8', w: 16.5, h: 10, ports: { pixel: 8, input: 3, eth: 1, dc: 2 }, provides: { pixelOutputs: 8, pixels: 6000, inputs: 3 }, internal: { ethernet: 1 } }),
+    dev('baldrick17', 'Baldrick17', 'controller', 'B17', { board: 'baldrick17', w: 21, h: 11, ports: { pixel: 17, input: 3, eth: 2, dc: 5 }, provides: { pixelOutputs: 17, pixels: 12750, inputs: 3 }, internal: { ethernet: 1 } }),
+    dev('baldrickinput8', 'BaldrickInput8', 'controller', 'BI8', { board: 'baldrickinput8', w: 12, h: 8, ports: { input: 8, pixel: 2, eth: 2, dc: 1 }, provides: { inputs: 8, pixelOutputs: 2, pixels: 1500 }, internal: { ethernet: 1 } }),
+    dev('baldrickinput1', 'BaldrickInput1', 'controller', 'BI1', { board: 'baldrickinput1', w: 6, h: 5, ports: { input: 1, eth: 1, dc: 1 }, provides: { inputs: 1 }, internal: { ethernet: 1 } }),
+    dev('baldrickdmx', 'BaldrickDMX', 'controller', 'BDX', { board: 'baldrickdmx', w: 8, h: 6, ports: { dmx: 1, eth: 1, dc: 1 }, provides: { dmxCh: 512 }, internal: { ethernet: 1 } }),
+    dev('baldrickswitchy', 'BaldrickSwitchy', 'controller', 'BSW', { board: 'baldrickswitchy', w: 12, h: 8, ports: { relay: 4, eth: 1, dc: 1 }, provides: { relays: 4 }, internal: { ethernet: 1 } }),
+    dev('baldricksignals', 'BaldrickSignals', 'controller', 'BSG', { w: 7, h: 5, ports: { eth: 1, dc: 1 }, internal: { ethernet: 1 }, notes: 'Crowd-size sensing over Wi-Fi; reports to CSV / Google Sheets.' }),
+    dev('pi4', 'Raspberry Pi 4 (FPP)', 'compute', 'Pi4', { w: 9, h: 6, ports: { eth: 1, usb: 4, audio: 1, video: 2, dc: 1 }, provides: { usb: 4, audioOut: 2, videoOut: 2 }, internal: { ethernet: 1 } }),
+    dev('pi5', 'Raspberry Pi 5 (FPP)', 'compute', 'Pi5', { w: 9, h: 6, ports: { eth: 1, usb: 4, video: 2, dc: 1 }, provides: { usb: 4, videoOut: 2 }, internal: { ethernet: 1 }, notes: 'No 3.5 mm audio jack: add a USB sound card for show audio.' }),
+    dev('usbsound', 'USB sound card', 'audio', 'USB♪', { w: 5, h: 3, ports: { usb: 1, audio: 1 }, provides: { audioOut: 2 }, consumes: { usb: 1 }, internal: { usb: 1 } }),
+    dev('amp2', 'Amplifier, 2 channel', 'audio', 'AMP', { w: 10, h: 7, ports: { audio: 1, speaker: 2, dc: 1 }, provides: { ampOut: 2 }, consumes: { audioOut: 2 }, internal: { audioOut: 2 } }),
+    dev('amp4', 'Amplifier, 4 channel', 'audio', 'AMP4', { w: 14, h: 8, ports: { audio: 2, speaker: 4, dc: 1 }, provides: { ampOut: 4 }, consumes: { audioOut: 2 }, internal: { audioOut: 2 } }),
+    dev('speaker', 'Speaker (passive)', 'audio', 'SPK', { ports: { speaker: 1 }, consumes: { ampOut: 1 } }),
+    dev('speakerActive', 'Speaker (powered)', 'audio', 'SPK+', { ports: { audio: 1, mains: 1 }, consumes: { audioOut: 1 } }),
+    dev('sw5', 'Network switch, 5 port', 'network', 'SW5', { w: 10, h: 7, ports: { eth: 5, dc: 1 }, provides: { ethernet: 5 } }),
+    dev('sw8', 'Network switch, 8 port', 'network', 'SW8', { w: 16, h: 10, ports: { eth: 8, dc: 1 }, provides: { ethernet: 8 } }),
+    dev('sw16', 'Network switch, 16 port', 'network', 'SW16', { w: 28, h: 12, ports: { eth: 16, mains: 1 }, provides: { ethernet: 16 } }),
+    dev('mainsStrip', 'Mains socket strip (4 way)', 'power', 'AC4', { w: 30, h: 6, ports: { mains: 5 }, provides: { mainsOut: 4 } }),
+    // inputs / sensors
+    dev('pushButton', 'Push button', 'input', 'PB', { ports: { input: 1 } }),
+    dev('litButton', 'Illuminated button', 'input', 'LB', { ports: { input: 1, relay: 1 } }),
+    dev('wirelessButton', 'Wireless button / remote', 'input', 'RF', { ports: { input: 1, dc: 1 } }),
+    dev('toggleSwitch', 'Toggle / limit switch', 'input', 'TG', { ports: { input: 1 } }),
+    dev('reedSwitch', 'Reed switch', 'input', 'RD', { ports: { input: 1 } }),
+    dev('hallSensor', 'Hall / magnetic sensor', 'input', 'HAL', { ports: { input: 1, dc: 1 } }),
+    dev('beamBreak', 'Beam-break sensor', 'input', 'BB', { ports: { input: 1, dc: 1 } }),
+    dev('pir', 'PIR motion sensor', 'input', 'PIR', { ports: { input: 1, dc: 1 } }),
+    dev('irProx', 'IR proximity sensor', 'input', 'IR', { ports: { input: 1, dc: 1 } }),
+    dev('ultrasonic', 'Ultrasonic distance sensor', 'input', 'US', { ports: { input: 1, analog: 1, dc: 1 } }),
+    dev('pressureMat', 'Pressure mat', 'input', 'MAT', { ports: { input: 1 } }),
+    dev('fsr', 'Force-sensitive resistor', 'input', 'FSR', { ports: { analog: 1, input: 1 } }),
+    dev('loadCell', 'Load cell / weight sensor', 'input', 'LC', { ports: { analog: 1, input: 1, dc: 1 } }),
+    dev('rfid', 'RFID / NFC reader', 'input', 'RFID', { ports: { usb: 1, input: 1, dc: 1 } }),
+    dev('capTouch', 'Capacitive touch sensor', 'input', 'CAP', { ports: { input: 1, dc: 1 } }),
+    dev('encoder', 'Rotary encoder', 'input', 'ENC', { ports: { input: 1 }, consumes: { inputs: 2 } }),
+    dev('pot', 'Potentiometer', 'input', 'POT', { ports: { analog: 1 } }),
+    dev('lightSensor', 'Light sensor', 'input', 'LDR', { ports: { analog: 1, input: 1 } }),
+    dev('micTrigger', 'Microphone / sound trigger', 'input', 'MIC', { ports: { input: 1, analog: 1, dc: 1 } }),
+    // outputs / actuators
+    dev('relayLoad', 'Relay-switched load', 'output', 'RLY', { ports: { relay: 1, mains: 1 } }),
+    dev('solenoid', 'Solenoid', 'output', 'SOL', { ports: { relay: 1, dc: 1 } }),
+    dev('maglock', 'Electromagnet / maglock', 'output', 'MAG', { ports: { relay: 1, dc: 1 } }),
+    dev('servo', 'Servo', 'output', 'SRV', { ports: { custom: 1, dc: 1 } }),
+    dev('dcMotor', 'DC motor', 'output', 'MOT', { ports: { relay: 1, dc: 1 } }),
+    dev('stepper', 'Stepper motor', 'output', 'STP', { ports: { custom: 1, dc: 1 } }),
+    dev('linearAct', 'Linear actuator', 'output', 'LIN', { ports: { relay: 1, dc: 1 } }),
+    dev('fan', 'Fan', 'output', 'FAN', { ports: { relay: 1, mains: 1 } }),
+    dev('projector', 'Projector / display', 'output', 'PRJ', { ports: { video: 1, eth: 1, mains: 1 }, consumes: { videoOut: 1 } }),
+    dev('dmxFixture', 'DMX fixture (par)', 'effect', 'PAR', { ports: { dmx: 1, mains: 1 }, consumes: { dmxCh: 7 } }),
+    dev('movingLight', 'Moving light', 'effect', 'MH', { ports: { dmx: 1, mains: 1 }, consumes: { dmxCh: 16 } }),
+    dev('fog', 'Smoke / fog machine', 'effect', 'FOG', { ports: { dmx: 1, relay: 1, mains: 1 }, consumes: { dmxCh: 2 } }),
+    dev('haze', 'Haze machine', 'effect', 'HAZ', { ports: { dmx: 1, mains: 1 }, consumes: { dmxCh: 2 } }),
+    dev('bubble', 'Bubble machine', 'effect', 'BUB', { ports: { relay: 1, dmx: 1, mains: 1 }, consumes: { dmxCh: 1 } }),
+    dev('snow', 'Snow / effect machine', 'effect', 'SNO', { ports: { relay: 1, dmx: 1, mains: 1 }, consumes: { dmxCh: 1 } }),
+    dev('customDevice', 'Custom device', 'custom', '?', { ports: { custom: 1 } })
+  ];
+  // Mean Well PSUs as box components (footprint by series).
+  const psuSize = id => /^HLG/.test(id) ? [24, 7] : /^LRS-(100|150)/.test(id) ? [13, 10] : /^RSP/.test(id) ? [17, 12] : /^SE/.test(id) ? [22, 12] : [21.5, 11.5];
+  C.psus.forEach(s => {
+    const [w, h] = psuSize(s.id);
+    C.components.push(dev('psu:' + s.id, 'Mean Well ' + s.id, 'power', s.v + 'V', { psuModel: s.id, w, h, ports: { dc: 2, mains: 1 }, provides: { psuW: Math.round(s.v * s.a) }, notes: s.ip }));
+  });
+
+  // Starter cable standards (copied into your library the first time, then fully editable).
+  const cs = (id, name, type, length, color, tag, connector) => ({ id, name, type, length, color, tag, connector, notes: '' });
+  C.cableStds = [
+    cs('std-px2', 'Pixel extension', 'pixel', 2, '#facc15', 'Yellow', '3-pin pixel (xConnect)'),
+    cs('std-px5', 'Pixel extension', 'pixel', 5, '#3b82f6', 'Blue', '3-pin pixel (xConnect)'),
+    cs('std-px10', 'Pixel extension', 'pixel', 10, '#ef4444', 'Red', '3-pin pixel (xConnect)'),
+    cs('std-eth3', 'Cat6 patch', 'eth', 3, '#9ca3af', 'Grey', 'RJ45'),
+    cs('std-eth10', 'Cat6 patch', 'eth', 10, '#22c55e', 'Green', 'RJ45'),
+    cs('std-eth20', 'Cat6 outdoor', 'eth', 20, '#111827', 'Black', 'RJ45 (IP67)'),
+    cs('std-dmx5', 'DMX cable', 'dmx', 5, '#f97316', 'Orange', '3-pin XLR'),
+    cs('std-in5', 'Input cable 2-core', 'input', 5, '#14b8a6', 'Teal', '2-pin'),
+    cs('std-spk10', 'Speaker cable', 'speaker', 10, '#e5e7eb', 'White', 'Bare / Speakon'),
+    cs('std-ac10', 'Mains extension', 'mains', 10, '#57534e', 'Black', '13 A plug / socket')
+  ];
+
+  // Starter controller box template.
+  C.boxTemplates = [{
+    id: 'box-b8-show', name: 'B8 show box', w: 60, h: 40, d: 20, notes: 'Two LRS-350-12, Baldrick8, Pi 4 running FPP, 5 port switch, USB sound card and a 2 channel amp.',
+    items: [
+      { id: 'bi1', comp: 'psu:LRS-350-12', x: 2, y: 2, label: 'PSU 1', limits: {} },
+      { id: 'bi2', comp: 'psu:LRS-350-12', x: 2, y: 15, label: 'PSU 2', limits: {} },
+      { id: 'bi3', comp: 'baldrick8', x: 26, y: 2, label: '', limits: { pixels: 3200 } },
+      { id: 'bi4', comp: 'pi4', x: 26, y: 15, label: '', limits: {} },
+      { id: 'bi5', comp: 'sw5', x: 37, y: 15, label: '', limits: {} },
+      { id: 'bi6', comp: 'usbsound', x: 26, y: 24, label: '', limits: {} },
+      { id: 'bi7', comp: 'amp2', x: 37, y: 25, label: '', limits: {} }
+    ]
+  }];
+
   C.inputDevices = ['Push button', 'Big red button', 'PIR motion sensor', 'Beam break', 'Reed switch', 'Step / pressure mat', 'Other'];
   C.inputActions = [
     { id: 'none', name: 'Not set' },
@@ -583,7 +882,12 @@ PP.CHANGELOG = [
     hoursPerNight: 5,
     nights: 40,
     tariff: 0.25,
-    currency: '£'
+    currency: '£',
+    roomFlow: false,           // animated direction markers on room cables
+    roomLabels: false,         // show every cable length (selected/short cables always show)
+    roomSnap: true,            // snap to the room grid (hold Alt while dragging to place freely)
+    roomHidden: [],            // cable types hidden in the room view
+    cableSlackM: 0             // default service-loop allowance added to each routed cable
   });
 
   M.newPsu = (model = 'LRS-350-12', n = 1) => {
@@ -637,8 +941,19 @@ PP.CHANGELOG = [
     app: 'PixelPlanner', schema: SCHEMA, name: 'New show', notes: '',
     settings: M.defaultSettings(),
     library: { pixelTypes: clone(C.pixelTypes), presets: clone(C.presets) },
-    distros: []
+    hw: M.newHw(),
+    distros: [],
+    rooms: [M.newRoom('Room 1')]
   });
+
+  // Project copies of the reusable definitions it uses (so a project stays stable when the library changes).
+  M.newHw = () => ({ components: {}, boxes: {}, cables: {} });
+  M.newRoom = (name = 'Room', w = 20, h = 12) => ({ id: M.uid('room'), name, w, h, grid: 0.5, nodes: [], cables: [] });
+  // kind: 'distro' (ref = distro id, a controller box when the distro has boxTpl), 'device' (ref = component id),
+  // 'prop' (a pixel element: portId links it to a port run, otherwise pixels = count). x, y = centre in metres.
+  M.newNode = (kind, ref, x, y, o = {}) => Object.assign({ id: M.uid('rn'), kind, ref: ref || null, x, y, w: null, h: null, label: '', open: false }, o);
+  // A physical cable: a -> pts (pivots, metres) -> b. std = cable standard id; len = custom physical length (m).
+  M.newRoomCable = (a, b, type, o = {}) => Object.assign({ id: M.uid('rc'), a, b, type, pts: [], std: '', len: 0, slack: null, label: '' }, o);
 
   M.demoProject = () => {
     const p = M.newProject();
@@ -665,6 +980,23 @@ PP.CHANGELOG = [
     s.relays[1].name = 'Inflatable'; s.relays[1].amps = 1; s.relays[1].volts = 230;
     d2.controllers.push(s);
     p.distros.push(d, d2);
+    // Room layout: real positions in metres, routed cables with pivots and cable standards.
+    const r = p.rooms[0]; r.name = 'Front garden'; r.w = 20; r.h = 12;
+    const N = (kind, ref, x, y, o) => { const n = M.newNode(kind, ref, x, y, o); r.nodes.push(n); return n; };
+    const nd = N('distro', d.id, 4, 7), np = N('distro', d2.id, 17, 9.5);
+    const roof = N('prop', null, 7.5, 4.5, { portId: c.ports[0].id, w: 8, h: 0.2 });
+    const trees = N('prop', null, 10.5, 7, { portId: c.ports[1].id, w: 3, h: 0.8 });
+    const floods = N('prop', null, 2.5, 10.5, { portId: c.ports[2].id, w: 3, h: 0.3 });
+    const arches = N('prop', null, 13.5, 2, { portId: c.ports[4].id, w: 4.5, h: 0.4 });
+    const btn = N('device', 'pushButton', 6.5, 10.5, { label: 'Show start button' });
+    const snow = N('device', 'snow', 18.5, 11.2, { label: 'Snow machine' });
+    const C2 = (a, b, type, o) => r.cables.push(M.newRoomCable(a.id, b.id, type, o));
+    C2(nd, roof, 'pixel', { std: 'std-px5', pts: [{ x: 4, y: 5.5 }] });
+    C2(nd, trees, 'pixel', { std: 'std-px10', pts: [{ x: 7, y: 7 }] });
+    C2(nd, floods, 'pixel', { std: 'std-px5' });
+    C2(nd, arches, 'pixel', { std: 'std-px10', pts: [{ x: 5.5, y: 5.5 }, { x: 12, y: 5.5 }] });
+    C2(nd, btn, 'input', { std: 'std-in5' });
+    C2(np, snow, 'relay');
     return p;
   };
 
@@ -683,6 +1015,14 @@ PP.CHANGELOG = [
         c.ports.forEach(pt => { pt.chain = pt.chain || []; if (pt.brightness == null) pt.brightness = 100; if (pt.portPower == null) pt.portPower = true; });
       });
     });
+    p.hw = Object.assign(M.newHw(), p.hw || {});
+    if (!Array.isArray(p.rooms)) p.rooms = [M.newRoom('Room 1')];
+    p.rooms.forEach(r => {
+      r.nodes = r.nodes || []; r.cables = r.cables || [];
+      if (!(r.grid > 0)) r.grid = 0.5;
+      r.cables.forEach(c => { c.pts = c.pts || []; });
+    });
+    if (PP.hw) PP.hw.adopt(p);
     p.schema = SCHEMA;
     return p;
   };
@@ -706,6 +1046,11 @@ PP.CHANGELOG = [
     });
     (p.library.pixelTypes || []).forEach(t => m.set(t.id, { type: 'pixelType', obj: t }));
     (p.library.presets || []).forEach(t => m.set('preset:' + t.id, { type: 'preset', obj: t }));
+    (p.rooms || []).forEach(r => {
+      m.set(r.id, { type: 'room', obj: r, room: r });
+      r.nodes.forEach(n => m.set(n.id, { type: 'rnode', obj: n, room: r }));
+      r.cables.forEach(c => m.set(c.id, { type: 'rcable', obj: c, room: r }));
+    });
     return m;
   };
   M.find = (p, id) => M.index(p).get(id);
@@ -731,6 +1076,7 @@ PP.CHANGELOG = [
   S.commit = (label, fn) => {
     const before = JSON.stringify(S.project);
     fn(S.project);
+    if (PP.hw) PP.hw.adopt(S.project);
     if (JSON.stringify(S.project) === before) return;
     S.undo.push(before); if (S.undo.length > 150) S.undo.shift();
     S.redo = []; S.dirty = true; S.save(); S.emit('change:' + label);
@@ -1062,6 +1408,7 @@ PP.CHANGELOG = [
     T.kWh = T.typicalW * st.hoursPerNight * st.nights / 1000;
     T.cost = T.kWh * st.tariff;
     R.totals = T;
+    if (PP.hw) PP.hw.check(p, R, warn);
     const order = { error: 0, warn: 1, info: 2 };
     R.warnings.sort((a, b) => order[a.level] - order[b.level]);
     R.counts = { error: 0, warn: 0, info: 0 };
@@ -1284,6 +1631,435 @@ PP.CHANGELOG = [
 
 </script>
 <script>
+// Installation hardware: the reusable library (components, cable standards, controller boxes), room geometry,
+// routed cable lengths, typed-port compatibility, capacity/usage and hardware bill-of-materials rows.
+// Pure data and calculation: the room view, box builder and guide present what this returns.
+(function () {
+  const C = PP.catalog, M = PP.model;
+  const H = PP.hw = {};
+  const clone = o => JSON.parse(JSON.stringify(o));
+  H.PX = 50;                 // room view world units per metre
+  const KINDS = ['components', 'boxes', 'cables'];
+
+  // ---------- global library: shared by every project opened in this browser ----------
+  const LIB_KEY = 'pixelplanner.library.v1';
+  H.builtin = {};
+  C.components.forEach(c => { H.builtin[c.id] = c; });
+  H.loadLib = () => {
+    let L = null;
+    try { L = JSON.parse(localStorage.getItem(LIB_KEY)); } catch (e) { /* blocked or corrupt */ }
+    L = Object.assign({ components: {}, boxes: {}, cables: {} }, L || {});
+    if (!L.seeded) {
+      C.cableStds.forEach(s => { L.cables[s.id] = clone(s); });
+      C.boxTemplates.forEach(b => { L.boxes[b.id] = clone(b); });
+      L.seeded = 1;
+    }
+    H.lib = L; H.saveLib();
+    return L;
+  };
+  H.saveLib = () => { try { localStorage.setItem(LIB_KEY, JSON.stringify(H.lib)); } catch (e) { /* storage full or blocked */ } };
+  H.loadLib();
+
+  // Lookups: the project's own copy wins, then your library, then the built-in definitions.
+  H.comp = (p, id) => {
+    if (!id) return null;
+    if (id === 'psu:custom') return null;
+    return (p && p.hw.components[id]) || H.lib.components[id] || H.builtin[id] || null;
+  };
+  H.box = (p, id) => (id && ((p && p.hw.boxes[id]) || H.lib.boxes[id])) || null;
+  H.std = (p, id) => (id && ((p && p.hw.cables[id]) || H.lib.cables[id])) || null;
+  const merged = (proj, lib, base) => Object.values(Object.assign({}, base || {}, lib, proj || {}));
+  H.comps = p => merged(p && p.hw.components, H.lib.components, H.builtin).sort((a, b) => a.name.localeCompare(b.name));
+  H.boxes = p => merged(p && p.hw.boxes, H.lib.boxes).sort((a, b) => a.name.localeCompare(b.name));
+  H.stds = p => merged(p && p.hw.cables, H.lib.cables).sort((a, b) => a.type.localeCompare(b.type) || a.name.localeCompare(b.name) || a.length - b.length);
+  H.stdName = s => s ? `${s.name} ${fmt(s.length)} m${s.tag ? ' (' + s.tag + ')' : ''}` : '';
+
+  // Copy every definition the project refers to into project.hw, so the project keeps working
+  // (and looks the same) when the library changes or the file is opened on another computer.
+  H.adopt = (p) => {
+    const hw = p.hw;
+    const need = (map, id, get) => { if (id && !map[id]) { const d = get(id); if (d) map[id] = clone(d); } };
+    const needComp = id => need(hw.components, id, x => H.lib.components[x] || H.builtin[x]);
+    p.distros.forEach(d => { if (d.boxTpl) need(hw.boxes, d.boxTpl, x => H.lib.boxes[x]); });
+    Object.values(hw.boxes).forEach(b => (b.items || []).forEach(i => needComp(i.comp)));
+    (p.rooms || []).forEach(r => {
+      r.nodes.forEach(n => { if (n.kind === 'device') needComp(n.ref); });
+      r.cables.forEach(c => need(hw.cables, c.std, x => H.lib.cables[x]));
+    });
+  };
+
+  // Library edits. The current project's copy follows the library; other saved projects keep theirs
+  // until you use "Update this project from the library".
+  H.put = (kind, obj) => {
+    H.lib[kind][obj.id] = clone(obj); H.saveLib();
+    const S = PP.store, p = S.project;
+    if (p && p.hw[kind][obj.id]) S.commit('library', q => { q.hw[kind][obj.id] = clone(obj); });
+    else if (PP.render) PP.render();
+  };
+  H.remove = (kind, id) => { delete H.lib[kind][id]; H.saveLib(); if (PP.render) PP.render(); };
+  H.pullFromLibrary = (p) => {
+    let n = 0;
+    KINDS.forEach(k => Object.keys(p.hw[k]).forEach(id => { if (H.lib[k][id]) { p.hw[k][id] = clone(H.lib[k][id]); n++; } }));
+    return n;
+  };
+  H.pushToLibrary = (p) => {
+    let n = 0;
+    KINDS.forEach(k => Object.values(p.hw[k]).forEach(o => { if (k === 'components' && H.builtin[o.id] && !H.lib.components[o.id] && JSON.stringify(o) === JSON.stringify(H.builtin[o.id])) return; H.lib[k][o.id] = clone(o); n++; }));
+    H.saveLib();
+    return n;
+  };
+  H.exportLib = () => JSON.stringify({ app: 'PixelPlannerLibrary', version: PP.APP_VERSION, components: H.lib.components, boxes: H.lib.boxes, cables: H.lib.cables }, null, 1);
+  H.importLib = (text) => {
+    const j = JSON.parse(text);
+    if (!j || j.app !== 'PixelPlannerLibrary') throw new Error('This is not a Pixel Planner library file.');
+    let n = 0;
+    KINDS.forEach(k => Object.values(j[k] || {}).forEach(o => { if (o && o.id) { H.lib[k][o.id] = o; n++; } }));
+    H.saveLib();
+    return n;
+  };
+  H.newId = (prefix) => M.uid(prefix);
+
+  // ---------- rooms and geometry (metres) ----------
+  const fmt = v => (Math.round(v * 10) / 10).toFixed(1).replace(/\.0$/, '');
+  H.fmtM = v => (v == null || !isFinite(v) ? '-' : fmt(v) + ' m');
+  const distroOf = (p, n) => n && n.kind === 'distro' ? p.distros.find(d => d.id === n.ref) : null;
+  H.distroOf = distroOf;
+
+  H.nodeSize = (p, n) => {
+    if (n.w > 0 && n.h > 0) return [+n.w, +n.h];
+    if (n.kind === 'distro') { const d = distroOf(p, n), b = d && d.boxTpl && H.box(p, d.boxTpl); return b ? [Math.max(0.2, b.w / 100), Math.max(0.2, b.h / 100)] : [0.6, 0.4]; }
+    if (n.kind === 'prop') return [1.5, 0.3];
+    const c = H.comp(p, n.ref);
+    return c ? [Math.max(0.3, c.w / 100), Math.max(0.3, c.h / 100)] : [0.3, 0.3];
+  };
+  H.rect = (p, n) => { const [w, h] = H.nodeSize(p, n); return { cx: +n.x, cy: +n.y, w, h }; };
+  // Where a line from the node's centre towards q leaves the node outline.
+  const clip = (r, q) => {
+    const dx = q.x - r.cx, dy = q.y - r.cy;
+    if (!dx && !dy) return { x: r.cx, y: r.cy };
+    const t = Math.min(dx ? (r.w / 2) / Math.abs(dx) : Infinity, dy ? (r.h / 2) / Math.abs(dy) : Infinity, 1);
+    return { x: r.cx + dx * t, y: r.cy + dy * t };
+  };
+  // Full routed path: node A edge -> pivots -> node B edge.
+  H.route = (p, room, c, byId) => {
+    const get = id => byId ? byId.get(id) : room.nodes.find(n => n.id === id);
+    const na = get(c.a), nb = get(c.b);
+    if (!na || !nb) return null;
+    const ra = H.rect(p, na), rb = H.rect(p, nb);
+    const pts = (c.pts || []).map(q => ({ x: +q.x, y: +q.y }));
+    const first = pts[0] || { x: rb.cx, y: rb.cy }, last = pts[pts.length - 1] || { x: ra.cx, y: ra.cy };
+    return [clip(ra, first), ...pts, clip(rb, last)];
+  };
+  H.polyLen = pts => pts.reduce((s, q, i) => i ? s + Math.hypot(q.x - pts[i - 1].x, q.y - pts[i - 1].y) : 0, 0);
+
+  H.propPixels = (p, R, n) => n.portId ? ((R.ports.get(n.portId) || {}).pixels || 0) : Math.max(0, +n.pixels || 0);
+  H.portLabel = (p, R, portId) => {
+    const e = R && R.idx ? R.idx.get(portId) : M.find(p, portId);
+    return e && e.type === 'port' ? `${e.controller.name} port ${e.port.num}${e.port.label ? ' (' + e.port.label + ')' : ''}` : null;
+  };
+  H.nodeName = (p, n, R) => {
+    if (!n) return '?';
+    if (n.label) return n.label;
+    if (n.kind === 'distro') { const d = distroOf(p, n); return d ? d.name : 'Missing distro'; }
+    if (n.kind === 'prop') return (n.portId && H.portLabel(p, R, n.portId)) || `Pixel prop (${+n.pixels || 0} px)`;
+    const c = H.comp(p, n.ref); return c ? c.name : 'Unknown device';
+  };
+
+  // ---------- components inside a box / distro ----------
+  const customPsuDef = s => ({ id: 'psu:custom', name: `Custom ${s.customV} V ${s.customA} A PSU`, cat: 'power', sym: s.customV + 'V', w: 20, h: 11, ports: { dc: 2, mains: 1 }, provides: { psuW: Math.round(s.customV * s.customA) }, limits: {}, consumes: {}, internal: {} });
+  // A distro made from a box template uses the template's contents; any other distro is described
+  // by its PSUs and boards.
+  H.boxComps = (p, d) => {
+    const t = d.boxTpl && H.box(p, d.boxTpl);
+    if (t) return t.items.map(i => ({ item: i, def: H.comp(p, i.comp) })).filter(x => x.def);
+    const out = [];
+    d.psus.forEach(s => { const def = s.model === 'custom' ? customPsuDef(s) : H.comp(p, 'psu:' + s.model); if (def) out.push({ item: { id: s.id, comp: def.id, label: s.name, limits: {} }, def }); });
+    d.controllers.forEach(c => { const def = H.comp(p, c.board); if (def) out.push({ item: { id: c.id, comp: def.id, label: c.name, limits: {} }, def }); });
+    return out;
+  };
+  H.accepts = (p, n) => {
+    if (n.kind === 'prop') return new Set(['pixel', 'dc', 'custom']);
+    const set = new Set(['custom']);
+    const addPorts = def => Object.keys(def.ports || {}).forEach(k => { if (+def.ports[k] > 0) set.add(k); });
+    if (n.kind === 'device') { const def = H.comp(p, n.ref); if (def) addPorts(def); }
+    else { const d = distroOf(p, n); if (d) H.boxComps(p, d).forEach(x => addPorts(x.def)); }
+    return set;
+  };
+
+  // ---------- capacity ----------
+  const num = v => (v === '' || v == null || !isFinite(+v)) ? null : +v;
+  // Operating limit: per-item override, then the definition's limit, then the manufacturer figure.
+  H.capOf = (item, def, res) => {
+    const a = num(item && item.limits && item.limits[res]); if (a != null) return a;
+    const b = num(def.limits && def.limits[res]); if (b != null) return b;
+    return num(def.provides && def.provides[res]) || 0;
+  };
+  H.capsFrom = (list) => {
+    const caps = {};
+    const get = r => (caps[r] = caps[r] || { cap: 0, max: 0, used: 0, internal: 0 });
+    list.forEach(({ item, def }) => Object.keys(def.provides || {}).forEach(r => {
+      if (num(def.provides[r]) == null) return;
+      const c = get(r); c.max += +def.provides[r]; c.cap += H.capOf(item, def, r);
+    }));
+    list.forEach(({ def }) => Object.keys(def.internal || {}).forEach(r => { if (caps[r]) caps[r].internal += num(def.internal[r]) || 0; }));
+    Object.values(caps).forEach(c => { c.used = c.internal; });
+    return caps;
+  };
+  H.capState = c => {
+    if (c.used > c.cap + 1e-9) return 'err';
+    if (c.cap > 0 && c.used / c.cap >= 0.85) return 'warn';
+    return 'ok';
+  };
+  H.capRows = (caps) => Object.keys(C.resources).concat(Object.keys(caps).filter(r => !C.resources[r]))
+    .filter(r => caps[r] && (caps[r].cap > 0 || caps[r].used > 0))
+    .map(r => Object.assign({ res: r, name: (C.resources[r] || { name: r }).name, unit: (C.resources[r] || {}).unit || '', state: H.capState(caps[r]) }, caps[r]));
+
+  const portDistroId = (R, portId) => { const e = R.idx.get(portId); return e && e.type === 'port' ? e.distro.id : null; };
+  H.leadFor = (p, R, na, nb, c) => {
+    if (c.type !== 'pixel') return null;
+    const prop = na.kind === 'prop' ? na : nb.kind === 'prop' ? nb : null;
+    const other = prop === na ? nb : na;
+    if (!prop || !prop.portId || !other || other.kind !== 'distro') return null;
+    const e = R.idx.get(prop.portId);
+    if (!e || e.type !== 'port' || e.distro.id !== other.ref) return null;
+    let len = 0; const cables = [];
+    for (const it of e.port.chain) { if (it.kind === 'pixels') break; if (it.kind === 'cable') { len += +it.length || 0; cables.push(it); } }
+    return cables.length ? { len, portId: prop.portId, cables } : null;
+  };
+
+  // Pick a sensible cable type for two nodes: the consumer's port order, preferring a type whose
+  // resource the other end provides.
+  H.guessType = (p, R, na, nb) => {
+    if (na.kind === 'prop' || nb.kind === 'prop') return 'pixel';
+    const A = H.accepts(p, na), B = H.accepts(p, nb);
+    const order = n => n.kind === 'device' ? Object.keys((H.comp(p, n.ref) || {}).ports || {}) : [];
+    const pref = order(nb).concat(order(na), ['eth', 'pixel', 'input', 'relay', 'dmx', 'audio', 'speaker', 'usb', 'video', 'mains', 'dc', 'analog']);
+    const both = pref.filter((t, i) => pref.indexOf(t) === i && A.has(t) && B.has(t));
+    const caps = n => { const x = R && R.hw && R.hw.caps.get(n.kind === 'distro' ? n.ref : n.id); return x ? x.caps : {}; };
+    const withRes = both.find(t => { const r = C.portType(t).res; return r && ((caps(na)[r] || {}).cap > 0 || (caps(nb)[r] || {}).cap > 0); });
+    return withRes || both[0] || pref.find(t => B.has(t) && t !== 'custom') || 'custom';
+  };
+
+  // ---------- the calculation: capacities, cable lengths, usage ----------
+  H.compute = (p, R) => {
+    const out = { caps: new Map(), cables: new Map(), nodeCables: new Map() };
+    const blank = () => ({ cap: 0, max: 0, used: 0, internal: 0 });
+    p.distros.forEach(d => {
+      const caps = H.capsFrom(H.boxComps(p, d));
+      const model = { pixelOutputs: 0, pixels: 0, inputs: 0, relays: 0 };
+      d.controllers.forEach(c => {
+        c.ports.forEach(pt => { const r = R.ports.get(pt.id); if (r && r.pixels) { model.pixelOutputs++; model.pixels += r.pixels; } });
+        c.inputs.forEach(i => { if (i.name || (i.action && i.action !== 'none')) model.inputs++; });
+        c.relays.forEach(x => { if (x.name) model.relays++; });
+      });
+      const D = R.distros.get(d.id);
+      const add = (r, v) => { if (!v) return; (caps[r] = caps[r] || blank()).used += v; };
+      add('pixelOutputs', model.pixelOutputs); add('pixels', model.pixels); add('psuW', D ? Math.round(D.dcW) : 0);
+      out.caps.set(d.id, { caps, model, conn: {}, name: d.name, ref: d.id, box: d.boxTpl ? H.box(p, d.boxTpl) : null });
+    });
+    (p.rooms || []).forEach(room => room.nodes.forEach(n => {
+      if (n.kind !== 'device') return;
+      const def = H.comp(p, n.ref);
+      out.caps.set(n.id, { caps: def ? H.capsFrom([{ item: { limits: n.limits || {} }, def }]) : {}, conn: {}, name: H.nodeName(p, n, R), ref: n.id });
+    }));
+    const key = n => n.kind === 'distro' ? n.ref : n.id;
+
+    (p.rooms || []).forEach(room => {
+      const byId = new Map(room.nodes.map(n => [n.id, n]));
+      room.cables.forEach(c => {
+        const na = byId.get(c.a), nb = byId.get(c.b);
+        const info = { room, cable: c, na, nb, pts: null, route: 0, req: 0, phys: null, physSrc: '', std: H.std(p, c.std), type: C.portType(c.type) };
+        out.cables.set(c.id, info);
+        [c.a, c.b].forEach(id => { if (!out.nodeCables.has(id)) out.nodeCables.set(id, []); out.nodeCables.get(id).push(c.id); });
+        if (!na || !nb || (na.kind === 'distro' && !distroOf(p, na)) || (nb.kind === 'distro' && !distroOf(p, nb))) { info.broken = true; return; }
+        info.pts = H.route(p, room, c, byId);
+        info.route = H.polyLen(info.pts);
+        info.slack = num(c.slack) != null ? Math.max(0, +c.slack) : Math.max(0, +p.settings.cableSlackM || 0);
+        info.req = info.route + info.slack;
+        info.lead = H.leadFor(p, R, na, nb, c);
+        if (info.std) { info.phys = +info.std.length || 0; info.physSrc = 'std'; }
+        else if (+c.len > 0) { info.phys = +c.len; info.physSrc = 'custom'; }
+        else if (info.lead) { info.phys = info.lead.len; info.physSrc = 'lead'; }
+        if (info.phys != null) { info.spare = info.phys - info.req; info.short = info.spare < -0.005; }
+        const A = H.accepts(p, na), B = H.accepts(p, nb);
+        info.compatible = A.has(c.type) && B.has(c.type);
+        info.badEnd = !A.has(c.type) ? na : !B.has(c.type) ? nb : null;
+        const res = info.type.res;
+        if (!res) return;
+        const ca = out.caps.get(key(na)), cb = out.caps.get(key(nb));
+        const has = x => x && x.caps[res] && x.caps[res].cap > 0;
+        let prov = null, cons = null;
+        if (has(ca) && !has(cb)) { prov = na; cons = nb; }
+        else if (has(cb) && !has(ca)) { prov = nb; cons = na; }
+        else if (has(ca) && has(cb)) { if (nb.kind === 'distro' && na.kind !== 'distro') { prov = nb; cons = na; } else { prov = na; cons = nb; } }
+        info.res = res; info.provider = prov; info.consumer = cons;
+        if (!prov) return;
+        let amt = 1;
+        if (cons.kind === 'device') { const def = H.comp(p, cons.ref); if (def && def.consumes && num(def.consumes[res]) != null) amt = +def.consumes[res]; }
+        const portD = cons.kind === 'prop' && cons.portId ? portDistroId(R, cons.portId) : null;
+        info.linked = !!(portD && prov.kind === 'distro' && portD === prov.ref);   // already counted from the port run
+        if (portD && prov.kind === 'distro' && portD !== prov.ref) info.wrongDistro = portD;
+        info.amount = amt;
+        if (info.linked) return;
+        const pc = out.caps.get(key(prov));
+        pc.conn[res] = (pc.conn[res] || 0) + amt;
+        if (c.type === 'pixel' && cons.kind === 'prop') pc.conn.pixels = (pc.conn.pixels || 0) + H.propPixels(p, R, cons);
+      });
+    });
+    // Inputs and relays named on a board and devices cabled to it describe the same physical
+    // connections, so count whichever is larger; everything else adds up.
+    out.caps.forEach(x => {
+      Object.keys(x.conn).forEach(r => {
+        const c = x.caps[r] = x.caps[r] || blank();
+        if (x.model && (r === 'inputs' || r === 'relays')) c.used = c.internal + Math.max(x.model[r], x.conn[r]);
+        else c.used += x.conn[r];
+      });
+      if (x.model) ['inputs', 'relays'].forEach(r => { if (!x.conn[r] && x.model[r]) { const c = x.caps[r] = x.caps[r] || blank(); c.used = c.internal + x.model[r]; } });
+    });
+    return out;
+  };
+
+  // Warnings for the Checks drawer (called from calc.run).
+  H.check = (p, R, warn) => {
+    const X = R.hw = H.compute(p, R);
+    X.caps.forEach(x => {
+      H.capRows(x.caps).forEach(c => {
+        if (c.state !== 'err') return;
+        const lim = c.cap < c.max ? ` (your limit; the hardware allows ${c.max.toLocaleString()})` : '';
+        warn('error', `${x.name}: ${c.name} ${Math.round(c.used).toLocaleString()} / ${c.cap.toLocaleString()}${c.unit ? ' ' + c.unit : ''}${lim}. Over capacity.`, x.ref);
+      });
+    });
+    X.cables.forEach(i => {
+      const c = i.cable, where = p.rooms.length > 1 ? i.room.name + ': ' : '';
+      const nm = `${where}${H.nodeName(p, i.na, R)} → ${H.nodeName(p, i.nb, R)}`;
+      if (i.broken) { warn('warn', `${where}a ${i.type.name.toLowerCase()} cable has lost one of its ends.`, c.id); return; }
+      if (!i.compatible) warn('warn', `${nm}: ${H.nodeName(p, i.badEnd, R)} has no ${i.type.name.toLowerCase()} connection.`, c.id);
+      else if (i.res && !i.provider) warn('warn', `${nm}: neither end provides ${C.resources[i.res].name.toLowerCase()}.`, c.id);
+      if (i.wrongDistro) warn('warn', `${nm}: this run is on ${(p.distros.find(d => d.id === i.wrongDistro) || {}).name}, not ${H.nodeName(p, i.provider, R)}.`, c.id);
+      if (i.short) warn('error', `${nm}: route needs ${H.fmtM(i.req)} but the ${i.physSrc === 'std' ? H.stdName(i.std) : i.physSrc === 'lead' ? 'run lead of ' + H.fmtM(i.phys) : H.fmtM(i.phys) + ' cable'} is ${H.fmtM(-i.spare)} short.`, c.id);
+      else if (i.phys == null) warn('info', `${nm}: no cable chosen for the ${H.fmtM(i.req)} route.`, c.id);
+      if (i.lead && i.physSrc === 'std' && Math.abs(i.lead.len - i.phys) > 0.05) warn('info', `${nm}: the run's lead cable is ${H.fmtM(i.lead.len)} but the room uses a ${H.fmtM(i.phys)} cable, so the voltage drop is worked out on ${H.fmtM(i.lead.len)}.`, c.id);
+    });
+    (p.rooms || []).forEach(r => r.nodes.forEach(n => {
+      if (n.kind === 'prop' && n.portId && !R.idx.get(n.portId)) warn('warn', `${r.name}: a pixel prop is linked to a port that no longer exists.`, n.id);
+      if (n.kind === 'distro' && !distroOf(p, n)) warn('warn', `${r.name}: a controller box in the room has been deleted from the project.`, n.id);
+    }));
+  };
+
+  // ---------- controller boxes in a project ----------
+  // Placing a box template creates a distro with the template's PSUs and boards (so the power and
+  // pixel calculations work as usual) and a room node for it.
+  H.placeBox = (p, tplId, room, x, y) => {
+    const t = H.box(p, tplId); if (!t) return null;
+    const n = p.distros.filter(d => d.boxTpl === tplId).length + 1;
+    const maxY = p.distros.reduce((m, d) => Math.max(m, d.y + 400), 40);
+    const d = M.newDistro(`${t.name} ${n}`, 40, p.distros.length ? maxY : 40, 'custom');
+    d.boxTpl = tplId;
+    const items = t.items.map(i => ({ i, def: H.comp(p, i.comp) })).filter(x => x.def);
+    items.filter(x => x.def.psuModel && C.psuById(x.def.psuModel)).forEach((x, k) => { const s = M.newPsu(x.def.psuModel, k + 1); if (x.i.label) s.name = x.i.label; d.psus.push(s); });
+    items.filter(x => x.def.board && C.boards[x.def.board]).forEach(x => {
+      const c = M.newController(x.def.board, x.i.label || undefined);
+      Object.keys(c.banks).forEach((k, j) => { c.banks[k] = d.psus.length ? d.psus[j % d.psus.length].id : null; });
+      d.controllers.push(c);
+    });
+    d.psuSlots = Math.max(1, d.psus.length); d.boardSlots = Math.max(1, d.controllers.length);
+    p.distros.push(d);
+    let node = null;
+    if (room) { node = M.newNode('distro', d.id, x, y); room.nodes.push(node); }
+    return { d, node };
+  };
+  // Bring a box's distro in line with an edited template: add missing PSUs and boards, and remove
+  // surplus ones only when nothing uses them (runs, bank feeds and injections are never lost).
+  H.syncBox = (p, d) => {
+    const t = H.box(p, d.boxTpl); if (!t) return [];
+    const log = [], defs = t.items.map(i => ({ i, def: H.comp(p, i.comp) })).filter(x => x.def);
+    const want = (key, pick) => { const m = {}; defs.forEach(x => { const k = pick(x.def); if (k) m[k] = (m[k] || 0) + 1; }); return m; };
+    const psuWant = want('psu', df => df.psuModel && C.psuById(df.psuModel) ? df.psuModel : null);
+    const boardWant = want('board', df => df.board && C.boards[df.board] ? df.board : null);
+    const psuUsed = id => d.controllers.some(c => Object.values(c.banks).includes(id)) || p.distros.some(x => x.controllers.some(c => c.ports.some(pt => pt.chain.some(it => it.kind === 'inject' && it.psuId === id))));
+    Object.keys(psuWant).forEach(m => { let have = d.psus.filter(s => s.model === m).length; while (have < psuWant[m]) { d.psus.push(M.newPsu(m, d.psus.length + 1)); have++; log.push(`Added a ${m}`); } });
+    d.psus.slice().forEach(s => {
+      if (s.model === 'custom') return;
+      const extra = d.psus.filter(x => x.model === s.model).length - (psuWant[s.model] || 0);
+      if (extra > 0) { if (!psuUsed(s.id)) { d.psus = d.psus.filter(x => x !== s); log.push(`Removed unused ${s.name}`); } else log.push(`Kept ${s.name}: it still powers something`); }
+    });
+    Object.keys(boardWant).forEach(b => {
+      let have = d.controllers.filter(c => c.board === b).length;
+      while (have < boardWant[b]) {
+        const c = M.newController(b); if (have) c.name += ' ' + (have + 1);
+        Object.keys(c.banks).forEach((k, j) => { c.banks[k] = d.psus.length ? d.psus[j % d.psus.length].id : null; });
+        d.controllers.push(c); have++; log.push(`Added a ${C.boards[b].name}`);
+      }
+    });
+    d.controllers.slice().forEach(c => {
+      const extra = d.controllers.filter(x => x.board === c.board).length - (boardWant[c.board] || 0);
+      if (extra > 0) { if (!c.ports.some(pt => pt.chain.length)) { d.controllers = d.controllers.filter(x => x !== c); log.push(`Removed unused ${c.name}`); } else log.push(`Kept ${c.name}: it has runs`); }
+    });
+    d.psuSlots = Math.max(d.psuSlots || 1, d.psus.length); d.boardSlots = Math.max(d.boardSlots || 1, d.controllers.length);
+    return log;
+  };
+  // After choosing a cable standard for a pixel cable, make the run's lead cable the same length.
+  H.syncLead = (p, R, c, len) => {
+    const room = p.rooms.find(r => r.cables.includes(c)); if (!room) return false;
+    const byId = new Map(room.nodes.map(n => [n.id, n]));
+    const L = H.leadFor(p, R, byId.get(c.a), byId.get(c.b), c);
+    if (!L || L.cables.length !== 1) return false;
+    const e = M.find(p, L.cables[0].id); if (!e) return false;
+    e.obj.length = Math.round(len * 10) / 10;
+    return true;
+  };
+  H.fitStd = (p, info) => H.stds(p).filter(s => s.type === info.cable.type && +s.length >= info.req - 0.005).sort((a, b) => a.length - b.length)[0] || null;
+
+  // ---------- bill of materials: hardware and cable rows ----------
+  const CAT_GROUP = { controller: 'Controllers', compute: 'Computers', network: 'Network', power: 'Power supplies', audio: 'Audio', input: 'Sensors and buttons', output: 'Outputs and actuators', effect: 'Effects and fixtures', custom: 'Other hardware' };
+  H.catGroup = cat => CAT_GROUP[cat] || 'Other hardware';
+  // scope: null (whole project) | {room: id} | {distro: id}
+  H.scopeDistros = (p, scope) => {
+    if (!scope) return new Set(p.distros.map(d => d.id));
+    if (scope.distro) return new Set([scope.distro]);
+    const r = p.rooms.find(x => x.id === scope.room);
+    return new Set(r ? r.nodes.filter(n => n.kind === 'distro').map(n => n.ref) : []);
+  };
+  H.bomRows = (p, R, scope, add) => {
+    const X = R.hw, ds = H.scopeDistros(p, scope);
+    p.distros.filter(d => ds.has(d.id) && d.boxTpl).forEach(d => {
+      const t = H.box(p, d.boxTpl); if (!t) return;
+      add('Controller boxes', t.name, 1, 'pcs');
+      // Boards and PSUs come from the distro itself; the rest of the box contents are listed here.
+      t.items.forEach(i => { const def = H.comp(p, i.comp); if (def && !def.board && !def.psuModel) add(H.catGroup(def.cat), def.name, 1, 'pcs'); });
+    });
+    const rooms = scope && scope.room ? p.rooms.filter(r => r.id === scope.room) : p.rooms;
+    rooms.forEach(room => {
+      const inScopeNode = n => !scope || !scope.distro || (n.kind === 'distro' && n.ref === scope.distro) ||
+        room.cables.some(c => (c.a === n.id || c.b === n.id) && [c.a, c.b].some(id => { const m = room.nodes.find(x => x.id === id); return m && m.kind === 'distro' && m.ref === scope.distro; }));
+      room.nodes.filter(inScopeNode).forEach(n => {
+        if (n.kind === 'device') { const def = H.comp(p, n.ref); if (def) add(H.catGroup(def.cat), def.name, 1, 'pcs'); }
+        else if (n.kind === 'prop' && !n.portId && +n.pixels > 0) add('Pixels', 'Pixels on room props (type not set)', +n.pixels, 'px');
+      });
+      room.cables.forEach(c => {
+        const i = X.cables.get(c.id); if (!i || i.broken) return;
+        if (scope && scope.distro && ![i.na, i.nb].some(n => n.kind === 'distro' && n.ref === scope.distro)) return;
+        if (i.std) add('Cables (room)', H.stdName(i.std), 1, 'pcs', i.std.connector || '');
+        else if (i.physSrc === 'custom') add('Cables (room)', `${i.type.name} cable ${H.fmtM(i.phys)}`, 1, 'pcs', 'custom length');
+        else if (i.physSrc !== 'lead') add('Cables (room)', `${i.type.name} cable, at least ${H.fmtM(Math.ceil(i.req * 2) / 2)}`, 1, 'pcs', 'not chosen yet');
+      });
+    });
+  };
+  // A readable cable schedule for the wiring guide.
+  H.cableSchedule = (p, R, scope) => {
+    const X = R.hw, rows = [];
+    const rooms = scope && scope.room ? p.rooms.filter(r => r.id === scope.room) : p.rooms;
+    rooms.forEach(room => room.cables.forEach(c => {
+      const i = X.cables.get(c.id); if (!i || i.broken) return;
+      if (scope && scope.distro && ![i.na, i.nb].some(n => n.kind === 'distro' && n.ref === scope.distro)) return;
+      rows.push({ room: room.name, from: H.nodeName(p, i.na, R), to: H.nodeName(p, i.nb, R), type: i.type.name, route: i.route, req: i.req, pivots: c.pts.length, cable: i.std ? H.stdName(i.std) : i.physSrc === 'custom' ? H.fmtM(i.phys) + ' (custom)' : i.physSrc === 'lead' ? H.fmtM(i.phys) + ' (run lead)' : 'Not chosen', colour: i.std ? i.std.color : '', spare: i.spare, short: i.short, label: c.label || '' });
+    }));
+    return rows;
+  };
+})();
+
+</script>
+<script>
 // Small UI helpers shared by the views.
 (function () {
   const U = PP.ui = {
@@ -1455,6 +2231,12 @@ PP.CHANGELOG = [
         ${btn('balance', 'Balance PSUs', d.id, 'small', 'Spread banks and injection feeds across this distro\'s PSUs')}
         ${btn('delDistro', '✕', d.id, 'small ghost danger', 'Delete distro')}
       </div>`;
+    const HX = R.hw && R.hw.caps.get(d.id);
+    if (HX && PP.room) {
+      const rows = PP.hw.capRows(HX.caps), worst = rows.some(c => c.state === 'err') ? 'err' : rows.some(c => c.state === 'warn') ? 'warn' : 'ok';
+      const key = 'dc-' + d.id, box = d.boxTpl && PP.hw.box(p, d.boxTpl);
+      h += `<details class="dist-caps" data-open-id="${key}"${U.open.has(key) || (worst === 'err' && !U.open.has('!' + key)) ? ' open' : ''}><summary class="muted" style="font-size:12px;cursor:pointer">${chev} Capacity${box ? ` · box <b>${esc(box.name)}</b>` : ''} <span class="dot ${worst}"></span> ${rows.filter(c => c.state !== 'ok').map(c => `<span class="${c.state}">${esc(c.name)} ${Math.round(c.used).toLocaleString()}/${c.cap.toLocaleString()}</span>`).join(' · ')}</summary>${PP.room.capHtml(HX.caps)}</details>`;
+    }
     h += `<h4>Power supplies ${btn('addPsu', '+ PSU', d.id, 'small')}</h4>`;
     if (d.psus.length) {
       h += `<table class="t"><tr><th>Name</th><th>Model</th><th title="Output voltage set on the trim pot">Set V</th><th style="width:28%">Load</th><th>Amps</th><th>Watts</th><th></th></tr>`;
@@ -2104,13 +2886,14 @@ PP.CHANGELOG = [
   };
 
   // ---------- bill of materials ----------
-  G.bom = (p, R) => {
+  G.bom = (p, R, scope) => {
+    const ds = PP.hw ? PP.hw.scopeDistros(p, scope) : null;
     const rows = [];
     const add = (group, item, qty, unit = '', note = '') => {
       const r = rows.find(x => x.group === group && x.item === item && x.note === note);
       if (r) r.qty += qty; else rows.push({ group, item, qty, unit, note });
     };
-    p.distros.forEach(d => {
+    p.distros.filter(d => !ds || ds.has(d.id)).forEach(d => {
       add('Enclosures', (C.distroSizes.find(s => s.id === d.size) || {}).name || d.size, 1, 'pcs', d.name);
       d.psus.forEach(s => add('Power supplies', s.model === 'custom' ? `Custom ${s.customV} V ${s.customA} A PSU` : `Mean Well ${s.model}`, 1, 'pcs'));
       d.controllers.forEach(c => {
@@ -2137,13 +2920,14 @@ PP.CHANGELOG = [
         });
       });
     });
+    if (PP.hw && R.hw) PP.hw.bomRows(p, R, scope, add);
     rows.forEach(r => { if (r.unit === 'm') r.qty = Math.ceil(r.qty * 10) / 10; });
-    const order = ['Enclosures', 'Controllers', 'Power supplies', 'Pixels', 'Cable', 'Fuses', 'Connectors'];
+    const order = ['Controller boxes', 'Enclosures', 'Controllers', 'Power supplies', 'Computers', 'Network', 'Audio', 'Pixels', 'Cable', 'Cables (room)', 'Fuses', 'Connectors', 'Sensors and buttons', 'Outputs and actuators', 'Effects and fixtures', 'Other hardware'];
     return rows.sort((a, b) => order.indexOf(a.group) - order.indexOf(b.group) || a.item.localeCompare(b.item));
   };
 
   const csv = rows => rows.map(r => r.map(v => { const s = String(v == null ? '' : v); return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; }).join(',')).join('\r\n');
-  G.csvBom = (p, R) => csv([['Group', 'Item', 'Qty', 'Unit', 'Note'], ...G.bom(p, R).map(r => [r.group, r.item, U.num(r.qty, 1), r.unit, r.note])]);
+  G.csvBom = (p, R, scope) => csv([['Group', 'Item', 'Qty', 'Unit', 'Note'], ...G.bom(p, R, scope).map(r => [r.group, r.item, U.num(r.qty, 1), r.unit, r.note])]);
   G.csvChannels = (p, R) => {
     const rows = [['Controller', 'IP', 'Port', 'Label', 'Pixels', 'Channels', 'Start channel', 'End channel', 'Universes', 'Brightness %']];
     p.distros.forEach(d => d.controllers.forEach(c => c.ports.forEach(pt => {
@@ -2182,8 +2966,11 @@ PP.CHANGELOG = [
   }
 
   // ---------- full document ----------
-  G.build = (p, R) => {
+  G.build = (p, R, scope) => {
     const st = p.settings, T = R.totals;
+    const ds = PP.hw ? PP.hw.scopeDistros(p, scope) : new Set(p.distros.map(d => d.id));
+    const inScope = d => ds.has(d.id);
+    const scopeName = !scope ? '' : scope.room ? (p.rooms.find(r => r.id === scope.room) || {}).name : (p.distros.find(d => d.id === scope.distro) || {}).name;
     const date = new Date().toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' });
     let h = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${esc(p.name)} — wiring guide</title><style>${themeCss()}
       body{font-family:"Segoe UI",system-ui,sans-serif;background:var(--cp-surface);color:var(--cp-text);margin:24px;font-size:13px;line-height:1.45}
@@ -2195,7 +2982,7 @@ PP.CHANGELOG = [
       .mono{font-family:Consolas,"Courier New",monospace;font-size:12px;word-break:break-all;color:var(--cp-link)}.tick{display:inline-block;width:12px;height:12px;border:1.5px solid var(--cp-border-strong);border-radius:3px;margin-right:6px;vertical-align:-2px}
       @media print{body{margin:10mm}h2{break-after:avoid}.card{break-inside:avoid}}
     </style></head><body>`;
-    h += `<h1>${esc(p.name)} — wiring guide</h1><div class="muted">${esc(PP.APP_NAME)} ${esc(PP.APP_VERSION)} · ${esc(date)} · global brightness ${st.brightness}%</div>`;
+    h += `<h1>${esc(p.name)} — wiring guide${scopeName ? ' · ' + esc(scopeName) : ''}</h1><div class="muted">${esc(PP.APP_NAME)} ${esc(PP.APP_VERSION)} · ${esc(date)} · global brightness ${st.brightness}%</div>`;
     if (p.notes) h += `<p>${esc(p.notes).replace(/\n/g, '<br>')}</p>`;
     h += `<div class="kpis" style="margin-top:12px">
       <div class="kpi"><b>${T.pixels}</b><span>pixels</span></div><div class="kpi"><b>${T.channels}</b><span>channels · ${T.universes} universes</span></div>
@@ -2206,14 +2993,17 @@ PP.CHANGELOG = [
 
     // Network
     h += `<h2>Network</h2><table><tr><th>Controller</th><th>Board</th><th>Distro</th><th>IP</th><th>Pixels</th><th>Channels</th></tr>`;
-    p.distros.forEach(d => d.controllers.forEach(c => { const CR = R.controllers.get(c.id); h += `<tr><td>${esc(c.name)}</td><td>${esc(C.boards[c.board].name)}</td><td>${esc(d.name)}</td><td class="mono">${esc(c.ip || '—')}</td><td>${CR.pixels}</td><td>${CR.channels}</td></tr>`; }));
+    p.distros.filter(inScope).forEach(d => d.controllers.forEach(c => { const CR = R.controllers.get(c.id); h += `<tr><td>${esc(c.name)}</td><td>${esc(C.boards[c.board].name)}</td><td>${esc(d.name)}</td><td class="mono">${esc(c.ip || '—')}</td><td>${CR.pixels}</td><td>${CR.channels}</td></tr>`; }));
     h += `</table><p class="muted">FPP on the Pi (${esc(st.fppIp)}) sends E1.31/DDP over ethernet to each Baldrick. Give every board a fixed IP, set the same IPs in xLights controller setup (vendor ILightThat), and upload the output config from xLights. GS8208 pixels need FPP “Always Transmit Channel Data”.</p>`;
 
     // Per distro
-    p.distros.forEach(d => {
+    p.distros.filter(inScope).forEach(d => {
       const D = R.distros.get(d.id);
       h += `<h2>${esc(d.name)}</h2><div class="muted">${esc((C.distroSizes.find(s => s.id === d.size) || {}).name || '')} · ${K.fmtW(D.dcW)} DC · ${U.num(D.mainsA, 2)} A mains${D.relayW ? ` (incl. ${K.fmtW(D.relayW)} switched by relays)` : ''}</div>`;
       if (d.notes) h += `<p>${esc(d.notes).replace(/\n/g, '<br>')}</p>`;
+      const HX = R.hw && R.hw.caps.get(d.id), box = d.boxTpl && PP.hw.box(p, d.boxTpl);
+      if (box) h += `<p><b>Controller box:</b> ${esc(box.name)} (${box.w}×${box.h}×${box.d} cm). Contents: ${box.items.map(i => { const c = PP.hw.comp(p, i.comp); return c ? esc((i.label ? i.label + ' · ' : '') + c.name) : ''; }).filter(Boolean).join(', ')}.</p>`;
+      if (HX) { const rows = PP.hw.capRows(HX.caps); if (rows.length) h += `<h3>Capacity</h3><table><tr><th>Resource</th><th>Used</th><th>Available</th></tr>${rows.map(c => `<tr><td>${esc(c.name)}</td><td class="${c.state}">${Math.round(c.used).toLocaleString()}</td><td>${c.cap.toLocaleString()}${c.unit ? ' ' + esc(c.unit) : ''}${c.cap < c.max ? ' <span class="soft">(your limit; hardware ' + c.max.toLocaleString() + ')</span>' : ''}</td></tr>`).join('')}</table>`; }
       h += `<h3>Power supplies</h3><table><tr><th>PSU</th><th>Model</th><th>Set output to</th><th>Load</th><th>Feeds</th></tr>`;
       d.psus.forEach(s => {
         const r = R.psus.get(s.id);
@@ -2248,12 +3038,20 @@ PP.CHANGELOG = [
 
     // BOM
     h += `<h2>Bill of materials</h2><table><tr><th>Group</th><th>Item</th><th>Qty</th><th>Note</th></tr>`;
-    G.bom(p, R).forEach(r => { h += `<tr><td>${esc(r.group)}</td><td>${esc(r.item)}</td><td>${U.num(r.qty, 1)} ${esc(r.unit)}</td><td class="soft">${esc(r.note)}</td></tr>`; });
+    G.bom(p, R, scope).forEach(r => { h += `<tr><td>${esc(r.group)}</td><td>${esc(r.item)}</td><td>${U.num(r.qty, 1)} ${esc(r.unit)}</td><td class="soft">${esc(r.note)}</td></tr>`; });
     h += `</table><p class="muted">Add 10–15% to cable lengths for routing and drip loops. Pixel string wire is included in the strings.</p>`;
+
+    // Cable schedule (room layouts)
+    const sched = PP.hw && R.hw ? PP.hw.cableSchedule(p, R, scope) : [];
+    if (sched.length) {
+      h += `<h2>Cable schedule</h2><table><tr><th></th>${p.rooms.length > 1 ? '<th>Room</th>' : ''}<th>From</th><th>To</th><th>Type</th><th>Route</th><th>Needs</th><th>Cable</th><th>Spare</th></tr>`;
+      sched.forEach(r => { h += `<tr><td><span class="tick"></span>${r.colour ? `<span style="display:inline-block;width:10px;height:10px;border-radius:3px;border:1px solid var(--cp-border-strong);background:${esc(r.colour)}"></span>` : ''}</td>${p.rooms.length > 1 ? `<td>${esc(r.room)}</td>` : ''}<td>${esc(r.from)}</td><td>${esc(r.to)}${r.label ? `<div class="soft">${esc(r.label)}</div>` : ''}</td><td>${esc(r.type)}</td><td>${esc(PP.hw.fmtM(r.route))}${r.pivots ? `<div class="soft">${r.pivots} bend${r.pivots > 1 ? 's' : ''}</div>` : ''}</td><td>${esc(PP.hw.fmtM(r.req))}</td><td>${esc(r.cable)}</td><td class="${r.short ? 'err' : ''}">${r.spare == null ? '-' : r.short ? esc(PP.hw.fmtM(-r.spare)) + ' short' : esc(PP.hw.fmtM(r.spare))}</td></tr>`; });
+      h += `</table><p class="muted">Lengths are measured edge to edge along the routed path in the room layout, plus slack. Colours are your cable standards.</p>`;
+    }
 
     // Channel map
     h += `<h2>Channel map</h2><table><tr><th>Controller</th><th>Port</th><th>Label</th><th>Pixels</th><th>Start</th><th>End</th><th>Universes</th></tr>`;
-    p.distros.forEach(d => d.controllers.forEach(c => c.ports.forEach(pt => {
+    p.distros.filter(inScope).forEach(d => d.controllers.forEach(c => c.ports.forEach(pt => {
       const r = R.ports.get(pt.id); if (!r.channels) return;
       h += `<tr><td>${esc(c.name)}</td><td>${pt.num}</td><td>${esc(pt.label)}</td><td>${r.pixels}</td><td>${r.startCh}</td><td>${r.startCh + r.channels - 1}</td><td>${r.universes}</td></tr>`;
     })));
@@ -2261,21 +3059,34 @@ PP.CHANGELOG = [
     return h;
   };
 
+  let scopeKey = '';
+  const parseScope = (p, k) => {
+    if (!k) return null;
+    const [t, id] = k.split(':');
+    if (t === 'room' && p.rooms.some(r => r.id === id)) return { room: id };
+    if (t === 'distro' && p.distros.some(d => d.id === id)) return { distro: id };
+    return null;
+  };
   G.open = () => {
     const p = S.project, R = U.lastR || K.run(p);
-    const html = G.build(p, R);
+    let scope = parseScope(p, scopeKey); if (!scope) scopeKey = '';
+    let html = G.build(p, R, scope);
     const d = U.$('#guideDlg');
-    d.innerHTML = `<div class="dlg-head"><b>Wiring guide</b><span class="grow"></span>
+    const opts = U.opt('', 'Whole project', scopeKey) +
+      (p.rooms.some(r => r.nodes.length) ? `<optgroup label="Room">${p.rooms.map(r => U.opt('room:' + r.id, r.name, scopeKey)).join('')}</optgroup>` : '') +
+      `<optgroup label="Distro / box">${p.distros.map(x => U.opt('distro:' + x.id, x.name, scopeKey)).join('')}</optgroup>`;
+    d.innerHTML = `<div class="dlg-head"><b>Wiring guide</b><select id="guideScope" aria-label="What to include" title="Build the guide and bill of materials for the whole project, one room or one box">${opts}</select><span class="grow"></span>
       <button data-g="print" class="primary">Print / PDF</button><button data-g="html">Download HTML</button><button data-g="bom">BOM CSV</button><button data-g="ch">Channel map CSV</button><button data-g="close" aria-label="Close">✕</button></div>
       <div class="dlg-body"><iframe id="guideFrame" title="Wiring guide"></iframe></div>`;
     const f = U.$('#guideFrame', d);
     f.srcdoc = html;
+    U.$('#guideScope', d).onchange = ev => { scopeKey = ev.target.value; scope = parseScope(p, scopeKey); html = G.build(p, R, scope); f.srcdoc = html; };
     d.onclick = ev => {
       const b = ev.target.closest('[data-g]'); if (!b) return;
-      const base = U.slug(p.name);
+      const base = U.slug(p.name) + (scopeKey ? '-' + U.slug(U.$('#guideScope', d).selectedOptions[0].textContent) : '');
       if (b.dataset.g === 'print') f.contentWindow.print();
       else if (b.dataset.g === 'html') U.download(base + '-wiring-guide.html', html, 'text/html');
-      else if (b.dataset.g === 'bom') U.download(base + '-bom.csv', G.csvBom(p, R), 'text/csv');
+      else if (b.dataset.g === 'bom') U.download(base + '-bom.csv', G.csvBom(p, R, scope), 'text/csv');
       else if (b.dataset.g === 'ch') U.download(base + '-channels.csv', G.csvChannels(p, R), 'text/csv');
       else if (b.dataset.g === 'close') d.close();
     };
@@ -2300,6 +3111,22 @@ PP.CHANGELOG = [
         <li><b>Form</b>: every setting as fields. Ports fold open to show their run.</li>
         <li><b>Visual</b>: a wiring diagram. Drag presets, cables and injections from the left onto a port (the pad on the right of a board), onto a string to insert after it, or onto the <b>+</b> at the end of a run. Drop PSUs and boards onto a distro. Drag a distro by its title bar. Scroll to zoom, drag the background to pan. The panel on the right edits whatever you click.</li>
         <li><b>Split</b>: both at once. Clicking in one highlights the same thing in the other.</li>
+        <li><b>Room</b>: a real-scale layout of where things go. See below.</li>
+      </ul>
+      <h3>Room layouts and cables</h3>
+      <ul>
+        <li>Set the room's width, depth and grid in the panel on the right (click the empty floor). Everything is in metres. Add more rooms or areas with <b>+ Room</b>.</li>
+        <li>Drag <b>controller boxes</b>, distros, <b>pixel runs</b> (linked to a port, so their pixels count), and sensors, buttons, actuators or effects in from the left.</li>
+        <li>To connect two things, hover one and drag from the small circle on its right edge onto the other. The cable type is picked from the connectors both ends have; change it in the panel.</li>
+        <li>Select a cable to route it: drag a <b>+</b> to add a pivot, drag pivots to go around paths and doors, double-click a pivot to remove it. Drag a square end onto another item to move that end. Hold <span class="kbd">Alt</span> to place off the grid; pivots line up with their neighbours so runs stay square.</li>
+        <li>Pick a <b>cable standard</b> for each cable (or type a custom length). A standard that is too short turns the cable red with the shortfall shown. <b>Fit cables</b> gives every cable the shortest standard that fits.</li>
+        <li><b>Flow</b> animates cable direction, <b>Lengths</b> shows every length (selected and short cables always do), and <b>Cables</b> hides types you are not working on.</li>
+      </ul>
+      <h3>Controller boxes and the library</h3>
+      <ul>
+        <li><b>Box builder</b> lays out a box at real size in centimetres. Drag parts in, drag to move (0.5 cm snap), set a label and your own <b>operating limits</b> (for example 3,200 pixels on a Baldrick8 rated 6,000). Overlaps and parts sticking out are highlighted.</li>
+        <li><b>Save to library</b> keeps the box for every project. <b>Place in room</b> creates a distro with the box's PSUs and boards, ready to wire in the Form. Double-click a placed box to see inside it.</li>
+        <li>The <b>Library</b> holds cable standards (name, type, length, colour, tag, connector), components and boxes. Edit a built-in component to change its size, connectors or capacity, or add your own. Export it to move it to another computer.</li>
       </ul>
       <h3>Typical workflow</h3>
       <ol>
@@ -2311,7 +3138,7 @@ PP.CHANGELOG = [
         <li>Open the <b>Wiring guide</b> to print a build sheet with PSU trim voltages, fuses, injection feeds, Turniput URLs, bill of materials and channel map.</li>
       </ol>
       <h3>Files</h3>
-      <p>Your work autosaves in this browser. Use <b>Save</b> to keep a <span class="kbd">.pixelplan.json</span> file you can back up or send to someone with this app. Shortcuts: <span class="kbd">Ctrl+S</span> save, <span class="kbd">Ctrl+O</span> open, <span class="kbd">Ctrl+Z</span> undo, <span class="kbd">Ctrl+Y</span> redo, <span class="kbd">Delete</span> removes the selected run item.</p>`,
+      <p>Your work autosaves in this browser. Use <b>Save</b> to keep a <span class="kbd">.pixelplan.json</span> file you can back up or send to someone with this app. The file includes the room layouts and a copy of the boxes, parts and cable standards it uses. Shortcuts: <span class="kbd">Ctrl+S</span> save, <span class="kbd">Ctrl+O</span> open, <span class="kbd">Ctrl+Z</span> undo, <span class="kbd">Ctrl+Y</span> redo, <span class="kbd">Delete</span> removes the selected run item, or the selected item or cable in a room.</p>`,
     calc: () => `
       <h3>Voltage drop</h3>
       <p>Each port is modelled as a ladder of wire resistances. Every pixel is a load that draws its full-white watts × brightness ÷ voltage. The +V and GND wires both count (round-trip resistance). The solver finds the voltage at every single pixel, including current shared between the port and any injection points, and the current in every wire.</p>
@@ -2322,6 +3149,12 @@ PP.CHANGELOG = [
       <p>PSU load against your target (default 80% continuous), PSU trim range, Baldrick fuse per port (7.5 A), power bank limits, board input voltage, wire ampacity, channel limit per port (2,250 ch = 750 RGB pixels at 40 fps), data gaps over ${esc(PP.store.project ? PP.store.project.settings.dataWarnM : 5)} m, relay ratings, enclosure slots and mains current per distro against your circuit.</p>
       <h3>Mains and cost</h3>
       <p>Mains amps = DC watts ÷ PSU efficiency ÷ mains voltage, plus relay loads. Running cost uses the “typical show load” percentage, hours per night and nights per season.</p>
+      <h3>Room cable lengths</h3>
+      <p>Room positions are in metres. A cable runs from the edge of one item, through its pivots in order, to the edge of the other; its <b>required length</b> is that path plus slack (the cable's own slack, or the room default). The <b>physical length</b> is the chosen standard, else the custom length, else the run's lead cable from the Form for a pixel run on the same distro. Spare = physical − required; below zero is an error, because a cable can't stretch.</p>
+      <h3>Box capacity</h3>
+      <p>A box's capacity for each resource (pixel outputs, pixels, inputs, relays, DMX channels, Ethernet ports, USB ports, audio and amp channels, video, mains outlets, PSU watts) is the sum of what its parts provide, using your operating limit where you set one. <b>Used</b> = what parts in the box use themselves (for example each board uses a switch port) + ports with pixels and their pixel count from the Form + PSU load in watts + devices cabled to the box in rooms. For inputs and relays, a Turniput named in the Form and a button cabled in a room are the same connection, so the larger of the two counts. A pixel prop linked to a port on that box is not counted twice. Over 100% is an error and 85% or more is a warning.</p>
+      <h3>Compatibility</h3>
+      <p>Every part lists its connectors. A cable's type must exist at both ends; if not it is drawn dashed and flagged. A cable that uses a resource (for example a button uses one input) needs something at one end that provides it.</p>
       <p class="soft">These are planning estimates. Pixel wattage varies a lot between suppliers; measure a string at full white and put the real figure in the Library. Always check voltages with a meter before the show.</p>`,
     news: () => PP.CHANGELOG.map(c => `<div class="cl-ver">${esc(c.version)} <span class="soft" style="font-weight:400">${esc(c.date)}</span></div><ul>${c.items.map(i => `<li>${esc(i)}</li>`).join('')}</ul>`).join(''),
     about: () => `
@@ -2353,6 +3186,970 @@ PP.CHANGELOG = [
 
 </script>
 <script>
+// Room view: real-scale room layouts. Controller boxes / distros, devices and pixel props placed in
+// metres, joined by physical cables routed through draggable pivot points.
+(function () {
+  const U = PP.ui, C = PP.catalog, M = PP.model, S = PP.store, H = PP.hw;
+  const esc = U.esc;
+  const RM = PP.room = {};
+  const PX = H.PX;
+  U.rcam = { x: 40, y: 40, k: 1 };
+  U.roomId = null;
+  let drag = null, pan = null, lastTap = { key: '', t: 0 }, fitted = false;
+
+  RM.current = (p) => {
+    if (!p.rooms.length) p.rooms.push(M.newRoom('Room 1'));
+    let r = p.rooms.find(x => x.id === U.roomId);
+    if (!r) { r = p.rooms[0]; U.roomId = r.id; }
+    return r;
+  };
+  const colourOf = (i) => (i.std && i.std.color) || i.type.color;
+  const shapeFor = (cat, x, y, w, h) => {
+    const cx = x + w / 2, cy = y + h / 2;
+    switch (C.hwCat(cat).shape) {
+      case 'circle': return `<ellipse cx="${cx}" cy="${cy}" rx="${w / 2}" ry="${h / 2}"/>`;
+      case 'diamond': return `<polygon points="${cx},${y} ${x + w},${cy} ${cx},${y + h} ${x},${cy}"/>`;
+      case 'hex': { const i = Math.min(w, h) * 0.28; return `<polygon points="${x + i},${y} ${x + w - i},${y} ${x + w},${cy} ${x + w - i},${y + h} ${x + i},${y + h} ${x},${cy}"/>`; }
+      case 'round': return `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${Math.min(w, h) * 0.35}"/>`;
+      default: return `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="3"/>`;
+    }
+  };
+  RM.shapeFor = shapeFor;
+
+  // Capacity bars (shared by the room inspector, box builder and form).
+  RM.capHtml = (caps, opts = {}) => {
+    const rows = H.capRows(caps);
+    if (!rows.length) return `<div class="muted small">${opts.empty || 'No capacity to track.'}</div>`;
+    return `<div class="caps">${rows.map(c => {
+      const pct = c.cap ? c.used / c.cap * 100 : (c.used ? 999 : 0);
+      const lim = c.cap < c.max ? ` title="Your operating limit. The hardware allows ${c.max.toLocaleString()}${c.unit ? ' ' + c.unit : ''}."` : '';
+      return `<div class="cap ${c.state}"><span class="cap-k">${esc(c.name)}</span><span class="cap-v"${lim}>${Math.round(c.used).toLocaleString()} / ${c.cap.toLocaleString()}${c.unit ? ' ' + c.unit : ''}${c.cap < c.max ? ' <span class="soft">limit</span>' : ''}</span><div class="bar ${c.state}"><i style="width:${Math.min(100, pct)}%"></i></div></div>`;
+    }).join('')}</div>`;
+  };
+
+  // ---------- palette ----------
+  RM.renderPalette = (p) => {
+    const pal = (data, color, label, tip = 'Drag into the room') => `<div class="pal" draggable="true" data-rdrag='${esc(JSON.stringify(data))}' title="${esc(tip)}"><span class="sw hw" style="--c:${esc(color || '')}"></span>${esc(label)}</div>`;
+    const placed = new Set(), linked = new Set();
+    p.rooms.forEach(r => r.nodes.forEach(n => { if (n.kind === 'distro') placed.add(n.ref); if (n.portId) linked.add(n.portId); }));
+    const sec = (key, title, body, openDef) => {
+      const open = U.open.has('rp-' + key) || (openDef && !U.open.has('!rp-' + key));
+      return body ? `<details class="rpal" data-open-id="rp-${key}"${open ? ' open' : ''}><summary>${esc(title)}</summary>${body}</details>` : '';
+    };
+    let h = '';
+    h += sec('boxes', 'Controller boxes', H.boxes(p).map(b => pal({ t: 'box', id: b.id }, C.hwCat('controller').color, b.name, 'Drag in to add this box: it creates a distro with its PSUs and boards')).join(''), true);
+    h += sec('distros', 'Distros not placed', p.distros.filter(d => !placed.has(d.id)).map(d => pal({ t: 'distro', id: d.id }, C.hwCat('controller').color, d.name, 'Place this distro in the room')).join(''), true);
+    let runs = '';
+    p.distros.forEach(d => d.controllers.forEach(c => c.ports.forEach(pt => {
+      if (linked.has(pt.id) || !pt.chain.some(it => it.kind === 'pixels')) return;
+      runs += pal({ t: 'prop', portId: pt.id }, C.portType('pixel').color, `${c.name} P${pt.num}${pt.label ? ' ' + pt.label : ''}`, 'Place this pixel run in the room');
+    })));
+    runs += pal({ t: 'prop' }, C.portType('pixel').color, 'Pixel prop (not linked)', 'A pixel element with its own pixel count');
+    h += sec('runs', 'Pixel runs', runs, true);
+    const comps = H.comps(p);
+    C.hwCats.forEach(cat => {
+      const list = comps.filter(c => c.cat === cat.id);
+      h += sec('c-' + cat.id, cat.name, list.map(c => pal({ t: 'comp', id: c.id }, cat.color, c.name, c.notes || 'Drag into the room')).join(''), cat.id === 'input' || cat.id === 'output');
+    });
+    U.$('#rpalette').innerHTML = h;
+  };
+
+  // ---------- toolbar ----------
+  RM.renderTools = (p) => {
+    const room = RM.current(p), st = p.settings;
+    const tg = (k, label, tip) => `<button class="tg${st[k] ? ' on' : ''}" data-act="rToggle" data-id="${k}" title="${esc(tip)}" aria-pressed="${!!st[k]}">${label}</button>`;
+    const hidden = new Set(st.roomHidden || []);
+    const used = new Set(p.rooms.flatMap(r => r.cables.map(c => c.type)));
+    U.$('#rtools').innerHTML =
+      `<select id="roomSel" title="Room" aria-label="Room">${p.rooms.map(r => U.opt(r.id, r.name, room.id)).join('')}</select>
+      <button data-act="rAddRoom" title="Add a room">+ Room</button>
+      <button data-act="rFit" title="Fit the room in view">Fit</button>
+      <button data-act="rZoomIn" aria-label="Zoom in">+</button><button data-act="rZoomOut" aria-label="Zoom out">−</button>
+      ${tg('roomSnap', 'Snap', 'Snap to the room grid (hold Alt while dragging to place freely)')}
+      ${tg('roomFlow', 'Flow', 'Animate the direction of each cable')}
+      ${tg('roomLabels', 'Lengths', 'Show every cable length (selected and short cables always show)')}
+      <details class="dd"><summary title="Show or hide cable types">Cables${hidden.size ? ` <span class="soft">(${hidden.size} hidden)</span>` : ''}</summary><div class="dd-menu">${C.portTypes.map(t => `<label class="${used.has(t.id) ? '' : 'soft'}"><input type="checkbox" data-rhide="${t.id}"${hidden.has(t.id) ? '' : ' checked'}><span class="sw hw" style="--c:${t.color}"></span>${esc(t.name)}</label>`).join('')}</div></details>
+      <button data-act="rAutoStdAll" title="Give every cable without a standard the shortest standard that fits">Fit cables</button>
+      <span class="grow"></span>
+      <button data-act="boxOpen" title="Build reusable controller boxes">Box builder</button>
+      <button data-act="libOpen" title="Reusable cable standards, hardware and boxes">Library</button>`;
+  };
+
+  // ---------- render ----------
+  RM.render = (p, R) => {
+    const room = RM.current(p), st = p.settings, X = R.hw, sel = S.selection;
+    const W = room.w * PX, HH = room.h * PX, g = Math.max(0.05, +room.grid || 0.5) * PX;
+    const hidden = new Set(st.roomHidden || []);
+    const byId = new Map(room.nodes.map(n => [n.id, n]));
+    const P = q => `${(q.x * PX).toFixed(1)},${(q.y * PX).toFixed(1)}`;
+    const live = drag && drag.live ? drag.live : null;
+    let cables = '', flows = '', labels = '', handles = '', nodes = '';
+
+    room.cables.forEach(c => {
+      const i = live && live.has(c.id) ? liveInfo(p, R, room, c, byId) : X.cables.get(c.id);
+      if (!i || !i.pts) return;
+      const isSel = sel === c.id;
+      if (hidden.has(c.type) && !isSel) return;
+      const d = 'M' + i.pts.map(P).join(' L');
+      const col = colourOf(i);
+      const tip = `${H.nodeName(p, i.na, R)} → ${H.nodeName(p, i.nb, R)}\n${i.type.name}${i.std ? ' · ' + H.stdName(i.std) : ''}\nRoute ${H.fmtM(i.route)}${i.slack ? ' + ' + H.fmtM(i.slack) + ' slack' : ''}${i.phys != null ? ` · cable ${H.fmtM(i.phys)} · ${i.short ? 'SHORT by ' + H.fmtM(-i.spare) : 'spare ' + H.fmtM(i.spare)}` : ' · no cable chosen'}`;
+      cables += `<g class="r-cable${isSel ? ' sel' : ''}${i.short ? ' short' : ''}${i.compatible ? '' : ' bad'}" data-rc="${c.id}">
+        <path class="r-hit" d="${d}"/>${isSel ? `<path class="r-halo" d="${d}"/>` : ''}
+        <path class="r-line" d="${d}" style="stroke:${esc(col)}"/>${i.short ? `<path class="r-shortdash" d="${d}"/>` : ''}<title>${esc(tip)}</title></g>`;
+      if (st.roomFlow) flows += `<path class="r-flow" d="${d}"/>`;
+      if (isSel || i.short || st.roomLabels || (live && live.has(c.id))) {
+        let best = 0, bi = 1;
+        for (let k = 1; k < i.pts.length; k++) { const l = Math.hypot(i.pts[k].x - i.pts[k - 1].x, i.pts[k].y - i.pts[k - 1].y); if (l > best) { best = l; bi = k; } }
+        const a = i.pts[bi - 1], b = i.pts[bi], mx = (a.x + b.x) / 2 * PX, my = (a.y + b.y) / 2 * PX;
+        const txt = `${H.fmtM(i.req)}${i.phys != null ? ' / ' + H.fmtM(i.phys) : ''}${i.short ? ' · ' + H.fmtM(-i.spare) + ' short' : ''}`;
+        labels += `<g class="r-lab${i.short ? ' err' : i.phys == null ? ' none' : ''}" transform="translate(${mx.toFixed(1)},${(my - 6).toFixed(1)})" data-rc="${c.id}"><rect x="${-txt.length * 2.9 - 5}" y="-9" width="${txt.length * 5.8 + 10}" height="14" rx="4"/><text text-anchor="middle" y="1.5">${esc(txt)}</text></g>`;
+      }
+      if (isSel) {
+        const pts = i.pts;
+        for (let k = 1; k < pts.length; k++) {
+          const mx = (pts[k - 1].x + pts[k].x) / 2, my = (pts[k - 1].y + pts[k].y) / 2;
+          handles += `<g class="r-mid" data-mid="${k - 1}" data-cable="${c.id}" transform="translate(${(mx * PX).toFixed(1)},${(my * PX).toFixed(1)})"><circle r="6"/><path d="M-3 0H3M0 -3V3"/><title>Drag to add a pivot here</title></g>`;
+        }
+        c.pts.forEach((q, k) => { handles += `<circle class="r-piv" data-piv="${k}" data-cable="${c.id}" cx="${(q.x * PX).toFixed(1)}" cy="${(q.y * PX).toFixed(1)}" r="6"><title>Pivot ${k + 1}: drag to move, double-click to remove</title></circle>`; });
+        [['a', pts[0]], ['b', pts[pts.length - 1]]].forEach(([e, q]) => { handles += `<rect class="r-end" data-end="${e}" data-cable="${c.id}" x="${(q.x * PX - 5).toFixed(1)}" y="${(q.y * PX - 5).toFixed(1)}" width="10" height="10" rx="2"><title>Drag onto another item to move this end</title></rect>`; });
+      }
+    });
+
+    room.nodes.forEach(n => { nodes += drawNode(p, R, room, n, sel); });
+
+    let rubber = '';
+    if (drag && (drag.mode === 'conn' || drag.mode === 'end') && drag.cur) {
+      const from = drag.mode === 'conn' ? byId.get(drag.from) : null;
+      const a = from ? { x: from.x * PX, y: from.y * PX } : drag.anchor;
+      rubber = `<line class="r-rubber" x1="${a.x}" y1="${a.y}" x2="${drag.cur.x}" y2="${drag.cur.y}"/>`;
+    }
+
+    const U1 = PX;
+    U.$('#rsvg').innerHTML = `<defs>
+        <pattern id="rgrid" width="${g}" height="${g}" patternUnits="userSpaceOnUse"><path d="M ${g} 0 L 0 0 0 ${g}" class="r-grid"/></pattern>
+      </defs>
+      <g id="rcam" transform="translate(${U.rcam.x},${U.rcam.y}) scale(${U.rcam.k})">
+        <rect class="r-outside" x="-5000" y="-5000" width="10000" height="10000" data-rbg="1"/>
+        <rect class="r-floor" x="0" y="0" width="${W}" height="${HH}" data-rbg="1"/>
+        <rect x="0" y="0" width="${W}" height="${HH}" fill="url(#rgrid)" pointer-events="none"/>
+        <rect class="r-wall" x="0" y="0" width="${W}" height="${HH}" pointer-events="none"/>
+        <text class="r-dim" x="${W / 2}" y="-10" text-anchor="middle">${esc(H.fmtM(room.w))}</text>
+        <text class="r-dim" x="-10" y="${HH / 2}" text-anchor="middle" transform="rotate(-90 -10 ${HH / 2})">${esc(H.fmtM(room.h))}</text>
+        <g class="r-scale" transform="translate(0,${HH + 18})"><path d="M0 -4V4M0 0H${U1}M${U1} -4V4"/><text x="${U1 + 6}" y="4">1 m · grid ${esc(H.fmtM(room.grid))}</text></g>
+        <text class="r-name" x="0" y="-26">${esc(room.name)}</text>
+        ${cables}<g class="r-flows">${flows}</g>${nodes}${labels}${handles}${rubber}
+      </g>
+      ${room.nodes.length ? '' : `<text x="50%" y="45%" text-anchor="middle" class="s-muted" style="font-size:14px">Drag controller boxes, pixel runs and devices in from the left</text>`}`;
+  };
+
+  // Live geometry while dragging (the rest of the calculation catches up on release).
+  function liveInfo(p, R, room, c, byId) {
+    const i = Object.assign({}, R.hw.cables.get(c.id) || {});
+    const na = byId.get(c.a), nb = byId.get(c.b);
+    if (!na || !nb) return null;
+    i.na = na; i.nb = nb; i.type = C.portType(c.type); i.std = H.std(p, c.std);
+    i.pts = H.route(p, room, c, byId); i.route = H.polyLen(i.pts);
+    i.slack = i.slack || 0; i.req = i.route + i.slack;
+    if (i.phys != null) { i.spare = i.phys - i.req; i.short = i.spare < -0.005; }
+    return i;
+  }
+
+  function drawNode(p, R, room, n, sel) {
+    const r = H.rect(p, n);
+    const x = (r.cx - r.w / 2) * PX, y = (r.cy - r.h / 2) * PX, w = r.w * PX, h = r.h * PX;
+    const isSel = sel === n.id || (n.kind === 'distro' && sel === n.ref);
+    let body = '', tip = H.nodeName(p, n, R), label = '', cls = n.kind, capState = 'ok';
+    const capsFor = R.hw.caps.get(n.kind === 'distro' ? n.ref : n.id);
+    if (capsFor) { const rows = H.capRows(capsFor.caps); capState = rows.some(c => c.state === 'err') ? 'err' : rows.some(c => c.state === 'warn') ? 'warn' : 'ok'; }
+    if (n.kind === 'distro') {
+      const d = H.distroOf(p, n), t = d && d.boxTpl && H.box(p, d.boxTpl);
+      body = `<rect class="r-box" x="${x}" y="${y}" width="${w}" height="${h}" rx="4"/>`;
+      if (n.open && t) {
+        const k = w / Math.max(1, t.w), k2 = h / Math.max(1, t.h);
+        t.items.forEach(it => {
+          const def = H.comp(p, it.comp); if (!def) return;
+          const cat = C.hwCat(def.cat);
+          body += `<g class="r-sub" style="--c:${cat.color}">${shapeFor(def.cat, x + it.x * k, y + it.y * k2, def.w * k, def.h * k2)}<text x="${x + (it.x + def.w / 2) * k}" y="${y + (it.y + def.h / 2) * k2 + 3}" text-anchor="middle">${esc(def.sym)}</text></g>`;
+        });
+      } else {
+        const comps = d ? H.boxComps(p, d) : [];
+        const syms = comps.map(x => x.def.sym).slice(0, 6).join(' ');
+        body += `<text class="r-sym" x="${x + w / 2}" y="${y + h / 2 + 4}" text-anchor="middle">${esc(t ? 'BOX' : 'DST')}</text>`;
+        tip += `\n${t ? 'Controller box: ' + t.name : 'Distro'}\n${comps.map(x => x.def.name).join(', ')}`;
+        if (syms) tip += `\n(${syms})`;
+      }
+      label = `<text class="r-label" x="${x + w / 2}" y="${y - 5}" text-anchor="middle">${esc(H.nodeName(p, n, R))}</text>`;
+      body += `<circle class="r-dot ${capState}" cx="${x + w - 5}" cy="${y + 5}" r="3.5"><title>${capState === 'err' ? 'Over capacity' : capState === 'warn' ? 'Nearly full' : 'Capacity OK'}</title></circle>`;
+    } else if (n.kind === 'prop') {
+      const px = H.propPixels(p, R, n), dots = Math.max(2, Math.min(40, Math.round(Math.max(w, h) / 8)));
+      body = `<rect class="r-prop" x="${x}" y="${y}" width="${w}" height="${h}" rx="3"/>`;
+      const horiz = w >= h;
+      for (let k = 0; k < dots; k++) {
+        const f = (k + 0.5) / dots;
+        body += `<circle class="r-px" cx="${horiz ? x + w * f : x + w / 2}" cy="${horiz ? y + h / 2 : y + h * f}" r="${Math.min(2.2, Math.min(w, h) / 3)}"/>`;
+      }
+      tip += `\n${px.toLocaleString()} pixels${n.portId ? '' : ' (not linked to a port)'}`;
+      label = `<text class="r-label" x="${x + w / 2}" y="${y - 4}" text-anchor="middle">${esc(H.nodeName(p, n, R))}</text>`;
+    } else {
+      const def = H.comp(p, n.ref);
+      const cat = C.hwCat(def ? def.cat : 'custom');
+      body = `<g class="r-dev" style="--c:${cat.color}">${shapeFor(cat.id, x, y, w, h)}</g><text class="r-sym" x="${x + w / 2}" y="${y + h / 2 + 3.5}" text-anchor="middle" style="font-size:${Math.max(6, Math.min(11, Math.min(w, h) / 2.4))}px">${esc(def ? def.sym : '?')}</text>`;
+      tip += def ? `\n${def.name} · ${cat.name}\nPorts: ${Object.keys(def.ports || {}).filter(k => def.ports[k] > 0).map(k => C.portType(k).name).join(', ') || 'none'}` : '';
+      if (n.label || isSel || p.settings.roomLabels) label = `<text class="r-label" x="${x + w / 2}" y="${y + h + 11}" text-anchor="middle">${esc(H.nodeName(p, n, R))}</text>`;
+      if (capsFor && H.capRows(capsFor.caps).length) body += `<circle class="r-dot ${capState}" cx="${x + w}" cy="${y}" r="3"/>`;
+    }
+    return `<g class="r-node ${cls}${isSel ? ' sel' : ''}" data-rn="${n.id}">${body}${label}
+      <circle class="r-conn" data-conn="${n.id}" cx="${x + w + 8}" cy="${y + h / 2}" r="5"><title>Drag to another item to connect a cable</title></circle><title>${esc(tip)}</title></g>`;
+  }
+
+  // ---------- inspector ----------
+  const fld = (id, f, label, val, extra = '', t = 'num') => `<label class="fl"><span>${label}</span><input data-id="${id}" data-f="${f}" data-t="${t}" value="${esc(val == null ? '' : val)}" ${extra}></label>`;
+  RM.inspector = (p, R) => {
+    const el = U.$('#rinspector');
+    const act = document.activeElement;
+    const key = act && el.contains(act) && act.dataset && act.dataset.id ? act.dataset.id + '|' + act.dataset.f : null;
+    const sc = el.scrollTop;
+    const e = S.selection ? R.idx.get(S.selection) : null;
+    const room = RM.current(p);
+    let h;
+    if (e && e.type === 'rnode' && e.room === room) h = nodeInsp(p, R, room, e.obj);
+    else if (e && e.type === 'rcable' && e.room === room) h = cableInsp(p, R, room, e.obj);
+    else if (e && e.type === 'distro') { const n = room.nodes.find(x => x.kind === 'distro' && x.ref === e.obj.id); h = n ? nodeInsp(p, R, room, n) : roomInsp(p, R, room); }
+    else h = roomInsp(p, R, room);
+    el.innerHTML = h;
+    el.scrollTop = sc;
+    if (key) { const [id, f] = key.split('|'); const x = U.$$('[data-id]', el).find(q => q.dataset.id === id && q.dataset.f === f); if (x) x.focus({ preventScroll: true }); }
+  };
+
+  function roomInsp(p, R, room) {
+    const X = R.hw, st = p.settings;
+    const list = room.cables.map(c => X.cables.get(c.id)).filter(Boolean);
+    const shortL = list.filter(i => i.short), none = list.filter(i => !i.broken && i.phys == null);
+    const byType = {};
+    list.forEach(i => { if (i.broken) return; const k = i.type.name; byType[k] = (byType[k] || 0) + i.req; });
+    return `<div class="ins-head"><b>Room</b><span class="soft">${room.nodes.length} items · ${room.cables.length} cables</span></div>
+      <div class="ins-grid">
+        <label class="fl wide"><span>Name</span><input data-id="${room.id}" data-f="name" value="${esc(room.name)}"></label>
+        ${fld(room.id, 'w', 'Width (m)', room.w, 'min="1" step="0.5"')}
+        ${fld(room.id, 'h', 'Depth (m)', room.h, 'min="1" step="0.5"')}
+        ${fld(room.id, 'grid', 'Grid (m)', room.grid, 'min="0.05" step="0.05"')}
+        ${fld('settings', 'cableSlackM', 'Slack per cable (m)', st.cableSlackM, 'min="0" step="0.1" title="Service loop / spare allowance added to every routed length (each cable can override it)"')}
+      </div>
+      <p class="muted small">1 grid square = ${esc(H.fmtM(room.grid))}. Positions and cable lengths are real distances in metres.</p>
+      ${shortL.length ? `<h4 class="err">Cables too short (${shortL.length})</h4>${shortL.map(i => `<div class="ins-link err" data-act="jump" data-id="${i.cable.id}">${esc(H.nodeName(p, i.na, R))} → ${esc(H.nodeName(p, i.nb, R))}: ${esc(H.fmtM(-i.spare))} short</div>`).join('')}` : ''}
+      ${none.length ? `<h4>No cable chosen (${none.length})</h4>${none.map(i => `<div class="ins-link" data-act="jump" data-id="${i.cable.id}">${esc(H.nodeName(p, i.na, R))} → ${esc(H.nodeName(p, i.nb, R))}: needs ${esc(H.fmtM(i.req))}</div>`).join('')}` : ''}
+      ${Object.keys(byType).length ? `<h4>Routed cable</h4><table class="mini">${Object.entries(byType).map(([k, v]) => `<tr><td>${esc(k)}</td><td class="num">${esc(H.fmtM(v))}</td></tr>`).join('')}</table>` : ''}
+      <div class="ins-actions"><button data-act="rRenameRoom" data-id="${room.id}">Rename</button><button data-act="rDelRoom" data-id="${room.id}"${p.rooms.length < 2 ? ' disabled' : ''}>Delete room</button></div>
+      <details class="hint"><summary>How to use the room</summary><ul>
+        <li>Drag boxes, pixel runs and devices in from the left. Drag an item to move it.</li>
+        <li>To connect, drag from the small circle on an item's right edge onto another item.</li>
+        <li>Select a cable, then drag a <b>+</b> on it to add a pivot. Drag pivots to route around things; double-click a pivot to remove it. Drag a square end onto another item to move that end.</li>
+        <li>Hold Alt while dragging to place things off the grid. Delete removes the selected item or cable.</li>
+      </ul></details>`;
+  }
+
+  function nodeInsp(p, R, room, n) {
+    const X = R.hw;
+    const [dw, dh] = H.nodeSize(p, Object.assign({}, n, { w: null, h: null }));
+    let h = `<div class="ins-head"><b>${esc(H.nodeName(p, n, R))}</b><span class="soft">${n.kind === 'distro' ? 'box / distro' : n.kind === 'prop' ? 'pixel prop' : 'device'}</span></div>`;
+    h += `<div class="ins-grid">
+      <label class="fl wide"><span>Label in room</span><input data-id="${n.id}" data-f="label" value="${esc(n.label)}" placeholder="${esc(H.nodeName(p, Object.assign({}, n, { label: '' }), R))}"></label>
+      ${fld(n.id, 'x', 'X (m)', +(+n.x).toFixed(2), 'step="0.1"')}${fld(n.id, 'y', 'Y (m)', +(+n.y).toFixed(2), 'step="0.1"')}
+      ${fld(n.id, 'w', 'Width (m)', n.w, `step="0.05" min="0" placeholder="${+dw.toFixed(2)}"`)}${fld(n.id, 'h', 'Depth (m)', n.h, `step="0.05" min="0" placeholder="${+dh.toFixed(2)}"`)}
+    </div>`;
+    if (n.kind === 'distro') {
+      const d = H.distroOf(p, n);
+      if (!d) h += '<p class="err">This distro has been deleted from the project.</p>';
+      else {
+        const t = d.boxTpl && H.box(p, d.boxTpl), cx = X.caps.get(d.id);
+        h += `<label class="fl wide"><span>Distro name</span><input data-id="${d.id}" data-f="name" value="${esc(d.name)}"></label>`;
+        h += `<p class="muted small">${t ? `Controller box <b>${esc(t.name)}</b> (${t.w}×${t.h}×${t.d} cm).` : 'Plain distro: capacity comes from its boards and PSUs.'}</p>`;
+        h += `<h4>Capacity</h4>${RM.capHtml(cx ? cx.caps : {})}`;
+        h += `<details class="hint"><summary>Contents</summary><ul>${H.boxComps(p, d).map(x => `<li>${esc(x.item.label ? x.item.label + ' · ' : '')}${esc(x.def.name)}</li>`).join('')}</ul></details>`;
+        h += `<div class="ins-actions">${t ? `<label class="chk"><input type="checkbox" data-id="${n.id}" data-f="open" data-t="bool"${n.open ? ' checked' : ''}> Show inside</label><button data-act="boxEdit" data-id="${t.id}">Edit box</button>` : ''}<button data-act="rShowDistro" data-id="${d.id}">Open in form</button></div>`;
+      }
+    } else if (n.kind === 'prop') {
+      let opts = U.opt('', 'Not linked (set pixels below)', n.portId || '');
+      p.distros.forEach(d => { opts += `<optgroup label="${esc(d.name)}">` + d.controllers.flatMap(c => c.ports.map(pt => U.opt(pt.id, `${c.name} port ${pt.num}${pt.label ? ' · ' + pt.label : ''}`, n.portId || ''))).join('') + '</optgroup>'; });
+      h += `<label class="fl wide"><span>Pixel run</span><select data-id="${n.id}" data-f="portId">${opts}</select></label>`;
+      if (!n.portId) h += `<div class="ins-grid">${fld(n.id, 'pixels', 'Pixels', n.pixels || 0, 'min="0" step="1"')}</div>`;
+      else { const r = R.ports.get(n.portId); if (r) h += `<p class="muted small">${r.pixels.toLocaleString()} pixels · ${r.channels.toLocaleString()} channels · ${U.num(r.portA, 2)} A</p>`; }
+    } else {
+      const def = H.comp(p, n.ref);
+      if (def) {
+        const cat = C.hwCat(def.cat);
+        h += `<p class="muted small">${esc(def.name)} · ${esc(cat.name)}${def.notes ? '<br>' + esc(def.notes) : ''}</p>`;
+        h += `<div class="chips">${Object.keys(def.ports || {}).filter(k => def.ports[k] > 0).map(k => `<span class="chip" style="--c:${C.portType(k).color}">${esc(C.portType(k).name)}${def.ports[k] > 1 ? ' ×' + def.ports[k] : ''}</span>`).join('')}</div>`;
+        const cx = X.caps.get(n.id);
+        if (cx && H.capRows(cx.caps).length) h += `<h4>Capacity</h4>${RM.capHtml(cx.caps)}`;
+        h += `<div class="ins-actions"><button data-act="libEditComp" data-id="${esc(def.id)}">Edit definition</button></div>`;
+      }
+    }
+    const cs = (X.nodeCables.get(n.id) || []).map(id => X.cables.get(id)).filter(Boolean);
+    h += `<h4>Cables (${cs.length})</h4>`;
+    h += cs.length ? cs.map(i => { const other = i.na === n ? i.nb : i.na; return `<div class="ins-link${i.short ? ' err' : ''}" data-act="jump" data-id="${i.cable.id}"><span class="sw hw" style="--c:${esc(colourOf(i))}"></span>${esc(i.type.name)} ${i.na === n ? '→' : '←'} ${esc(H.nodeName(p, other, R))} · ${esc(H.fmtM(i.req))}${i.short ? ' · short' : ''}</div>`; }).join('') : '<p class="muted small">Drag from the circle on its right edge to another item to add a cable.</p>';
+    h += `<div class="ins-actions"><button data-act="rDup" data-id="${n.id}">Duplicate</button><button data-act="rDel" data-id="${n.id}">Remove from room</button></div>`;
+    return h;
+  }
+
+  function cableInsp(p, R, room, c) {
+    const i = R.hw.cables.get(c.id);
+    const nodeOpts = sel => room.nodes.map(n => U.opt(n.id, H.nodeName(p, n, R), sel)).join('');
+    let h = `<div class="ins-head"><b>Cable</b><span class="soft">${esc(i.type.name)}</span></div>`;
+    h += `<label class="fl wide"><span>From</span><select data-id="${c.id}" data-f="a">${nodeOpts(c.a)}</select></label>`;
+    h += `<label class="fl wide"><span>To</span><select data-id="${c.id}" data-f="b">${nodeOpts(c.b)}</select></label>`;
+    if (i.broken) return h + '<p class="err">One end of this cable is missing.</p>' + `<div class="ins-actions"><button data-act="rDel" data-id="${c.id}">Delete cable</button></div>`;
+    const A = H.accepts(p, i.na), B = H.accepts(p, i.nb);
+    h += `<label class="fl wide"><span>Type</span><select data-id="${c.id}" data-f="type">${C.portTypes.map(t => U.opt(t.id, `${t.name}${A.has(t.id) && B.has(t.id) ? ' ✓' : ''}`, c.type)).join('')}</select></label>`;
+    if (!i.compatible) h += `<p class="warn small">${esc(H.nodeName(p, i.badEnd, R))} has no ${esc(i.type.name.toLowerCase())} connection. ✓ marks types both ends have.</p>`;
+    const stds = H.stds(p), mine = stds.filter(s => s.type === c.type), other = stds.filter(s => s.type !== c.type);
+    let so = U.opt('', i.lead && !c.len ? `Run lead (${H.fmtM(i.lead.len)})` : 'Custom length…', c.std || '');
+    if (mine.length) so += `<optgroup label="${esc(i.type.name)}">${mine.map(s => U.opt(s.id, H.stdName(s) + ((+s.length >= i.req - 0.005) ? '' : ' · too short'), c.std)).join('')}</optgroup>`;
+    if (other.length) so += `<optgroup label="Other types">${other.map(s => U.opt(s.id, `${H.stdName(s)} · ${C.portType(s.type).name}`, c.std)).join('')}</optgroup>`;
+    h += `<h4>Length</h4><table class="mini">
+      <tr><td>Routed path</td><td class="num">${esc(H.fmtM(i.route))}</td></tr>
+      <tr><td>Slack / service loop</td><td class="num"><input class="tiny" data-id="${c.id}" data-f="slack" data-t="num" value="${c.slack == null ? '' : esc(c.slack)}" placeholder="${esc(p.settings.cableSlackM)}" step="0.1" min="0" title="Blank uses the room default"> m</td></tr>
+      <tr><td><b>Required</b></td><td class="num"><b>${esc(H.fmtM(i.req))}</b></td></tr></table>`;
+    h += `<label class="fl wide"><span>Physical cable</span><select data-id="${c.id}" data-f="std">${so}</select></label>`;
+    if (!c.std) h += `<div class="ins-grid">${fld(c.id, 'len', 'Custom length (m)', c.len || '', `min="0" step="0.5" placeholder="${i.lead ? i.lead.len : 'not set'}"`)}</div>`;
+    const status = i.phys == null ? `<p class="muted">No cable chosen yet.</p>` : i.short ? `<p class="stat-line err">✕ ${esc(H.fmtM(i.phys))} cable is <b>${esc(H.fmtM(-i.spare))} too short</b>. A cable can't stretch: choose a longer one or re-route.</p>` : `<p class="stat-line ok">✓ ${esc(H.fmtM(i.phys))} cable fits with ${esc(H.fmtM(i.spare))} spare.</p>`;
+    h += status;
+    if (i.std) h += `<p class="muted small"><span class="sw hw" style="--c:${esc(i.std.color)}"></span>${esc(i.std.tag || '')} ${esc(i.std.connector || '')}${i.std.notes ? ' · ' + esc(i.std.notes) : ''}</p>`;
+    const fit = H.fitStd(p, i);
+    h += `<div class="ins-actions">${fit && fit.id !== c.std ? `<button data-act="rAutoStd" data-id="${c.id}" title="${esc(H.stdName(fit))}">Use ${esc(H.fmtM(fit.length))} ${esc(fit.tag || fit.name)}</button>` : ''}${i.lead ? `<button data-act="rLeadSync" data-id="${c.id}" title="Set the run's lead cable in the Form to this cable's length, so the voltage drop uses it">Set run lead to ${esc(H.fmtM(i.phys != null && i.physSrc !== 'lead' ? i.phys : i.req))}</button>` : ''}</div>`;
+    if (i.lead) h += `<p class="muted small">The run's lead cable in the Form is ${esc(H.fmtM(i.lead.len))}.</p>`;
+    if (i.provider) h += `<p class="muted small">${i.linked ? 'Counted from the port run on' : `Uses ${i.amount} ${esc(C.resources[i.res].name.toLowerCase())} on`} ${esc(H.nodeName(p, i.provider, R))}.</p>`;
+    h += `<h4>Route (${c.pts.length} pivot${c.pts.length === 1 ? '' : 's'})</h4>`;
+    h += c.pts.length ? `<table class="mini">${c.pts.map((q, k) => `<tr><td>Pivot ${k + 1}</td><td class="num">${esc(U.num(q.x, 2))}, ${esc(U.num(q.y, 2))} m</td><td><button class="icon sm" data-act="rPivDel" data-id="${c.id}" data-i="${k}" aria-label="Remove pivot ${k + 1}">✕</button></td></tr>`).join('')}</table>` : '<p class="muted small">Straight. Drag the + on the cable to add a pivot.</p>';
+    h += `<label class="fl wide"><span>Label</span><input data-id="${c.id}" data-f="label" value="${esc(c.label)}" placeholder="e.g. under the path"></label>`;
+    h += `<div class="ins-actions"><button data-act="rPivClear" data-id="${c.id}"${c.pts.length ? '' : ' disabled'}>Straighten</button><button data-act="rReverse" data-id="${c.id}" title="Swap the ends (flow direction)">Reverse</button><button data-act="rDel" data-id="${c.id}">Delete cable</button></div>`;
+    return h;
+  }
+
+  // ---------- camera ----------
+  const applyCam = () => { const g = U.$('#rcam'); if (g) g.setAttribute('transform', `translate(${U.rcam.x},${U.rcam.y}) scale(${U.rcam.k})`); };
+  RM.zoom = (f, cx, cy) => {
+    const wrap = U.$('#rcanvas').getBoundingClientRect();
+    if (cx == null) { cx = wrap.width / 2; cy = wrap.height / 2; }
+    const k = Math.min(8, Math.max(0.1, U.rcam.k * f));
+    U.rcam.x = cx - (cx - U.rcam.x) * k / U.rcam.k; U.rcam.y = cy - (cy - U.rcam.y) * k / U.rcam.k; U.rcam.k = k; applyCam();
+  };
+  RM.fit = () => {
+    const p = S.project, room = RM.current(p), wrap = U.$('#rcanvas').getBoundingClientRect();
+    if (!wrap.width) return;
+    let x0 = 0, y0 = 0, x1 = room.w, y1 = room.h;
+    room.nodes.forEach(n => { const r = H.rect(p, n); x0 = Math.min(x0, r.cx - r.w); y0 = Math.min(y0, r.cy - r.h); x1 = Math.max(x1, r.cx + r.w); y1 = Math.max(y1, r.cy + r.h); });
+    const pad = 70, w = (x1 - x0) * PX, h = (y1 - y0) * PX;
+    const k = Math.min(8, Math.max(0.1, Math.min((wrap.width - pad) / w, (wrap.height - pad) / h)));
+    U.rcam = { k, x: (wrap.width - w * k) / 2 - x0 * PX * k, y: (wrap.height - h * k) / 2 - y0 * PX * k + 8 };
+    applyCam(); fitted = true;
+  };
+  RM.fitOnce = () => { if (!fitted) requestAnimationFrame(RM.fit); };
+  RM.refit = () => { fitted = false; };
+  const toWorld = (ev) => { const r = U.$('#rsvg').getBoundingClientRect(); return { x: (ev.clientX - r.left - U.rcam.x) / U.rcam.k, y: (ev.clientY - r.top - U.rcam.y) / U.rcam.k }; };
+
+  // ---------- snapping ----------
+  const snapOn = ev => S.project.settings.roomSnap && !(ev && ev.altKey);
+  const snapV = (v, g) => Math.round(v / g) * g;
+  const r2 = v => Math.round(v * 1000) / 1000;
+  function snapPivot(p, room, c, i, q, ev) {
+    if (!snapOn(ev)) return { x: r2(q.x), y: r2(q.y) };
+    const g = +room.grid || 0.5;
+    let x = snapV(q.x, g), y = snapV(q.y, g);
+    // Line up with the neighbouring point so runs stay square.
+    const nb = [];
+    const na = room.nodes.find(n => n.id === c.a), nbb = room.nodes.find(n => n.id === c.b);
+    nb.push(i > 0 ? c.pts[i - 1] : na, i < c.pts.length - 1 ? c.pts[i + 1] : nbb);
+    const tol = Math.max(0.15, g * 0.4);
+    nb.forEach(o => { if (!o) return; if (Math.abs(q.x - o.x) < tol) x = +o.x; if (Math.abs(q.y - o.y) < tol) y = +o.y; });
+    return { x: r2(x), y: r2(y) };
+  }
+
+  // ---------- drop, connect, delete ----------
+  function drop(data, w, ev) {
+    const g = +RM.current(S.project).grid || 0.5;
+    const x = r2(snapOn(ev) ? snapV(w.x / PX, g) : w.x / PX), y = r2(snapOn(ev) ? snapV(w.y / PX, g) : w.y / PX);
+    S.commit('roomAdd', p => {
+      const room = RM.current(p);
+      if (data.t === 'box') { const r = H.placeBox(p, data.id, room, x, y); if (r) S.selection = r.node.id; }
+      else if (data.t === 'distro') { const n = M.newNode('distro', data.id, x, y); room.nodes.push(n); S.selection = n.id; }
+      else if (data.t === 'prop') { const n = M.newNode('prop', null, x, y, { portId: data.portId || null, pixels: data.portId ? 0 : 50, w: 1.5, h: 0.3 }); room.nodes.push(n); S.selection = n.id; }
+      else if (data.t === 'comp') { const n = M.newNode('device', data.id, x, y); room.nodes.push(n); S.selection = n.id; }
+    });
+  }
+  function connect(fromId, toId) {
+    if (fromId === toId) return;
+    S.commit('connect', p => {
+      const room = RM.current(p);
+      const a = room.nodes.find(n => n.id === fromId), b = room.nodes.find(n => n.id === toId);
+      if (!a || !b) return;
+      const c = M.newRoomCable(a.id, b.id, H.guessType(p, U.lastR, a, b));
+      room.cables.push(c); S.selection = c.id;
+    });
+  }
+
+  const cableOf = (p, id) => { const e = M.find(p, id); return e && e.type === 'rcable' ? e.obj : null; };
+  RM.actions = {
+    rToggle: (k) => S.commit('roomSetting', p => { p.settings[k] = !p.settings[k]; }),
+    rFit: () => RM.fit(),
+    rZoomIn: () => RM.zoom(1.2),
+    rZoomOut: () => RM.zoom(1 / 1.2),
+    rAddRoom: async () => {
+      const name = await U.ask({ title: 'New room', input: 'Room ' + (S.project.rooms.length + 1), ok: 'Add' });
+      if (!name) return;
+      S.commit('addRoom', p => { const r = M.newRoom(name); p.rooms.push(r); U.roomId = r.id; S.selection = null; });
+      RM.refit(); RM.fitOnce();
+    },
+    rRenameRoom: async (id) => {
+      const r = S.project.rooms.find(x => x.id === id);
+      const name = await U.ask({ title: 'Rename room', input: r.name, ok: 'Rename' });
+      if (name) S.commit('renameRoom', p => { p.rooms.find(x => x.id === id).name = name; });
+    },
+    rDelRoom: async (id) => {
+      const r = S.project.rooms.find(x => x.id === id);
+      if (S.project.rooms.length < 2) return;
+      if (!(await U.ask({ title: `Delete ${r.name}?`, body: 'Its layout and cables are removed. Distros and runs stay in the project. You can undo this.', ok: 'Delete', danger: true }))) return;
+      S.commit('delRoom', p => { p.rooms = p.rooms.filter(x => x.id !== id); U.roomId = p.rooms[0].id; S.selection = null; });
+      RM.refit(); RM.fitOnce();
+    },
+    rDel: (id) => RM.del(id),
+    rDup: (id) => S.commit('roomDup', p => {
+      const e = M.find(p, id); if (!e || e.type !== 'rnode') return;
+      const n = M.clone(e.obj); n.id = M.uid('rn'); n.x = r2(+n.x + 0.5); n.y = r2(+n.y + 0.5);
+      if (n.kind === 'distro') {
+        const d = H.distroOf(p, e.obj);
+        if (d && d.boxTpl) { const r = H.placeBox(p, d.boxTpl, null, 0, 0); n.ref = r.d.id; }
+        else { n.kind = 'device'; return; }
+      }
+      if (n.kind === 'prop') n.portId = null;
+      e.room.nodes.push(n); S.selection = n.id;
+    }),
+    rShowDistro: (id) => { PP.setView('split'); S.select(id); },
+    rPivDel: (id, el) => S.commit('delPivot', p => { const c = cableOf(p, id); if (c) c.pts.splice(+el.dataset.i, 1); }),
+    rPivClear: (id) => S.commit('straighten', p => { const c = cableOf(p, id); if (c) c.pts = []; }),
+    rReverse: (id) => S.commit('reverse', p => { const c = cableOf(p, id); if (!c) return; [c.a, c.b] = [c.b, c.a]; c.pts.reverse(); }),
+    rAutoStd: (id) => {
+      const i = U.lastR.hw.cables.get(id), s = i && H.fitStd(S.project, i);
+      if (!s) return U.toast('No standard of this type is long enough. Add one in the Library.');
+      S.commit('autoStd', p => { const c = cableOf(p, id); c.std = s.id; H.syncLead(p, U.lastR, c, +s.length); });
+      U.toast(`Using ${H.stdName(s)}.`);
+    },
+    rAutoStdAll: () => {
+      const p0 = S.project, X = U.lastR.hw; let n = 0, miss = 0;
+      const pick = [];
+      RM.current(p0).cables.forEach(c => { const i = X.cables.get(c.id); if (!i || i.broken || c.std) return; const s = H.fitStd(p0, i); if (s) pick.push([c.id, s]); else miss++; });
+      S.commit('autoStdAll', p => pick.forEach(([id, s]) => { const c = cableOf(p, id); c.std = s.id; H.syncLead(p, U.lastR, c, +s.length); n++; }));
+      U.toast(`${n} cable${n === 1 ? '' : 's'} given a standard.${miss ? ` ${miss} need a longer standard than you have.` : ''}${!n && !miss ? ' Every cable already has one.' : ''}`);
+    },
+    rLeadSync: (id) => {
+      const i = U.lastR.hw.cables.get(id);
+      const len = i.phys != null && i.physSrc !== 'lead' ? i.phys : Math.ceil(i.req * 2) / 2;
+      let ok = false;
+      S.commit('leadSync', p => { ok = H.syncLead(p, U.lastR, cableOf(p, id), len); });
+      U.toast(ok ? `Run lead set to ${H.fmtM(len)}.` : 'The run has more than one lead cable; edit it in the Form.');
+    }
+  };
+  RM.del = (id) => S.commit('roomDel', p => {
+    const e = M.find(p, id); if (!e) return;
+    if (e.type === 'rcable') e.room.cables = e.room.cables.filter(c => c.id !== id);
+    else if (e.type === 'rnode') { e.room.nodes = e.room.nodes.filter(n => n.id !== id); e.room.cables = e.room.cables.filter(c => c.a !== id && c.b !== id); }
+    S.selection = null;
+  });
+
+  // Room-specific change events (room picker, cable-type filter). Returns true when handled.
+  RM.onChange = (el) => {
+    if (el.id === 'roomSel') { U.roomId = el.value; S.selection = null; RM.refit(); PP.render(); RM.fitOnce(); return true; }
+    if (el.dataset && el.dataset.rhide) {
+      const t = el.dataset.rhide;
+      S.commit('roomHidden', p => { const s = new Set(p.settings.roomHidden || []); if (el.checked) s.delete(t); else s.add(t); p.settings.roomHidden = Array.from(s); });
+      return true;
+    }
+    return false;
+  };
+  // After a field edit: keep the Form's run lead in step with a newly chosen pixel cable standard.
+  RM.afterField = (p, o, f) => {
+    if (f === 'std' && o && o.type === 'pixel' && o.std) { const s = H.std(p, o.std); if (s) H.syncLead(p, U.lastR, o, +s.length); }
+    if ((f === 'a' || f === 'b') && o && o.a === o.b) { const room = p.rooms.find(r => r.cables.includes(o)); if (room) room.cables = room.cables.filter(c => c !== o); }
+  };
+
+  // ---------- events (bound once) ----------
+  RM.init = () => {
+    const svg = U.$('#rsvg'), wrap = U.$('#rcanvas');
+    U.$('#rpalette').addEventListener('dragstart', ev => {
+      const el = ev.target.closest('[data-rdrag]'); if (!el) return;
+      ev.dataTransfer.setData('text/plain', el.dataset.rdrag); ev.dataTransfer.effectAllowed = 'copy';
+    });
+    wrap.addEventListener('dragover', ev => { ev.preventDefault(); wrap.classList.add('dragover'); });
+    wrap.addEventListener('dragleave', ev => { if (!wrap.contains(ev.relatedTarget)) wrap.classList.remove('dragover'); });
+    wrap.addEventListener('drop', ev => {
+      ev.preventDefault(); wrap.classList.remove('dragover');
+      let data; try { data = JSON.parse(ev.dataTransfer.getData('text/plain')); } catch (e) { return; }
+      if (data && data.t) drop(data, toWorld(ev), ev);
+    });
+    svg.addEventListener('wheel', ev => {
+      ev.preventDefault();
+      const r = svg.getBoundingClientRect();
+      RM.zoom(ev.deltaY < 0 ? 1.12 : 1 / 1.12, ev.clientX - r.left, ev.clientY - r.top);
+    }, { passive: false });
+
+    const redraw = () => RM.render(S.project, U.lastR);
+    const tap = (key) => { const now = Date.now(), dbl = lastTap.key === key && now - lastTap.t < 400; lastTap = dbl ? { key: '', t: 0 } : { key, t: now }; return dbl; };
+    svg.addEventListener('pointerdown', ev => {
+      if (ev.button !== 0) return;
+      const p = S.project, room = RM.current(p), t = ev.target, w = toWorld(ev);
+      const before = JSON.stringify(p);
+      const hd = t.closest('[data-piv],[data-mid],[data-end],[data-conn]');
+      if (hd) {
+        const c = hd.dataset.cable ? room.cables.find(x => x.id === hd.dataset.cable) : null;
+        if (hd.dataset.piv != null) {
+          const i = +hd.dataset.piv;
+          if (tap(c.id + ':' + i)) { S.commit('delPivot', q => { const cc = cableOf(q, c.id); cc.pts.splice(i, 1); }); return; }
+          drag = { mode: 'piv', c, i, before, live: new Set([c.id]) };
+        } else if (hd.dataset.mid != null) {
+          const i = +hd.dataset.mid;
+          c.pts.splice(i, 0, snapPivot(p, room, c, i, { x: w.x / PX, y: w.y / PX }, ev));
+          drag = { mode: 'piv', c, i, before, moved: true, live: new Set([c.id]) };
+        } else if (hd.dataset.end) {
+          const i = U.lastR.hw.cables.get(c.id);
+          const q = hd.dataset.end === 'a' ? i.pts[0] : i.pts[i.pts.length - 1];
+          drag = { mode: 'end', c, end: hd.dataset.end, before, anchor: { x: (hd.dataset.end === 'a' ? (i.pts[1] || q) : (i.pts[i.pts.length - 2] || q)).x * PX, y: (hd.dataset.end === 'a' ? (i.pts[1] || q) : (i.pts[i.pts.length - 2] || q)).y * PX }, cur: w };
+        } else if (hd.dataset.conn) drag = { mode: 'conn', from: hd.dataset.conn, cur: w };
+        svg.setPointerCapture(ev.pointerId); ev.preventDefault();
+        return;
+      }
+      const ne = t.closest('[data-rn]');
+      if (ne) {
+        const n = room.nodes.find(x => x.id === ne.dataset.rn);
+        const dbl = tap('n:' + n.id);
+        if (dbl && n.kind === 'distro') { S.commit('toggleOpen', q => { const e = M.find(q, n.id); e.obj.open = !e.obj.open; }); return; }
+        drag = { mode: 'node', n, before, sx: ev.clientX, sy: ev.clientY, ox: +n.x, oy: +n.y, moved: false, live: new Set(U.lastR.hw.nodeCables.get(n.id) || []) };
+        svg.setPointerCapture(ev.pointerId);
+        return;
+      }
+      const ce = t.closest('[data-rc]');
+      if (ce) { S.select(ce.dataset.rc); return; }
+      pan = { sx: ev.clientX, sy: ev.clientY, ox: U.rcam.x, oy: U.rcam.y, moved: false };
+      svg.setPointerCapture(ev.pointerId); svg.classList.add('panning');
+    });
+    svg.addEventListener('pointermove', ev => {
+      if (drag) {
+        const p = S.project, room = RM.current(p), w = toWorld(ev);
+        if (drag.mode === 'node') {
+          const dx = (ev.clientX - drag.sx) / U.rcam.k / PX, dy = (ev.clientY - drag.sy) / U.rcam.k / PX;
+          if (!drag.moved && Math.abs(dx) + Math.abs(dy) < 3 / U.rcam.k / PX) return;
+          drag.moved = true;
+          const g = +room.grid || 0.5;
+          drag.n.x = r2(snapOn(ev) ? snapV(drag.ox + dx, g) : drag.ox + dx);
+          drag.n.y = r2(snapOn(ev) ? snapV(drag.oy + dy, g) : drag.oy + dy);
+          redraw();
+        } else if (drag.mode === 'piv') {
+          drag.c.pts[drag.i] = snapPivot(p, room, drag.c, drag.i, { x: w.x / PX, y: w.y / PX }, ev);
+          drag.moved = true; redraw();
+        } else { drag.cur = w; redraw(); }
+      } else if (pan) {
+        U.rcam.x = pan.ox + ev.clientX - pan.sx; U.rcam.y = pan.oy + ev.clientY - pan.sy;
+        if (Math.abs(ev.clientX - pan.sx) + Math.abs(ev.clientY - pan.sy) > 3) pan.moved = true;
+        applyCam();
+      }
+    });
+    const end = ev => {
+      if (drag) {
+        const dr = drag; drag = null;
+        if (dr.mode === 'node') { if (dr.moved) S.commitFrom(dr.before, 'moveNode'); else S.select(dr.n.id); }
+        else if (dr.mode === 'piv') { if (dr.moved) { S.selection = dr.c.id; S.commitFrom(dr.before, 'movePivot'); } else S.select(dr.c.id); }
+        else {
+          const hit = ev.type === 'pointerup' && document.elementFromPoint(ev.clientX, ev.clientY);
+          const ne = hit && hit.closest && hit.closest('#rsvg [data-rn]');
+          if (dr.mode === 'conn') {
+            if (ne && ne.dataset.rn !== dr.from) connect(dr.from, ne.dataset.rn);
+            else { if (!ne) U.toast('Drop the cable end on another item to connect it.'); redraw(); }
+          } else {
+            const other = dr.end === 'a' ? dr.c.b : dr.c.a;
+            if (ne && ne.dataset.rn !== other) { dr.c[dr.end] = ne.dataset.rn; S.commitFrom(dr.before, 'moveEnd'); }
+            else redraw();
+          }
+        }
+      }
+      if (pan) { if (!pan.moved) S.select(null); pan = null; svg.classList.remove('panning'); }
+    };
+    svg.addEventListener('pointerup', end);
+    svg.addEventListener('pointercancel', end);
+  };
+})();
+
+</script>
+<script>
+// Controller box builder, component editor and the reusable hardware library dialog.
+(function () {
+  const U = PP.ui, C = PP.catalog, M = PP.model, S = PP.store, H = PP.hw;
+  const esc = U.esc;
+  const BX = PP.boxes = {};
+  const SC = 5;                       // box builder: SVG units per centimetre
+  const clone = o => JSON.parse(JSON.stringify(o));
+  const r1 = v => Math.round(v * 2) / 2;   // 0.5 cm snap
+  const numOr = (v, d) => { const n = parseFloat(v); return isFinite(n) ? n : d; };
+  let B = null;                       // box builder state {t, sel, dirty, drag}
+  let CE = null;                      // component editor state {c, isNew, done}
+  let LT = 'cables';                  // library tab
+
+  // ================= box builder =================
+  const itemDefs = t => t.items.map(i => ({ item: i, def: H.comp(S.project, i.comp) })).filter(x => x.def);
+  function problems(t) {
+    const out = [], L = itemDefs(t);
+    const box = x => ({ x0: +x.item.x, y0: +x.item.y, x1: +x.item.x + x.def.w, y1: +x.item.y + x.def.h });
+    const bad = new Set();
+    L.forEach(a => {
+      const r = box(a);
+      if (r.x0 < -0.01 || r.y0 < -0.01 || r.x1 > t.w + 0.01 || r.y1 > t.h + 0.01) { bad.add(a.item.id); out.push(`${a.item.label || a.def.name} sticks out of the box.`); }
+    });
+    for (let i = 0; i < L.length; i++) for (let j = i + 1; j < L.length; j++) {
+      const a = box(L[i]), b = box(L[j]);
+      if (a.x0 < b.x1 - 0.01 && b.x0 < a.x1 - 0.01 && a.y0 < b.y1 - 0.01 && b.y0 < a.y1 - 0.01) { bad.add(L[i].item.id); bad.add(L[j].item.id); out.push(`${L[i].item.label || L[i].def.name} overlaps ${L[j].item.label || L[j].def.name}.`); }
+    }
+    const caps = H.capsFrom(L);
+    L.forEach(x => Object.keys(x.def.internal || {}).forEach(r => { if (!caps[r] && +x.def.internal[r] > 0) out.push(`${x.def.name} needs ${C.resources[r] ? C.resources[r].name.toLowerCase() : r}, but nothing in the box provides it.`); }));
+    const area = L.reduce((s, x) => s + x.def.w * x.def.h, 0);
+    if (area > t.w * t.h * 0.8) out.push(`Components fill ${Math.round(area / (t.w * t.h) * 100)}% of the base: leave room for wiring and airflow.`);
+    return { list: Array.from(new Set(out)), bad };
+  }
+  function freeSpot(t, def) {
+    for (let y = 1; y + def.h <= t.h; y += 1) for (let x = 1; x + def.w <= t.w; x += 1) {
+      const clash = itemDefs(t).some(o => x < +o.item.x + o.def.w && +o.item.x < x + def.w && y < +o.item.y + o.def.h && +o.item.y < y + def.h);
+      if (!clash) return { x, y };
+    }
+    return { x: 1, y: 1 };
+  }
+
+  BX.boxOpen = (id) => {
+    const src = id ? H.box(S.project, id) : null;
+    B = { t: src ? clone(src) : { id: M.uid('box'), name: 'New box', w: 60, h: 40, d: 20, notes: '', items: [] }, sel: null, dirty: !src, isNew: !src };
+    renderBox();
+    const d = U.$('#boxDlg'); if (!d.open) d.showModal();
+  };
+
+  function renderBox(keepFocus = true) {
+    const d = U.$('#boxDlg'), t = B.t, p = S.project;
+    const act = document.activeElement, key = keepFocus && act && d.contains(act) && act.dataset && act.dataset.bk ? act.dataset.bk + '|' + (act.dataset.res || '') : null;
+    const side = U.$('.bx-side', d), sc = side ? side.scrollTop : 0;
+    const pr = problems(t), L = itemDefs(t);
+    const pal = C.hwCats.map(cat => {
+      const list = H.comps(p).filter(c => c.cat === cat.id);
+      if (!list.length) return '';
+      const open = cat.id === 'controller' || cat.id === 'power' || B['o-' + cat.id];
+      return `<details class="rpal" data-bxcat="${cat.id}"${open ? ' open' : ''}><summary>${esc(cat.name)}</summary>${list.map(c => `<div class="pal" draggable="true" data-bxdrag="${esc(c.id)}" title="${esc(c.name)} · ${c.w}×${c.h} cm. Drag into the box, or double-click to add."><span class="sw hw" style="--c:${cat.color}"></span>${esc(c.name)}</div>`).join('')}</details>`;
+    }).join('');
+    let items = '';
+    L.forEach(({ item, def }) => {
+      const cat = C.hwCat(def.cat), x = item.x * SC, y = item.y * SC, w = def.w * SC, h = def.h * SC;
+      const lbl = item.label || def.name;
+      items += `<g class="bx-item${B.sel === item.id ? ' sel' : ''}${pr.bad.has(item.id) ? ' bad' : ''}" data-bxi="${item.id}" style="--c:${cat.color}">${PP.room.shapeFor(def.cat, x, y, w, h)}
+        <text class="bx-sym" x="${x + w / 2}" y="${y + h / 2 + (h > 40 ? -2 : 4)}" text-anchor="middle"${w < 45 || h < 25 ? ` style="font-size:${Math.max(6, Math.min(w / 4, h / 2)).toFixed(1)}px"` : ''}>${esc(def.sym)}</text>
+        ${h > 40 && w > 60 ? `<text class="bx-lbl" x="${x + w / 2}" y="${y + h / 2 + 12}" text-anchor="middle">${esc(lbl.length > w / 6 ? lbl.slice(0, Math.max(3, Math.floor(w / 6) - 1)) + '…' : lbl)}</text>` : ''}
+        <title>${esc(lbl)} · ${def.w}×${def.h} cm at ${item.x}, ${item.y} cm</title></g>`;
+    });
+    let grid = '';
+    for (let x = 10; x < t.w; x += 10) grid += `<line x1="${x * SC}" y1="0" x2="${x * SC}" y2="${t.h * SC}"/>`;
+    for (let y = 10; y < t.h; y += 10) grid += `<line x1="0" y1="${y * SC}" x2="${t.w * SC}" y2="${y * SC}"/>`;
+    const svg = `<svg id="bxsvg" viewBox="-30 -30 ${t.w * SC + 60} ${t.h * SC + 60}" preserveAspectRatio="xMidYMid meet">
+      <rect class="bx-base" x="0" y="0" width="${t.w * SC}" height="${t.h * SC}" rx="6" data-bxbg="1"/><g class="bx-grid">${grid}</g>
+      <text class="r-dim" x="${t.w * SC / 2}" y="-10" text-anchor="middle">${t.w} cm</text>
+      <text class="r-dim" x="-10" y="${t.h * SC / 2}" text-anchor="middle" transform="rotate(-90 -10 ${t.h * SC / 2})">${t.h} cm</text>
+      ${items}</svg>`;
+
+    const sel = B.sel && L.find(x => x.item.id === B.sel);
+    let selH = '';
+    if (sel) {
+      const { item, def } = sel, cat = C.hwCat(def.cat);
+      const res = Object.keys(def.provides || {}).filter(r => +def.provides[r] > 0);
+      selH = `<h4>${esc(def.name)}</h4><p class="muted small">${esc(cat.name)} · ${def.w}×${def.h} cm${def.notes ? '<br>' + esc(def.notes) : ''}</p>
+        <div class="ins-grid"><label class="fl wide"><span>Label</span><input data-bk="label" value="${esc(item.label)}" placeholder="${esc(def.name)}"></label>
+        <label class="fl"><span>X (cm)</span><input data-bk="x" type="number" step="0.5" value="${item.x}"></label><label class="fl"><span>Y (cm)</span><input data-bk="y" type="number" step="0.5" value="${item.y}"></label></div>
+        ${res.length ? `<h4>Operating limits</h4><p class="muted small">Leave blank to use the manufacturer figure. Set lower to plan with headroom.</p><div class="ins-grid">${res.map(r => `<label class="fl"><span>${esc(C.resources[r] ? C.resources[r].name : r)}</span><input data-bk="limit" data-res="${r}" type="number" min="0" value="${item.limits && item.limits[r] != null ? esc(item.limits[r]) : ''}" placeholder="${esc(H.capOf({}, def, r))}"></label>`).join('')}</div>` : ''}
+        <div class="ins-actions"><button data-bx="dup">Duplicate</button><button data-bx="del">Remove</button><button data-bx="editComp" data-id="${esc(def.id)}">Edit definition</button></div>`;
+    }
+    const caps = H.capsFrom(L);
+    const users = p.distros.filter(x => x.boxTpl === t.id);
+    d.innerHTML = `<div class="dlg-head"><b>Box builder</b><input class="bx-name" data-bk="name" value="${esc(t.name)}" aria-label="Box name"><span class="soft">${B.dirty ? 'unsaved' : H.lib.boxes[t.id] ? 'saved in your library' : 'from this project'}</span><span class="grow"></span>
+        <button data-bx="new" title="Start a new empty box">New</button><button data-bx="copy" title="Save a copy with a new name">Save as copy</button>
+        <button data-bx="save" class="primary" title="Save to your reusable library${users.length ? ' and update the boxes in this project' : ''}">Save to library</button>
+        <button data-bx="place" title="Save, then add one to the current room">Place in room</button><button data-bx="close" aria-label="Close">✕</button></div>
+      <div class="bx-body">
+        <div class="bx-pal"><div class="muted small" style="padding:4px 6px">Drag parts into the box</div>${pal}<button data-bx="newComp" class="sm" style="margin:6px">+ Custom component</button></div>
+        <div class="bx-canvas" id="bxcanvas">${svg}</div>
+        <div class="bx-side">
+          <div class="ins-grid">
+            <label class="fl"><span>Width (cm)</span><input data-bk="w" type="number" min="5" step="1" value="${t.w}"></label>
+            <label class="fl"><span>Height (cm)</span><input data-bk="h" type="number" min="5" step="1" value="${t.h}"></label>
+            <label class="fl"><span>Depth (cm)</span><input data-bk="d" type="number" min="1" step="1" value="${t.d}"></label>
+            <label class="fl wide"><span>Notes</span><input data-bk="notes" value="${esc(t.notes)}" placeholder="Enclosure model, IP rating, gland plate…"></label>
+          </div>
+          ${selH || '<p class="muted small">Click a part to set its label and operating limits. Drag to move (0.5 cm snap). Delete removes it.</p>'}
+          <h4>Box capacity</h4>${PP.room.capHtml(caps, { empty: 'Add boards, a Pi or a switch to see what this box can drive.' })}
+          <p class="muted small">Used here = what the box uses itself (for example the board's own Ethernet port). Connections in rooms add to it.</p>
+          ${pr.list.length ? `<h4 class="warn">Check</h4><ul class="small">${pr.list.map(x => `<li class="warn">${esc(x)}</li>`).join('')}</ul>` : ''}
+          <h4>Contents (${L.length})</h4><div>${L.map(x => `<div class="ins-link${B.sel === x.item.id ? ' on' : ''}" data-bx="sel" data-id="${x.item.id}"><span class="sw hw" style="--c:${C.hwCat(x.def.cat).color}"></span>${esc(x.item.label ? x.item.label + ' · ' : '')}${esc(x.def.name)}</div>`).join('') || '<p class="muted small">Empty.</p>'}</div>
+          ${users.length ? `<p class="muted small">${users.length} box${users.length > 1 ? 'es' : ''} in this project use${users.length > 1 ? '' : 's'} this layout: ${users.map(x => esc(x.name)).join(', ')}. Saving adds any new PSUs and boards to ${users.length > 1 ? 'them' : 'it'}.</p>` : ''}
+        </div>
+      </div>`;
+    const side2 = U.$('.bx-side', d); if (side2) side2.scrollTop = sc;
+    if (key) { const [k, r] = key.split('|'); const x = U.$$('[data-bk]', d).find(q => q.dataset.bk === k && (q.dataset.res || '') === r); if (x) x.focus({ preventScroll: true }); }
+  }
+
+  function saveBox(asCopy) {
+    const t = clone(B.t);
+    if (asCopy) { t.id = M.uid('box'); t.name = t.name.replace(/( copy)?$/, ' copy'); }
+    H.put('boxes', t);
+    const users = S.project.distros.filter(x => x.boxTpl === t.id);
+    let log = [];
+    if (users.length) S.commit('syncBox', p => { p.hw.boxes[t.id] = clone(t); p.distros.filter(x => x.boxTpl === t.id).forEach(dd => { log = log.concat(H.syncBox(p, dd).map(s => dd.name + ': ' + s)); }); });
+    B.t = t; B.dirty = false; B.isNew = false;
+    renderBox(false);
+    U.toast(`Saved ${t.name} to your library.${log.length ? ' ' + log.join('; ') + '.' : ''}`, log.length ? 6000 : 3200);
+  }
+  const addItem = (compId, pos) => {
+    const def = H.comp(S.project, compId); if (!def) return;
+    const at = pos || freeSpot(B.t, def);
+    const it = { id: M.uid('bi'), comp: compId, x: r1(Math.max(0, Math.min(B.t.w - def.w, at.x))), y: r1(Math.max(0, Math.min(B.t.h - def.h, at.y))), label: '', limits: {} };
+    B.t.items.push(it); B.sel = it.id; B.dirty = true; renderBox();
+  };
+  const toBox = (ev) => { const svg = U.$('#bxsvg'); const pt = svg.createSVGPoint(); pt.x = ev.clientX; pt.y = ev.clientY; const q = pt.matrixTransform(svg.getScreenCTM().inverse()); return { x: q.x / SC, y: q.y / SC }; };
+  const confirmDiscard = async () => !B || !B.dirty || !B.t.items.length || await U.ask({ title: 'Discard changes to this box?', body: 'It has not been saved to your library.', ok: 'Discard', danger: true });
+
+  async function boxClick(ev) {
+    const b = ev.target.closest('[data-bx]'); if (!b) return;
+    const a = b.dataset.bx, t = B.t;
+    if (a === 'close') { if (await confirmDiscard()) { U.$('#boxDlg').close(); B = null; } }
+    else if (a === 'new') { if (await confirmDiscard()) BX.boxOpen(null); }
+    else if (a === 'save') saveBox(false);
+    else if (a === 'copy') saveBox(true);
+    else if (a === 'place') {
+      if (!t.items.length) return U.toast('Add some parts to the box first.');
+      saveBox(false);
+      U.$('#boxDlg').close();
+      PP.setView('room');
+      S.commit('placeBox', p => { const room = PP.room.current(p); const r = H.placeBox(p, t.id, room, Math.round(room.w / 2), Math.round(room.h / 2)); if (r) S.selection = r.node.id; });
+      U.toast(`Placed ${t.name} in the room. Drag it into position.`);
+    }
+    else if (a === 'sel') { B.sel = b.dataset.id; renderBox(); }
+    else if (a === 'dup') { const it = t.items.find(x => x.id === B.sel); if (!it) return; const def = H.comp(S.project, it.comp); const c = clone(it); c.id = M.uid('bi'); const at = freeSpot(t, def); c.x = at.x; c.y = at.y; t.items.push(c); B.sel = c.id; B.dirty = true; renderBox(); }
+    else if (a === 'del') { t.items = t.items.filter(x => x.id !== B.sel); B.sel = null; B.dirty = true; renderBox(); }
+    else if (a === 'editComp') BX.compOpen(b.dataset.id, () => renderBox());
+    else if (a === 'newComp') BX.compOpen(null, (c) => { addItem(c.id); });
+  }
+  function boxChange(ev) {
+    const el = ev.target, k = el.dataset.bk; if (!k) return;
+    const t = B.t, it = t.items.find(x => x.id === B.sel);
+    if (k === 'name') t.name = el.value.trim() || 'Box';
+    else if (k === 'notes') t.notes = el.value;
+    else if (k === 'w' || k === 'h' || k === 'd') t[k] = Math.max(k === 'd' ? 1 : 5, numOr(el.value, t[k]));
+    else if (!it) return;
+    else if (k === 'label') it.label = el.value;
+    else if (k === 'x' || k === 'y') it[k] = r1(Math.max(0, numOr(el.value, it[k])));
+    else if (k === 'limit') { it.limits = it.limits || {}; const v = el.value.trim(); if (v === '') delete it.limits[el.dataset.res]; else it.limits[el.dataset.res] = Math.max(0, numOr(v, 0)); }
+    B.dirty = true; renderBox();
+  }
+
+  // ================= component editor =================
+  const blankComp = () => ({ id: M.uid('my'), name: 'My device', cat: 'custom', sym: 'DEV', w: 8, h: 6, ports: {}, provides: {}, limits: {}, consumes: {}, internal: {}, notes: '', builtin: false });
+  BX.compOpen = (id, done) => {
+    const src = id ? H.comp(S.project, id) : null;
+    CE = { c: src ? clone(src) : blankComp(), isNew: !src, done };
+    renderComp();
+    const d = U.$('#compDlg'); d.returnValue = ''; if (!d.open) d.showModal();
+  };
+  function renderComp() {
+    const c = CE.c, d = U.$('#compDlg');
+    const isBuiltin = !!H.builtin[c.id], edited = isBuiltin && H.lib.components[c.id];
+    const res = Object.keys(C.resources);
+    const cell = (grp, r) => `<td><input type="number" min="0" data-cg="${grp}" data-res="${r}" value="${c[grp] && c[grp][r] != null ? esc(c[grp][r]) : ''}"></td>`;
+    d.innerHTML = `<form method="dialog" data-ce="1"><div class="dlg-head"><b>${CE.isNew ? 'New component' : 'Edit component'}</b><span class="soft">${isBuiltin ? (edited ? 'built-in, edited in your library' : 'built-in') : 'your component'}</span></div>
+      <div class="dlg-body">
+        <div class="ins-grid">
+          <label class="fl wide"><span>Name</span><input data-ck="name" value="${esc(c.name)}" required></label>
+          <label class="fl"><span>Category</span><select data-ck="cat">${C.hwCats.map(x => U.opt(x.id, x.name, c.cat)).join('')}</select></label>
+          <label class="fl"><span>Symbol</span><input data-ck="sym" value="${esc(c.sym)}" maxlength="5" title="Up to 5 characters shown on the drawing"></label>
+          <label class="fl"><span>Width (cm)</span><input data-ck="w" type="number" min="1" step="0.5" value="${c.w}"></label>
+          <label class="fl"><span>Depth (cm)</span><input data-ck="h" type="number" min="1" step="0.5" value="${c.h}"></label>
+          <label class="fl wide"><span>Notes</span><input data-ck="notes" value="${esc(c.notes)}"></label>
+        </div>
+        <h4>Connections</h4><p class="muted small">How many of each connector it has. Cables in rooms can only use types both ends have.</p>
+        <div class="ce-ports">${C.portTypes.filter(t => t.id !== 'custom').map(t => `<label class="fl"><span><span class="sw hw" style="--c:${t.color}"></span>${esc(t.name)}</span><input type="number" min="0" data-cg="ports" data-res="${t.id}" value="${c.ports && c.ports[t.id] ? c.ports[t.id] : ''}"></label>`).join('')}</div>
+        <h4>Capacity</h4><p class="muted small"><b>Provides</b>: what it offers (manufacturer figure). <b>Limit</b>: your operating limit, if lower. <b>Uses when connected</b>: what it takes from the item it's cabled to (blank = 1). <b>Uses inside a box</b>: what it takes from other parts in the same box.</p>
+        <table class="mini ce-res"><tr><th></th><th>Provides</th><th>Limit</th><th>Uses when connected</th><th>Uses inside a box</th></tr>
+          ${res.map(r => `<tr><td>${esc(C.resources[r].name)}${C.resources[r].unit ? ' (' + esc(C.resources[r].unit) + ')' : ''}</td>${cell('provides', r)}${cell('limits', r)}${cell('consumes', r)}${cell('internal', r)}</tr>`).join('')}</table>
+      </div>
+      <div class="dlg-foot">${edited ? '<button type="button" data-ce-act="reset">Reset to built-in</button>' : ''}<span class="grow"></span><button value="cancel" formnovalidate>Cancel</button><button value="ok" class="primary">Save to library</button></div></form>`;
+  }
+  function compRead() {
+    const d = U.$('#compDlg'), c = CE.c;
+    U.$$('[data-ck]', d).forEach(el => { const k = el.dataset.ck; c[k] = (k === 'w' || k === 'h') ? Math.max(1, numOr(el.value, c[k])) : el.value; });
+    c.name = String(c.name).trim() || 'Device'; c.sym = String(c.sym).trim().slice(0, 5) || '?';
+    ['ports', 'provides', 'limits', 'consumes', 'internal'].forEach(g => { c[g] = {}; });
+    U.$$('[data-cg]', d).forEach(el => { const v = el.value.trim(); if (v === '') return; const n = Math.max(0, numOr(v, 0)); if (el.dataset.cg === 'ports' && !n) return; c[el.dataset.cg][el.dataset.res] = n; });
+    c.builtin = false;
+    return c;
+  }
+
+  // ================= library dialog =================
+  BX.libOpen = (tab) => { if (tab) LT = tab; renderLib(); const d = U.$('#libDlg'); if (!d.open) d.showModal(); };
+  const source = (kind, id) => {
+    const inLib = !!H.lib[kind][id], inProj = !!S.project.hw[kind][id];
+    if (kind === 'components' && H.builtin[id]) return inLib ? 'built-in, edited' : 'built-in';
+    return inLib ? (inProj ? 'library · used here' : 'library') : 'this project only';
+  };
+  function renderLib() {
+    const d = U.$('#libDlg'), p = S.project;
+    const tabs = [['cables', 'Cable standards'], ['components', 'Components'], ['boxes', 'Controller boxes'], ['share', 'Share']];
+    let body = '';
+    if (LT === 'cables') {
+      const used = new Map(); p.rooms.forEach(r => r.cables.forEach(c => { if (c.std) used.set(c.std, (used.get(c.std) || 0) + 1); }));
+      body = `<p class="muted small">Standard cable lengths you stock. Pick one on a room cable and the app checks it is long enough. Colours draw the cable in the room and label it in the guide. Changes save straight to your library.</p>
+        <table class="mini lib-t"><tr><th>Colour</th><th>Name</th><th>Type</th><th>Length (m)</th><th>Tag</th><th>Connector</th><th>Notes</th><th>Used</th><th></th></tr>
+        ${H.stds(p).map(s => `<tr data-lid="${esc(s.id)}"><td><input type="color" data-lk="color" value="${esc(/^#[0-9a-f]{6}$/i.test(s.color) ? s.color : '#999999')}" aria-label="Colour"></td>
+          <td><input data-lk="name" value="${esc(s.name)}"></td><td><select data-lk="type">${C.portTypes.map(t => U.opt(t.id, t.name, s.type)).join('')}</select></td>
+          <td><input data-lk="length" type="number" min="0.1" step="0.5" value="${esc(s.length)}" class="tiny"></td><td><input data-lk="tag" value="${esc(s.tag)}" class="tiny" placeholder="Blue"></td>
+          <td><input data-lk="connector" value="${esc(s.connector)}"></td><td><input data-lk="notes" value="${esc(s.notes)}"></td>
+          <td class="num">${used.get(s.id) || ''}<div class="soft small">${esc(source('cables', s.id))}</div></td><td><button class="icon sm" data-l="delStd" data-id="${esc(s.id)}" aria-label="Delete ${esc(H.stdName(s))}">✕</button></td></tr>`).join('')}</table>
+        <div class="ins-actions"><button data-l="addStd">+ Cable standard</button></div>`;
+    } else if (LT === 'components') {
+      body = `<p class="muted small">Every part you can drop into a room or a box. Edit a built-in to change its size, ports or limits (you can reset it later), or add your own sensors, actuators and effects.</p><div class="ins-actions"><button data-l="newComp" class="primary">+ New component</button></div>`;
+      C.hwCats.forEach(cat => {
+        const list = H.comps(p).filter(c => c.cat === cat.id); if (!list.length) return;
+        body += `<h4><span class="sw hw" style="--c:${cat.color}"></span>${esc(cat.name)}</h4><table class="mini lib-t">${list.map(c => `<tr><td><b>${esc(c.name)}</b> <span class="soft">${esc(c.sym)}</span><div class="soft small">${esc(Object.keys(c.ports || {}).filter(k => c.ports[k] > 0).map(k => C.portType(k).name + (c.ports[k] > 1 ? ' ×' + c.ports[k] : '')).join(', '))}</div></td>
+          <td class="soft small">${c.w}×${c.h} cm</td><td class="soft small">${esc(source('components', c.id))}</td>
+          <td class="num"><button class="sm" data-l="editComp" data-id="${esc(c.id)}">Edit</button>${!H.builtin[c.id] && H.lib.components[c.id] ? ` <button class="icon sm" data-l="delComp" data-id="${esc(c.id)}" aria-label="Delete ${esc(c.name)}">✕</button>` : ''}</td></tr>`).join('')}</table>`;
+      });
+    } else if (LT === 'boxes') {
+      const bx = H.boxes(p);
+      body = `<p class="muted small">Reusable controller box layouts. Placing one in a room creates a distro with its PSUs and boards, ready to wire in the Form.</p><div class="ins-actions"><button data-l="newBox" class="primary">+ New box</button></div>
+        <table class="mini lib-t">${bx.map(b => { const caps = H.capRows(H.capsFrom(itemDefs(b))); return `<tr><td><b>${esc(b.name)}</b><div class="soft small">${b.w}×${b.h}×${b.d} cm · ${b.items.length} parts${b.notes ? ' · ' + esc(b.notes) : ''}</div><div class="soft small">${caps.slice(0, 5).map(c => esc(c.name) + ' ' + c.cap.toLocaleString() + (c.unit ? ' ' + c.unit : '')).join(' · ')}</div></td>
+          <td class="soft small">${esc(source('boxes', b.id))}</td>
+          <td class="num"><button class="sm" data-l="editBox" data-id="${esc(b.id)}">Edit</button> <button class="sm" data-l="placeBox" data-id="${esc(b.id)}">Place in room</button>${H.lib.boxes[b.id] ? ` <button class="icon sm" data-l="delBox" data-id="${esc(b.id)}" aria-label="Delete ${esc(b.name)}">✕</button>` : ''}</td></tr>`; }).join('') || '<tr><td class="muted">No boxes yet.</td></tr>'}</table>`;
+    } else {
+      const n = k => Object.keys(H.lib[k]).length, np = k => Object.keys(p.hw[k]).length;
+      body = `<p>Your library lives in this browser and is shared by every project you open here. Projects also keep their own copy of the hardware they use, so a saved project opens the same anywhere.</p>
+        <table class="mini"><tr><th></th><th>Your library</th><th>This project</th></tr><tr><td>Cable standards</td><td class="num">${n('cables')}</td><td class="num">${np('cables')}</td></tr><tr><td>Components (custom or edited)</td><td class="num">${n('components')}</td><td class="num">${np('components')}</td></tr><tr><td>Controller boxes</td><td class="num">${n('boxes')}</td><td class="num">${np('boxes')}</td></tr></table>
+        <h4>Move it to another computer</h4><div class="ins-actions"><button data-l="export" class="primary">Export library…</button><button data-l="import">Import library…</button><input type="file" id="libFile" accept=".json,application/json" hidden></div>
+        <h4>This project</h4><div class="ins-actions"><button data-l="push" title="Copy the cables, parts and boxes this project uses into your library">Add this project's hardware to my library</button><button data-l="pull" title="Replace this project's copies with the versions in your library">Update this project from my library</button></div>
+        <p class="muted small">Import adds to your library and replaces items with the same id.</p>`;
+    }
+    d.innerHTML = `<div class="dlg-head"><b>Hardware library</b><div class="seg sm">${tabs.map(([k, l]) => `<button data-l="tab" data-id="${k}" class="${LT === k ? 'on' : ''}">${l}</button>`).join('')}</div><span class="grow"></span><button data-l="close" aria-label="Close">✕</button></div><div class="dlg-body">${body}</div>`;
+  }
+  const stdSave = (id, f, v) => { const s = clone(H.std(S.project, id)); s[f] = f === 'length' ? Math.max(0.1, numOr(v, s.length)) : v; H.put('cables', s); };
+  async function libClick(ev) {
+    const b = ev.target.closest('[data-l]'); if (!b) return;
+    const a = b.dataset.l, id = b.dataset.id, p = S.project;
+    if (a === 'close') U.$('#libDlg').close();
+    else if (a === 'tab') { LT = id; renderLib(); }
+    else if (a === 'addStd') { H.put('cables', { id: M.uid('std'), name: 'New cable', type: 'pixel', length: 5, color: '#a855f7', tag: 'Purple', connector: '', notes: '' }); renderLib(); }
+    else if (a === 'delStd') {
+      const s = H.std(p, id), inUse = p.rooms.some(r => r.cables.some(c => c.std === id));
+      if (!(await U.ask({ title: `Delete ${H.stdName(s)}?`, body: inUse ? 'Cables in this project that use it keep their own copy.' : 'It is removed from your library.', ok: 'Delete', danger: true }))) return;
+      H.remove('cables', id);
+      if (!inUse && p.hw.cables[id]) S.commit('dropStd', q => { delete q.hw.cables[id]; });
+      renderLib();
+    }
+    else if (a === 'newComp') BX.compOpen(null, () => renderLib());
+    else if (a === 'editComp') BX.compOpen(id, () => renderLib());
+    else if (a === 'delComp') { if (await U.ask({ title: 'Delete this component?', body: 'Projects that use it keep their own copy.', ok: 'Delete', danger: true })) { H.remove('components', id); renderLib(); } }
+    else if (a === 'newBox') { U.$('#libDlg').close(); BX.boxOpen(null); }
+    else if (a === 'editBox') { U.$('#libDlg').close(); BX.boxOpen(id); }
+    else if (a === 'placeBox') {
+      U.$('#libDlg').close(); PP.setView('room');
+      S.commit('placeBox', q => { const room = PP.room.current(q); const r = H.placeBox(q, id, room, Math.round(room.w / 2), Math.round(room.h / 2)); if (r) S.selection = r.node.id; });
+    }
+    else if (a === 'delBox') { if (await U.ask({ title: 'Delete this box from your library?', body: 'Boxes already placed in projects keep their layout.', ok: 'Delete', danger: true })) { H.remove('boxes', id); renderLib(); } }
+    else if (a === 'export') U.download('pixel-planner-library.json', H.exportLib());
+    else if (a === 'import') U.$('#libFile').click();
+    else if (a === 'push') { const n = H.pushToLibrary(p); U.toast(`${n} item${n === 1 ? '' : 's'} added to your library.`); renderLib(); }
+    else if (a === 'pull') { let n = 0; S.commit('pullLib', q => { n = H.pullFromLibrary(q); }); U.toast(`${n} item${n === 1 ? '' : 's'} updated from your library.`); renderLib(); }
+  }
+  function libChange(ev) {
+    const el = ev.target;
+    if (el.id === 'libFile') {
+      const f = el.files[0]; el.value = ''; if (!f) return;
+      f.text().then(t => { try { const n = H.importLib(t); U.toast(`Imported ${n} item${n === 1 ? '' : 's'}.`); renderLib(); if (PP.render) PP.render(); } catch (e) { U.toast('Could not import: ' + e.message, 5000); } });
+      return;
+    }
+    const tr = el.closest('[data-lid]'); if (!tr || !el.dataset.lk) return;
+    stdSave(tr.dataset.lid, el.dataset.lk, el.value);
+  }
+
+  // Actions reachable from the main UI (data-act).
+  BX.actions = {
+    boxOpen: () => BX.boxOpen(null),
+    boxEdit: (id) => BX.boxOpen(id),
+    libOpen: () => BX.libOpen(),
+    libEditComp: (id) => BX.compOpen(id)
+  };
+
+  BX.init = () => {
+    const bd = U.$('#boxDlg'), cd = U.$('#compDlg'), ld = U.$('#libDlg');
+    bd.addEventListener('click', boxClick);
+    bd.addEventListener('change', ev => { if (B) boxChange(ev); });
+    bd.addEventListener('cancel', async ev => { ev.preventDefault(); if (await confirmDiscard()) { bd.close(); B = null; } });
+    bd.addEventListener('toggle', ev => { const x = ev.target; if (B && x.dataset && x.dataset.bxcat) B['o-' + x.dataset.bxcat] = x.open; }, true);
+    bd.addEventListener('keydown', ev => {
+      if ((ev.key === 'Delete' || ev.key === 'Backspace') && B && B.sel && !/^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.tagName)) {
+        ev.preventDefault(); ev.stopPropagation(); B.t.items = B.t.items.filter(x => x.id !== B.sel); B.sel = null; B.dirty = true; renderBox();
+      }
+    });
+    bd.addEventListener('dragstart', ev => { const el = ev.target.closest('[data-bxdrag]'); if (el) { ev.dataTransfer.setData('text/plain', 'bx:' + el.dataset.bxdrag); ev.dataTransfer.effectAllowed = 'copy'; } });
+    bd.addEventListener('dblclick', ev => { const el = ev.target.closest('[data-bxdrag]'); if (el && B) addItem(el.dataset.bxdrag); });
+    bd.addEventListener('dragover', ev => { if (ev.target.closest('#bxcanvas')) ev.preventDefault(); });
+    bd.addEventListener('drop', ev => {
+      if (!ev.target.closest('#bxcanvas') || !B) return;
+      ev.preventDefault();
+      const v = ev.dataTransfer.getData('text/plain'); if (!v.startsWith('bx:')) return;
+      const id = v.slice(3), def = H.comp(S.project, id); if (!def) return;
+      const q = toBox(ev); addItem(id, { x: q.x - def.w / 2, y: q.y - def.h / 2 });
+    });
+    bd.addEventListener('pointerdown', ev => {
+      if (!B || ev.button !== 0) return;
+      const g = ev.target.closest('[data-bxi]');
+      if (!g) { if (ev.target.closest('[data-bxbg]')) { B.sel = null; renderBox(); } return; }
+      const it = B.t.items.find(x => x.id === g.dataset.bxi), def = H.comp(S.project, it.comp);
+      const q = toBox(ev);
+      B.drag = { it, def, dx: q.x - it.x, dy: q.y - it.y, moved: false, svg: U.$('#bxsvg') };
+      B.drag.svg.setPointerCapture(ev.pointerId);
+      if (B.sel !== it.id) { B.sel = it.id; renderBox(); B.drag.svg = U.$('#bxsvg'); B.drag.svg.setPointerCapture(ev.pointerId); }
+    });
+    bd.addEventListener('pointermove', ev => {
+      if (!B || !B.drag) return;
+      const dr = B.drag, q = toBox(ev);
+      const x = r1(Math.max(0, Math.min(B.t.w - dr.def.w, q.x - dr.dx))), y = r1(Math.max(0, Math.min(B.t.h - dr.def.h, q.y - dr.dy)));
+      if (x === dr.it.x && y === dr.it.y) return;
+      dr.it.x = x; dr.it.y = y; dr.moved = true; B.dirty = true;
+      renderBox(false); dr.svg = U.$('#bxsvg'); try { dr.svg.setPointerCapture(ev.pointerId); } catch (e) { }
+    });
+    const up = () => { if (B && B.drag) B.drag = null; };
+    bd.addEventListener('pointerup', up); bd.addEventListener('pointercancel', up);
+
+    cd.addEventListener('click', ev => {
+      const b = ev.target.closest('[data-ce-act="reset"]'); if (!b) return;
+      const id = CE.c.id;
+      H.remove('components', id);
+      if (S.project.hw.components[id]) S.commit('resetComp', q => { q.hw.components[id] = clone(H.builtin[id]); });
+      const done = CE.done; cd.close(); CE = null; if (done) done(H.builtin[id]);
+      U.toast('Back to the built-in definition.');
+    });
+    cd.addEventListener('close', () => {
+      if (!CE) return;
+      const st = CE; CE = null;
+      if (cd.returnValue !== 'ok') return;
+      CE = st; const c = compRead(); CE = null;
+      H.put('components', c);
+      if (st.done) st.done(c);
+      U.toast(`Saved ${c.name}.`);
+    });
+
+    ld.addEventListener('click', libClick);
+    ld.addEventListener('change', libChange);
+  };
+})();
+
+</script>
+<script>
 // Bootstrap, rendering loop, actions, files and shortcuts.
 (function () {
   const U = PP.ui, C = PP.catalog, M = PP.model, K = PP.calc, S = PP.store, F = PP.form, V = PP.visual;
@@ -2368,15 +4165,17 @@ PP.CHANGELOG = [
     U.$('#projName').value = p.name;
     document.title = `${p.name} — ${PP.APP_NAME}`;
     summary(p, R);
-    if (U.view !== 'visual') F.render(p, R);
-    if (U.view !== 'form') { V.renderPalette(p); V.render(p, R); }
+    if (U.view !== 'visual' && U.view !== 'room') F.render(p, R);
+    if (U.view === 'split' || U.view === 'visual') { V.renderPalette(p); V.render(p, R); }
     if (U.view === 'visual') inspector(p, R);
+    if (U.view === 'room') { PP.room.renderTools(p); PP.room.renderPalette(p); PP.room.render(p, R); PP.room.inspector(p, R); }
     status(p, R);
     U._renderMs = performance.now() - t0;
   }
 
   function onSelect() {
     const p = S.project, R = U.lastR;
+    if (U.view === 'room') { PP.room.render(p, R); PP.room.inspector(p, R); return; }
     if (U.view !== 'visual') F.markSelection(true);
     if (U.view !== 'form') V.render(p, R);
     if (U.view === 'visual') inspector(p, R);
@@ -2430,8 +4229,10 @@ PP.CHANGELOG = [
     U.$$('.seg [data-view]').forEach(b => { b.classList.toggle('on', b.dataset.view === v); b.setAttribute('aria-selected', b.dataset.view === v); });
     try { localStorage.setItem('pixelplanner.view', v); } catch (e) { }
     render();
-    if (v !== 'form' && !fitted) requestAnimationFrame(() => { V.fit(); fitted = true; });
+    if (v === 'room') PP.room.fitOnce();
+    else if (v !== 'form' && !fitted) requestAnimationFrame(() => { V.fit(); fitted = true; });
   }
+  PP.setView = setView;
 
   // ---------- field binding ----------
   function entity(p, id) {
@@ -2450,16 +4251,22 @@ PP.CHANGELOG = [
       const o = entity(p, id); if (!o) return;
       if (t === 'num') {
         const n = parseFloat(v);
+        if (String(v).trim() === '' && ['w', 'h', 'slack', 'len'].includes(f) && (o.kind || o.a)) { o[f] = null; return; }
         if (!isFinite(n)) return;
         v = n;
         if (f === 'brightness') v = Math.min(100, Math.max(1, v));
-        if (['count', 'length', 'spacing', 'amps', 'psuSlots', 'boardSlots', 'customA', 'customV'].includes(f) || f.endsWith('.length')) v = Math.max(0, v);
+        if (['count', 'length', 'spacing', 'amps', 'psuSlots', 'boardSlots', 'customA', 'customV', 'w', 'h', 'len', 'slack', 'pixels', 'cableSlackM'].includes(f) || f.endsWith('.length')) v = Math.max(0, v);
         if (f === 'count') v = Math.max(1, Math.round(v));
+        if (f === 'grid') v = Math.max(0.05, v);
+        if (f === 'pixels') v = Math.round(v);
+        if ((f === 'w' || f === 'h') && o.nodes) v = Math.max(1, v);
       }
       if (f.startsWith('banks.')) v = v || null;
       if (f === 'psuId') v = v || null;
+      if (f === 'portId') v = v || null;
       if (f === 'board') { M.changeBoard(o, v); return; }
       setPath(o, f, v);
+      if (PP.room) PP.room.afterField(p, o, f);
       if (f === 'size') { const s = C.distroSizes.find(x => x.id === v); if (s && v !== 'custom') { o.psuSlots = s.psuSlots; o.boardSlots = s.boardSlots; } }
       if (f === 'model') { const sp = M.psuSpec(o); o.vout = sp.v; }
       if (f === 'customV' && o.model === 'custom') o.vout = v;
@@ -2505,7 +4312,18 @@ PP.CHANGELOG = [
     help: () => PP.help.open('use'),
     whatsnew: () => PP.help.open('news'),
     warnings: () => { drawerOpen = !drawerOpen; U.$('#warnDrawer').hidden = !drawerOpen; },
-    jump: (id) => { if (!id) return; if (S.selection === id) onSelect(); else S.select(id); },
+    jump: (id) => {
+      if (!id) return;
+      const e = M.find(S.project, id);
+      if (e && (e.type === 'rnode' || e.type === 'rcable' || e.type === 'room')) {
+        const changed = U.roomId !== e.room.id; U.roomId = e.room.id;
+        S.selection = e.type === 'room' ? null : id;
+        if (U.view !== 'room') setView('room'); else if (changed) { PP.room.refit(); render(); PP.room.fitOnce(); } else onSelect();
+        return;
+      }
+      if (e && U.view === 'room') { S.selection = id; setView(e.type === 'distro' ? 'room' : 'split'); return; }
+      if (S.selection === id) onSelect(); else S.select(id);
+    },
     select: (id) => S.select(id),
     fit: () => V.fit(),
     zoomIn: () => V.zoom(1.2),
@@ -2525,6 +4343,13 @@ PP.CHANGELOG = [
         const gone = new Set(dd.psus.map(s => s.id));
         p.distros = p.distros.filter(x => x.id !== id);
         p.distros.forEach(x => x.controllers.forEach(c => c.ports.forEach(pt => pt.chain.forEach(it => { if (it.kind === 'inject' && gone.has(it.psuId)) it.psuId = null; }))));
+        (p.rooms || []).forEach(r => {
+          const nodes = new Set(r.nodes.filter(n => n.kind === 'distro' && n.ref === id).map(n => n.id));
+          const ports = new Set(dd.controllers.flatMap(c => c.ports.map(pt => pt.id)));
+          r.nodes.forEach(n => { if (n.kind === 'prop' && ports.has(n.portId)) n.portId = null; });
+          r.nodes = r.nodes.filter(n => !nodes.has(n.id));
+          r.cables = r.cables.filter(c => !nodes.has(c.a) && !nodes.has(c.b));
+        });
         S.selection = null;
       });
     },
@@ -2640,6 +4465,7 @@ PP.CHANGELOG = [
     },
     csvChannels: () => U.download(U.slug(S.project.name) + '-channels.csv', PP.guide.csvChannels(S.project, U.lastR), 'text/csv')
   };
+  Object.assign(A, PP.room.actions, PP.boxes.actions);
 
   function moveItem(id, dir) {
     S.commit('moveItem', p => {
@@ -2695,6 +4521,8 @@ PP.CHANGELOG = [
       const el = ev.target;
       if (el.id === 'themeSel') { setTheme(el.value); return; }
       if (el.id === 'fileInput') { const f = el.files[0]; if (f) f.text().then(t => loadText(t, f.name, null)); el.value = ''; return; }
+      if (el.closest && el.closest('#boxDlg, #libDlg, #compDlg')) return;
+      if (PP.room.onChange(el)) return;
       if (el.dataset && el.dataset.id && el.dataset.f) onField(el);
     });
     document.addEventListener('input', ev => {
@@ -2702,9 +4530,9 @@ PP.CHANGELOG = [
     });
     document.addEventListener('click', ev => {
       const v = ev.target.closest('[data-view]');
-      if (v && !ev.target.closest('#svg')) { setView(v.dataset.view); return; }
+      if (v && !ev.target.closest('#svg') && !ev.target.closest('dialog')) { setView(v.dataset.view); return; }
       const a = ev.target.closest('[data-act]');
-      if (a && !a.closest('#guideDlg') && A[a.dataset.act]) { ev.preventDefault(); A[a.dataset.act](a.dataset.id, a); return; }
+      if (a && !a.closest('#guideDlg, #boxDlg, #libDlg, #compDlg') && A[a.dataset.act]) { ev.preventDefault(); A[a.dataset.act](a.dataset.id, a); return; }
       const s = ev.target.closest('#formPane [data-sel], #inspector [data-sel]');
       if (s && !ev.target.closest('summary') && S.selection !== s.dataset.sel) {
         S.selection = s.dataset.sel; U.$$('.sel', s.closest('.pane, .inspector')).forEach(x => x.classList.remove('sel')); s.classList.add('sel');
@@ -2726,14 +4554,16 @@ PP.CHANGELOG = [
     }, true);
     document.addEventListener('keydown', ev => {
       const inField = /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.tagName);
+      const inDlg = !!document.querySelector('dialog[open]');
       const k = ev.key.toLowerCase();
       if ((ev.ctrlKey || ev.metaKey) && k === 's') { ev.preventDefault(); saveFile(ev.shiftKey); }
       else if ((ev.ctrlKey || ev.metaKey) && k === 'o') { ev.preventDefault(); openFile(); }
-      else if ((ev.ctrlKey || ev.metaKey) && k === 'z' && !inField) { ev.preventDefault(); ev.shiftKey ? S.doRedo() : S.doUndo(); }
-      else if ((ev.ctrlKey || ev.metaKey) && k === 'y' && !inField) { ev.preventDefault(); S.doRedo(); }
-      else if ((k === 'delete' || k === 'backspace') && !inField && S.selection) {
+      else if ((ev.ctrlKey || ev.metaKey) && k === 'z' && !inField && !inDlg) { ev.preventDefault(); ev.shiftKey ? S.doRedo() : S.doUndo(); }
+      else if ((ev.ctrlKey || ev.metaKey) && k === 'y' && !inField && !inDlg) { ev.preventDefault(); S.doRedo(); }
+      else if ((k === 'delete' || k === 'backspace') && !inField && !inDlg && S.selection) {
         const e = M.find(S.project, S.selection);
         if (e && e.type === 'item') { ev.preventDefault(); A.itemDel(S.selection); }
+        else if (e && (e.type === 'rnode' || e.type === 'rcable') && U.view === 'room') { ev.preventDefault(); PP.room.del(S.selection); }
       } else if (k === 'escape' && drawerOpen) { drawerOpen = false; U.$('#warnDrawer').hidden = true; }
     });
     window.addEventListener('resize', () => { if (U.view !== 'form' && !fitted) V.fit(); });
@@ -2752,9 +4582,11 @@ PP.CHANGELOG = [
     U.$('#themeSel').value = th;
     window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => { if (U.$('#themeSel').value === 'system') setTheme('system'); });
     if (!S.restore()) S.project = M.demoProject();
-    S.on(why => { if (why === 'select') onSelect(); else render(); });
+    S.on(why => { if (why === 'select') onSelect(); else { if (why === 'load') { PP.room.refit(); U.roomId = null; } render(); if (why === 'load' && U.view === 'room') PP.room.fitOnce(); } });
     bind();
     V.init();
+    PP.room.init();
+    PP.boxes.init();
     let v = 'split'; try { v = localStorage.getItem('pixelplanner.view') || (window.innerWidth < 900 ? 'form' : 'split'); } catch (e) { }
     setView(v);
     PP.render = render;
